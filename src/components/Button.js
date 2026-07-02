@@ -3,6 +3,10 @@ const variants = {
     "bg-[#B36BB3] text-white hover:bg-[#9E5F9E]",
   secondary:
     "bg-[#3b4658] text-white hover:bg-[#4a5870]",
+  blue:
+    "bg-[#2D3F96] text-white hover:bg-[#283885]",
+  purple:
+    "bg-[#662E94] text-white hover:bg-[#5A2885]",
 };
 
 const sizes = {
