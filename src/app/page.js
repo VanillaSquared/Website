@@ -45,6 +45,20 @@ export default function Home() {
             Download
           </Button>
           <Button
+            href="https://github.com/VanillaSquared/Website/wiki"
+            variant="blue"
+            external
+          >
+            Docs
+          </Button>
+          <Button
+            href="https://github.com/VanillaSquared/Website/issues/new"
+            variant="purple"
+            external
+          >
+            Bug Reporter
+          </Button>
+          <Button
             href="https://github.com/VanillaSquared/"
             variant="secondary"
             external
