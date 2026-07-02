@@ -2,9 +2,9 @@ const variants = {
   primary:
     "bg-[#B36BB3] text-white hover:bg-[#9E5F9E]",
   secondary:
-    "bg-[#3b4658] text-white hover:bg-[#4a5870]",
+    "bg-[#3b4658] text-white hover:bg-[#32394A]",
   blue:
-    "bg-[#2D3F96] text-white hover:bg-[#283885]",
+    "bg-[#374BAD] text-white hover:bg-[#283885]",
   purple:
     "bg-[#662E94] text-white hover:bg-[#5A2885]",
 };
