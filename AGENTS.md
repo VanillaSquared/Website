@@ -3,6 +3,7 @@
 ## Formatting
 
 - Format JSON files with VS Code's default pretty-print formatting.
+- Always make css variables for colors in order to make them reusable(in `src/app/global.css`).
 
 ## Development Workflow
 
