@@ -1,10 +1,21 @@
-- Format JSON files exactly how vscodes pretty printed option does it!
+# Project Guidelines
 
-## Follow these guidelines:
-- do not just implement infinite helper functions at random places
-- implement a proper, reusable, clean and structured API
-- code should be structured and clean
-- make sure to not just monkey patch everything(its better to improve the API for future then just to implement some random one off helper method for a single fix)
-- make sure code can be reused in the future and is not just some unreadable garbage
-- make sure to not accidently leak any information
-- make sure the server is secure
+## Formatting
+
+- Format JSON files with VS Code's default pretty-print formatting.
+
+## Development Workflow
+
+- Always start the website with `npm run build` to check for errors.
+
+## Code Quality
+
+- Keep the codebase clean, structured, and maintainable.
+- Prefer proper, reusable APIs over one-off helper methods or scattered utility functions.
+- Avoid monkey patching. Improve the underlying API when a reusable solution is needed.
+- Write code that can be reused in future work and remains easy to understand.
+
+## Security
+
+- Do not leak secrets, credentials, or sensitive information.
+- Keep server-side code secure and avoid introducing unsafe behavior.
