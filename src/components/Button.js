@@ -22,7 +22,7 @@ export default function Button({
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className={`${sizes[size] ?? sizes.md} border font-semibold transition-colors ${variants[variant] ?? variants.primary}`}
+      className={`${sizes[size] ?? sizes.md} border-[2.0px] font-semibold transition-colors ${variants[variant] ?? variants.primary}`}
     >
       {children}
     </a>
