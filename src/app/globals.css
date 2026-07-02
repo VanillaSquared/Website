@@ -17,20 +17,20 @@
 
   --vsq-button-primary: #b36bb3;
   --vsq-button-primary-hover: #9e5f9e;
-  --vsq-button-primary-outline: #bc78bc;
-  --vsq-button-primary-outline-hover: #c282c2;
+  --vsq-button-primary-outline: #b872b8;
+  --vsq-button-primary-outline-hover: #a767a7;
   --vsq-button-secondary: #3b4658;
   --vsq-button-secondary-hover: #32394a;
-  --vsq-button-secondary-outline: #465268;
-  --vsq-button-secondary-outline-hover: #4f5b72;
+  --vsq-button-secondary-outline: #414c60;
+  --vsq-button-secondary-outline-hover: #3c465a;
   --vsq-button-blue: #374bad;
   --vsq-button-blue-hover: #283885;
-  --vsq-button-blue-outline: #4055ba;
-  --vsq-button-blue-outline-hover: #4a5fc8;
+  --vsq-button-blue-outline: #3b50b4;
+  --vsq-button-blue-outline-hover: #30439c;
   --vsq-button-purple: #662e94;
   --vsq-button-purple-hover: #5a2885;
-  --vsq-button-purple-outline: #7239a1;
-  --vsq-button-purple-outline-hover: #7d44ad;
+  --vsq-button-purple-outline: #6b349a;
+  --vsq-button-purple-outline-hover: #623090;
 }
 
 @theme inline {
