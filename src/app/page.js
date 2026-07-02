@@ -36,7 +36,7 @@ export default function Home() {
           vanilla while expanding weapons, armor, enchantments, and combat utility.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Tag>Minecraft 1.21.4</Tag>
+          <Tag>Minecraft 26.2</Tag>
           <Tag>Fabric Loader ≥0.19.3</Tag>
           <Tag>Java ≥25</Tag>
         </div>
