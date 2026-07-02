@@ -6,8 +6,7 @@
 
 ## Development Workflow
 
-- Always start the website with `npm run dev` to check for errors.
-- Leave the development server running when finished so the user does not need to start it manually.
+- Always start the website with `npm run build` to check for errors.
 
 ## Code Quality
 
