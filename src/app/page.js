@@ -2,6 +2,10 @@
 
 import Link from "next/link";
 
+import Button from "@/components/Button";
+import Card from "@/components/Card";
+import Tag from "@/components/Tag";
+
 export default function Home() {
   const features = [
     "Rebalanced combat for swords, axes, spears, maces, shields, and fishing rods",
@@ -32,33 +36,21 @@ export default function Home() {
           vanilla while expanding weapons, armor, enchantments, and combat utility.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <span className="rounded-md bg-[#2d2d2d] px-3 py-1 text-sm font-medium text-gray-300">
-            Minecraft 1.21.4
-          </span>
-          <span className="rounded-md bg-[#2d2d2d] px-3 py-1 text-sm font-medium text-gray-300">
-            Fabric Loader ≥0.19.3
-          </span>
-          <span className="rounded-md bg-[#2d2d2d] px-3 py-1 text-sm font-medium text-gray-300">
-            Java ≥25
-          </span>
+          <Tag>Minecraft 1.21.4</Tag>
+          <Tag>Fabric Loader ≥0.19.3</Tag>
+          <Tag>Java ≥25</Tag>
         </div>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <a
-            href="https://modrinth.com/mod/vsq"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-[#B36BB3] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#9E5F9E]"
-          >
+          <Button href="https://modrinth.com/mod/vsq" external>
             Download
-          </a>
-          <a
+          </Button>
+          <Button
             href="https://github.com/mizius-studios/VanillaSquared"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-lg bg-[#3b4658] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#4a5870]"
+            variant="secondary"
+            external
           >
             GitHub
-          </a>
+          </Button>
         </div>
       </section>
 
@@ -68,12 +60,9 @@ export default function Home() {
           <h2 className="text-center text-3xl font-bold text-white">Features</h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <div
-                key={f}
-                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#C269C2]"
-              >
+              <Card key={f}>
                 <p className="text-gray-300">{f}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
@@ -93,15 +82,9 @@ export default function Home() {
           </p>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {enchantments.map((e) => (
-              <div
-                key={e.name}
-                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#C269C2]"
-              >
-                <h3 className="text-lg font-semibold text-[#C269C2]">
-                  {e.name}
-                </h3>
+              <Card key={e.name} title={e.name}>
                 <p className="mt-2 text-sm text-gray-400">{e.desc}</p>
-              </div>
+              </Card>
             ))}
           </div>
         </div>
