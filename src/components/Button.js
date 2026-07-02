@@ -1,12 +1,12 @@
 const variants = {
   primary:
-    "bg-[#B36BB3] text-white hover:bg-[#9E5F9E]",
+    "border-button-primary-outline bg-button-primary text-button-text hover:border-button-primary-outline-hover hover:bg-button-primary-hover",
   secondary:
-    "bg-[#3b4658] text-white hover:bg-[#32394A]",
+    "border-button-secondary-outline bg-button-secondary text-button-text hover:border-button-secondary-outline-hover hover:bg-button-secondary-hover",
   blue:
-    "bg-[#374BAD] text-white hover:bg-[#283885]",
+    "border-button-blue-outline bg-button-blue text-button-text hover:border-button-blue-outline-hover hover:bg-button-blue-hover",
   purple:
-    "bg-[#662E94] text-white hover:bg-[#5A2885]",
+    "border-button-purple-outline bg-button-purple text-button-text hover:border-button-purple-outline-hover hover:bg-button-purple-hover",
 };
 
 const sizes = {
@@ -26,7 +26,7 @@ export default function Button({
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className={`${sizes[size] ?? sizes.md} font-semibold transition-colors ${variants[variant] ?? variants.primary}`}
+      className={`${sizes[size] ?? sizes.md} border font-semibold transition-colors ${variants[variant] ?? variants.primary}`}
     >
       {children}
     </a>
