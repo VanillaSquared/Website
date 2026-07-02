@@ -27,11 +27,11 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1 font-sans">
       {/* Hero */}
-      <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-[#171717]">
-        <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+      <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-background">
+        <h1 className="text-5xl font-bold tracking-tight text-heading sm:text-6xl">
           Vanilla²
         </h1>
-        <p className="mt-4 max-w-2xl text-lg text-gray-400">
+        <p className="mt-4 max-w-2xl text-lg text-muted">
           A Fabric combat and progression overhaul that keeps Minecraft close to
           vanilla while expanding weapons, armor, enchantments, and combat utility.
         </p>
@@ -69,13 +69,13 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-20 bg-[#171717]">
+      <section className="px-6 py-20 bg-background">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-3xl font-bold text-white">Features</h2>
+          <h2 className="text-center text-3xl font-bold text-heading">Features</h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <Card key={f}>
-                <p className="text-gray-300">{f}</p>
+                <p className="text-soft">{f}</p>
               </Card>
             ))}
           </div>
@@ -83,12 +83,12 @@ export default function Home() {
       </section>
 
       {/* Enchanting Overhaul */}
-      <section className="px-6 py-20 bg-[#171717]">
+      <section className="px-6 py-20 bg-background">
         <div className="mx-auto max-w-5xl">
-          <h2 className="text-center text-3xl font-bold text-white">
+          <h2 className="text-center text-3xl font-bold text-heading">
             Enchanting Overhaul
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-center text-gray-400">
+          <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
             Vanilla² replaces much of vanilla enchanting with a recipe-based
             enchantment table and an enchantment recipe book. Discover recipes
             through loot, fishing, piglin bartering, villager librarians, and
@@ -97,7 +97,7 @@ export default function Home() {
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {enchantments.map((e) => (
               <Card key={e.name} title={e.name}>
-                <p className="mt-2 text-sm text-gray-400">{e.desc}</p>
+                <p className="mt-2 text-sm text-muted">{e.desc}</p>
               </Card>
             ))}
           </div>
@@ -105,19 +105,19 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#171717] px-6 py-10">
+      <footer className="bg-background px-6 py-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-sm text-gray-500">© Vanilla² (VSQ)</p>
-          <div className="flex gap-6 text-sm text-gray-500">
+          <p className="text-sm text-subtle">© Vanilla² (VSQ)</p>
+          <div className="flex gap-6 text-sm text-subtle">
             <Link
               href="https://github.com/VanillaSquared/"
-              className="hover:text-gray-300 transition-colors"
+              className="hover:text-soft transition-colors"
             >
               GitHub
             </Link>
             <Link
               href="https://modrinth.com/mod/vsq"
-              className="hover:text-gray-300 transition-colors"
+              className="hover:text-soft transition-colors"
             >
               Modrinth
             </Link>
