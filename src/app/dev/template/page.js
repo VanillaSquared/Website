@@ -1,0 +1,33 @@
+import Button from "@/components/Button";
+import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
+
+export const metadata = {
+  title: "Template Preview - Vanilla²",
+};
+
+export default function TemplatePreviewPage() {
+  return (
+    <DefaultTemplatePage
+      barItems={[
+        "Raw text item",
+        "Another text item",
+        <Button key="primary" href="/" size="sm">
+          Primary Button
+        </Button>,
+        <Button key="secondary" href="/" size="sm" variant="secondary">
+          Secondary Button
+        </Button>,
+      ]}
+    >
+      <section className="bg-background px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <h1 className="text-4xl font-bold text-white">Template Preview</h1>
+          <p className="mt-4 max-w-2xl text-gray-400">
+            This page previews the default template page and its top header with
+            both raw text entries and Button components.
+          </p>
+        </div>
+      </section>
+    </DefaultTemplatePage>
+  );
+}
