@@ -6,8 +6,8 @@ const variants = {
 };
 
 const sizes = {
-  sm: "rounded-lg px-4 py-2 text-sm",
-  md: "rounded-xl px-6 py-3 text-base",
+  sm: "rounded-lg px-2 py-1 text-sm",
+  md: "rounded-xl px-4 py-2 text-base",
 };
 
 export default function Button({
