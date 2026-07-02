@@ -45,7 +45,7 @@ export default function Home() {
             Download
           </Button>
           <Button
-            href="https://github.com/mizius-studios/VanillaSquared"
+            href="https://github.com/VanillaSquared/Website"
             variant="secondary"
             external
           >
@@ -96,7 +96,7 @@ export default function Home() {
           <p className="text-sm text-gray-500">© Vanilla² (VSQ)</p>
           <div className="flex gap-6 text-sm text-gray-500">
             <Link
-              href="https://github.com/mizius-studios/VanillaSquared"
+              href="https://github.com/VanillaSquared/Website"
               className="hover:text-gray-300 transition-colors"
             >
               GitHub
