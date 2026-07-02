@@ -1,65 +1,132 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
 
 export default function Home() {
+  const features = [
+    "Rebalanced combat for swords, axes, spears, maces, shields, and fishing rods",
+    "Expanded armor & protection scaling beyond vanilla limits",
+    "New attributes and damage types for deeper combat interactions",
+    "Fishing rods as combat tools with hook damage & enchantments",
+    "Extended armor HUD for values above 20",
+    "Custom Sulfur Cube entity with new loot & food items",
+  ];
+
+  const enchantments = [
+    { name: "Dash", desc: "Burst forward and strike entities caught in the lunge." },
+    { name: "Fractured", desc: "Mine multiple blocks asynchronously through manual clicks." },
+    { name: "Ruthless", desc: "Greatly increases attack damage at a self-damage cost." },
+    { name: "Swirling", desc: "Spin with your weapon and repeatedly strike nearby enemies." },
+    { name: "Void Strike", desc: "Applies the Voided effect to targets." },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-col flex-1 font-sans">
+      {/* Hero */}
+      <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-[#151515]">
+        <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
+          Vanilla²
+        </h1>
+        <p className="mt-4 max-w-2xl text-lg text-gray-400">
+          A Fabric combat and progression overhaul that keeps Minecraft close to
+          vanilla while expanding weapons, armor, enchantments, and combat utility.
+        </p>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <span className="rounded-md bg-[#2d2d2d] px-3 py-1 text-sm font-medium text-gray-300">
+            Minecraft 1.21.4
+          </span>
+          <span className="rounded-md bg-[#2d2d2d] px-3 py-1 text-sm font-medium text-gray-300">
+            Fabric Loader ≥0.19.3
+          </span>
+          <span className="rounded-md bg-[#2d2d2d] px-3 py-1 text-sm font-medium text-gray-300">
+            Java ≥25
+          </span>
+        </div>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="https://modrinth.com/mod/vsq"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg bg-[#3a8c3a] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#2f7a2f]"
+          >
+            Download
+          </a>
+          <a
+            href="https://github.com/mizius-studios/VanillaSquared"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-lg bg-[#3b4658] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#4a5870]"
+          >
+            GitHub
+          </a>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="px-6 py-20 bg-[#151515]">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-center text-3xl font-bold text-white">Features</h2>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((f) => (
+              <div
+                key={f}
+                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#3a8c3a]"
+              >
+                <p className="text-gray-300">{f}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Enchanting Overhaul */}
+      <section className="px-6 py-20 bg-[#151515]">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-center text-3xl font-bold text-white">
+            Enchanting Overhaul
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-center text-gray-400">
+            Vanilla² replaces much of vanilla enchanting with a recipe-based
+            enchantment table and an enchantment recipe book. Discover recipes
+            through loot, fishing, piglin bartering, villager librarians, and
+            structure chests.
           </p>
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {enchantments.map((e) => (
+              <div
+                key={e.name}
+                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#3a8c3a]"
+              >
+                <h3 className="text-lg font-semibold text-[#6cd46c]">
+                  {e.name}
+                </h3>
+                <p className="mt-2 text-sm text-gray-400">{e.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-[#151515] px-6 py-10">
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
+          <p className="text-sm text-gray-500">© Vanilla² (VSQ)</p>
+          <div className="flex gap-6 text-sm text-gray-500">
+            <Link
+              href="https://github.com/mizius-studios/VanillaSquared"
+              className="hover:text-gray-300 transition-colors"
+            >
+              GitHub
+            </Link>
+            <Link
+              href="https://modrinth.com/mod/vsq"
+              className="hover:text-gray-300 transition-colors"
+            >
+              Modrinth
+            </Link>
+          </div>
         </div>
-      </main>
+      </footer>
     </div>
   );
 }
