@@ -23,7 +23,7 @@ export default function Home() {
   return (
     <div className="flex flex-col flex-1 font-sans">
       {/* Hero */}
-      <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-[#151515]">
+      <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-[#171717]">
         <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl">
           Vanilla²
         </h1>
@@ -47,7 +47,7 @@ export default function Home() {
             href="https://modrinth.com/mod/vsq"
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg bg-[#3a8c3a] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#2f7a2f]"
+            className="rounded-lg bg-[#B36BB3] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[#9E5F9E]"
           >
             Download
           </a>
@@ -63,14 +63,14 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="px-6 py-20 bg-[#151515]">
+      <section className="px-6 py-20 bg-[#171717]">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold text-white">Features</h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <div
                 key={f}
-                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#3a8c3a]"
+                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#C269C2]"
               >
                 <p className="text-gray-300">{f}</p>
               </div>
@@ -80,7 +80,7 @@ export default function Home() {
       </section>
 
       {/* Enchanting Overhaul */}
-      <section className="px-6 py-20 bg-[#151515]">
+      <section className="px-6 py-20 bg-[#171717]">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold text-white">
             Enchanting Overhaul
@@ -95,9 +95,9 @@ export default function Home() {
             {enchantments.map((e) => (
               <div
                 key={e.name}
-                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#3a8c3a]"
+                className="rounded-xl border border-transparent bg-[#1e1e1e] p-6 transition-colors hover:border-[#C269C2]"
               >
-                <h3 className="text-lg font-semibold text-[#6cd46c]">
+                <h3 className="text-lg font-semibold text-[#C269C2]">
                   {e.name}
                 </h3>
                 <p className="mt-2 text-sm text-gray-400">{e.desc}</p>
@@ -108,7 +108,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-[#151515] px-6 py-10">
+      <footer className="bg-[#171717] px-6 py-10">
         <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-sm text-gray-500">© Vanilla² (VSQ)</p>
           <div className="flex gap-6 text-sm text-gray-500">
