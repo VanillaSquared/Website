@@ -1,58 +1,43 @@
 import { issuer } from "@openauthjs/openauth";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
-import { CodeUI } from "@openauthjs/openauth/ui/code";
 
+import { PendingEmailCodeUI } from "./codeUI";
+import { normalizeEmail, subjectFromUser, validateEmail, verifyEmailCodeClaim } from "./openAuth";
+import { getUserByEmail } from "./openSQL";
 import { subjects } from "./subjects";
 
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
-
-async function getUserId(email) {
-  const normalizedEmail = email.trim().toLowerCase();
-  const bytes = new TextEncoder().encode(normalizedEmail);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 24);
-}
+export const PENDING_LOGIN_EMAIL_COOKIE = "pending_login_email";
 
 export const authIssuer = issuer({
   subjects,
   storage: MemoryStorage(),
   providers: {
-    code: CodeProvider(
-      CodeUI({
-        copy: {
-          email_placeholder: "Email address",
-          code_info: "We'll send a login code to your email.",
-          code_sent: "Login code sent to ",
-          code_resent: "Login code resent to ",
-        },
-        async sendCode(claims, code) {
-          const email = claims.email?.trim().toLowerCase();
+    code: CodeProvider({
+      ...PendingEmailCodeUI({ cookieName: PENDING_LOGIN_EMAIL_COOKIE }),
+      async sendCode(claims, code) {
+        const email = normalizeEmail(claims.email);
+        const user = email ? await getUserByEmail(email) : null;
 
-          if (!email || !isValidEmail(email)) {
-            return { type: "invalid_claim", key: "email", value: claims.email ?? "" };
-          }
+        if (!email || !validateEmail(email) || !verifyEmailCodeClaim(email, claims.email_signature) || !user) {
+          return { type: "invalid_claim", key: "email", value: claims.email ?? "" };
+        }
 
-          // TODO: Wire this to a transactional email provider before production use.
-          console.log(`[OpenAuth] Login code for ${email}: ${code}`);
-        },
-      }),
-    ),
+        // TODO: Wire this to a transactional email provider before production use.
+        console.log(`[OpenAuth] Login code for ${email}: ${code}`);
+      },
+    }),
   },
   async success(ctx, value) {
     if (value.provider === "code") {
-      const email = value.claims.email.trim().toLowerCase();
+      const email = normalizeEmail(value.claims.email);
+      const user = await getUserByEmail(email);
 
-      return ctx.subject("user", {
-        id: await getUserId(email),
-        email,
-      });
+      if (!user) {
+        throw new Error("No user profile exists for this email address.");
+      }
+
+      return ctx.subject("user", subjectFromUser(user), { subject: user.id });
     }
 
     throw new Error("Invalid auth provider");

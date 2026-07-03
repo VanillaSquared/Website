@@ -30,14 +30,7 @@ export async function auth() {
 }
 
 export async function login() {
-  const origin = await getOrigin();
-  const client = getAuthClient(origin);
-  const redirectUri = `${origin}/api/callback`;
-  const { url } = await client.authorize(redirectUri, "code", {
-    provider: "code",
-  });
-
-  redirect(url);
+  redirect("/login");
 }
 
 export async function logout() {

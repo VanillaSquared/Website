@@ -1,4 +1,4 @@
-import { auth, login, logout } from "./actions";
+import { auth, logout } from "./actions";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
@@ -43,13 +43,11 @@ export default async function Home() {
           {subject ? (
             <form action={logout}>
               <Button type="submit" variant="secondary">
-                Logout {subject.properties.email}
+                Logout {subject.properties.username}
               </Button>
             </form>
           ) : (
-            <form action={login}>
-              <Button type="submit">Login</Button>
-            </form>
+            <Button href="/login">Login</Button>
           )}
           <Button href="https://modrinth.com/mod/vsq" external>
             Download

@@ -14,10 +14,14 @@
   --vsq-surface-tag: #2d2d2d;
   --vsq-surface-search: #202020;
   --vsq-surface-search-hover: #242424;
+  --vsq-surface-input: #202020;
+  --vsq-surface-error: #3b1f28;
   --vsq-border-divider: #262626;
   --vsq-border-search: #343434;
+  --vsq-border-input: #343434;
   --vsq-search-placeholder: #8f8f8f;
   --vsq-accent: #c269c2;
+  --vsq-error: #fca5a5;
 
   --vsq-button-primary: #bd72bd;
   --vsq-button-primary-hover: #a966a9;
@@ -53,12 +57,16 @@
   --color-tag: var(--vsq-surface-tag);
   --color-search: var(--vsq-surface-search);
   --color-search-hover: var(--vsq-surface-search-hover);
+  --color-input: var(--vsq-surface-input);
+  --color-error-surface: var(--vsq-surface-error);
   --color-divider: var(--vsq-border-divider);
   --color-search-border: var(--vsq-border-search);
+  --color-input-border: var(--vsq-border-input);
   --color-search-border-hover: var(--vsq-border-search-hover);
   --color-search-focus: var(--vsq-border-search-focus);
   --color-search-placeholder: var(--vsq-search-placeholder);
   --color-accent: var(--vsq-accent);
+  --color-error: var(--vsq-error);
   --color-button-text: var(--vsq-text-inverse);
   --color-button-primary: var(--vsq-button-primary);
   --color-button-primary-hover: var(--vsq-button-primary-hover);
