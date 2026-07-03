@@ -45,11 +45,12 @@ function page({ title, body }) {
   });
 }
 
-export function PendingEmailCodeUI({ cookieName }) {
+export function PendingEmailCodeUI({ cookieName, usernameCookieName }) {
   return {
     async request(request, state, form, error) {
       const email = getCookie(request, cookieName);
-      const emailSignature = signEmailCodeClaim(email);
+      const username = usernameCookieName ? getCookie(request, usernameCookieName) : "";
+      const emailSignature = signEmailCodeClaim(email, username);
       const errorHtml = error
         ? `<p class="error">${error.type === "invalid_code" ? "The code is incorrect." : "Could not send a code for this email."}</p>`
         : "";
@@ -64,11 +65,11 @@ export function PendingEmailCodeUI({ cookieName }) {
       if (state.type === "code") {
         return page({
           title: "Enter login code",
-          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form method="post"><input name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus /><button name="action" value="verify">Verify code</button></form><form method="post"><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary" name="action" value="resend">Resend code</button></form>`,
+          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form method="post"><input name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus /><button name="action" value="verify">Verify code</button></form><form method="post"><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary" name="action" value="resend">Resend code</button></form>`,
         });
       }
 
-      const requestForm = `<form id="send-code-form" method="post"><input type="hidden" name="action" value="request" /><input type="hidden" name="email" value="${escapeHtml(email)}" /><input type="hidden" name="email_signature" value="${escapeHtml(emailSignature)}" /><button autofocus>Send code</button></form>`;
+      const requestForm = `<form id="send-code-form" method="post"><input type="hidden" name="action" value="request" /><input type="hidden" name="email" value="${escapeHtml(email)}" /><input type="hidden" name="username" value="${escapeHtml(username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(emailSignature)}" /><button autofocus>Send code</button></form>`;
 
       if (error) {
         return page({

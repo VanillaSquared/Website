@@ -32,16 +32,18 @@ function getEmailCodeSecret() {
   return "development-email-code-claim-secret";
 }
 
-export function signEmailCodeClaim(email) {
-  return createHmac("sha256", getEmailCodeSecret()).update(normalizeEmail(email)).digest("base64url");
+export function signEmailCodeClaim(email, username = "") {
+  return createHmac("sha256", getEmailCodeSecret())
+    .update(JSON.stringify({ email: normalizeEmail(email), username: normalizeUsername(username) }))
+    .digest("base64url");
 }
 
-export function verifyEmailCodeClaim(email, signature) {
+export function verifyEmailCodeClaim(email, signature, username = "") {
   if (!signature) {
     return false;
   }
 
-  const expected = Buffer.from(signEmailCodeClaim(email));
+  const expected = Buffer.from(signEmailCodeClaim(email, username));
   const received = Buffer.from(String(signature));
 
   return expected.length === received.length && timingSafeEqual(expected, received);

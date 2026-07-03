@@ -9,9 +9,8 @@ import {
   validateEmail,
   validateUsername,
 } from "@/auth/openAuth";
-import { PENDING_LOGIN_EMAIL_COOKIE } from "@/auth/issuer";
+import { PENDING_LOGIN_EMAIL_COOKIE, PENDING_SIGNUP_USERNAME_COOKIE } from "@/auth/issuer";
 import {
-  createUser,
   getUserByEmail,
   getUserByUsername,
   getUserByUsernameAndEmail,
@@ -51,19 +50,32 @@ function validateCredentials(path, { username, email }) {
   }
 }
 
-async function startEmailCodeLogin(email) {
+async function startEmailCodeLogin(email, username = "") {
   const cookieStore = await cookies();
   const secure = process.env.NODE_ENV === "production";
-
-  cookieStore.set({
-    name: PENDING_LOGIN_EMAIL_COOKIE,
-    value: email,
+  const cookieOptions = {
     httpOnly: true,
     sameSite: "lax",
     secure,
     path: "/",
     maxAge: 10 * 60,
+  };
+
+  cookieStore.set({
+    ...cookieOptions,
+    name: PENDING_LOGIN_EMAIL_COOKIE,
+    value: email,
   });
+
+  if (username) {
+    cookieStore.set({
+      ...cookieOptions,
+      name: PENDING_SIGNUP_USERNAME_COOKIE,
+      value: username,
+    });
+  } else {
+    cookieStore.delete(PENDING_SIGNUP_USERNAME_COOKIE);
+  }
 
   const origin = await getOrigin();
   const client = getAuthClient(origin);
@@ -98,8 +110,6 @@ export async function signupWithEmailCode(formData) {
   const credentials = getCredentials(formData);
   validateCredentials("/signup", credentials);
 
-  let user;
-
   try {
     if (await getUserByUsername(credentials.username)) {
       redirectWithError("/signup", "That username is already taken.");
@@ -108,15 +118,9 @@ export async function signupWithEmailCode(formData) {
     if (await getUserByEmail(credentials.email)) {
       redirectWithError("/signup", "That email is already in use.");
     }
-
-    user = await createUser({
-      id: crypto.randomUUID(),
-      username: credentials.username,
-      email: credentials.email,
-    });
   } catch (error) {
     redirectDatabaseError("/signup", error);
   }
 
-  await startEmailCodeLogin(user.email);
+  await startEmailCodeLogin(credentials.email, credentials.username);
 }

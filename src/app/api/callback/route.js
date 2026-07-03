@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
+import { cookies } from "next/headers";
+
 import { getAuthClient, setTokens } from "@/app/auth";
+import { PENDING_LOGIN_EMAIL_COOKIE, PENDING_SIGNUP_USERNAME_COOKIE } from "@/auth/issuer";
 
 export async function GET(request) {
   const url = new URL(request.url);
@@ -18,6 +21,10 @@ export async function GET(request) {
   }
 
   await setTokens(exchanged.tokens.access, exchanged.tokens.refresh);
+
+  const cookieStore = await cookies();
+  cookieStore.delete(PENDING_LOGIN_EMAIL_COOKIE);
+  cookieStore.delete(PENDING_SIGNUP_USERNAME_COOKIE);
 
   return NextResponse.redirect(url.origin);
 }
