@@ -12,7 +12,7 @@ export default async function TopBar({ search = {} }) {
   const subject = await auth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-divider bg-[#171717]/80">
+    <header className="sticky top-0 z-50 border-b border-[#262626]/70 bg-[#0d0d0d]/75 backdrop-blur-xl">
       <nav className="flex min-h-16 w-full items-center gap-3 px-4 py-3">
         <Link
           href="/"
