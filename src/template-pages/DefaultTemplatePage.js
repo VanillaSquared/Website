@@ -16,10 +16,14 @@ const defaultBarItems = [
   </Button>,
 ];
 
-export default function DefaultTemplatePage({ children, barItems = defaultBarItems }) {
+export default function DefaultTemplatePage({
+  children,
+  barItems = defaultBarItems,
+  search = null,
+}) {
   return (
     <div className="flex min-h-screen flex-col bg-background font-sans">
-      <TopBar items={barItems} />
+      <TopBar items={barItems} search={search} />
       <main className="flex flex-1 flex-col">{children}</main>
       <Footer />
     </div>

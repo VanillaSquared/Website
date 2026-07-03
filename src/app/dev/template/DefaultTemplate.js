@@ -1,4 +1,5 @@
 import Button from "@/components/Button";
+import SearchBar from "@/components/SearchBar";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export const metadata = {
@@ -18,13 +19,15 @@ export default function TemplatePreviewPage() {
           Secondary Button
         </Button>,
       ]}
+      search={<SearchBar placeholder="Search the preview..." />}
     >
       <section className="bg-background px-6 py-20">
         <div className="mx-auto max-w-5xl">
           <h1 className="text-4xl font-bold text-heading">Template Preview</h1>
           <p className="mt-4 max-w-2xl text-muted">
             This page previews the default template page and its top header with
-            both raw text entries and Button components.
+            raw text entries, Button components, and the reusable SearchBar
+            component.
           </p>
         </div>
       </section>
