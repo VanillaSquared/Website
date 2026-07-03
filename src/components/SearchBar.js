@@ -54,7 +54,7 @@ export default function SearchBar({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder={placeholder}
-          className="h-9 w-full rounded-lg bg-search py-1.5 pr-9 pl-9 text-sm text-heading outline-none transition-colors placeholder:text-search-placeholder"
+          className={`${value ? "bg-search-hover" : "bg-search"} h-9 w-full rounded-lg py-1.5 pr-9 pl-9 text-sm text-heading outline-none transition-colors placeholder:text-search-placeholder hover:bg-search-hover focus:bg-search-hover`}
         />
         {value ? (
           <button

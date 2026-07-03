@@ -13,7 +13,7 @@
   --vsq-surface-card: #1e1e1e;
   --vsq-surface-tag: #2d2d2d;
   --vsq-surface-search: #202020;
-  --vsq-surface-search-hover: #2a2a2a;
+  --vsq-surface-search-hover: #242424;
   --vsq-border-divider: #262626;
   --vsq-border-search: #343434;
   --vsq-search-placeholder: #8f8f8f;
@@ -28,13 +28,17 @@
   --vsq-button-secondary-outline: #48546a;
   --vsq-button-secondary-outline-hover: #445069;
   --vsq-button-blue: #374bad;
-  --vsq-button-blue-hover: #283885;
+  --vsq-button-blue-hover: #2e409a;
   --vsq-button-blue-outline: #4158c0;
   --vsq-button-blue-outline-hover: #374ca8;
   --vsq-button-purple: #662e94;
   --vsq-button-purple-hover: #5a2885;
   --vsq-button-purple-outline: #733aa4;
   --vsq-button-purple-outline-hover: #6a369b;
+  --vsq-button-blurple: #5865F2;
+  --vsq-button-blurple-hover: #4953c3;
+  --vsq-button-blurple-outline: #6976ff;
+  --vsq-button-blurple-outline-hover: #5763e1;
 }
 
 @theme inline {
@@ -72,6 +76,10 @@
   --color-button-purple-hover: var(--vsq-button-purple-hover);
   --color-button-purple-outline: var(--vsq-button-purple-outline);
   --color-button-purple-outline-hover: var(--vsq-button-purple-outline-hover);
+  --color-button-blurple: var(--vsq-button-blurple);
+  --color-button-blurple-hover: var(--vsq-button-blurple-hover);
+  --color-button-blurple-outline: var(--vsq-button-blurple-outline);
+  --color-button-blurple-outline-hover: var(--vsq-button-blurple-outline-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

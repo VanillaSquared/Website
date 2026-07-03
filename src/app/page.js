@@ -44,6 +44,13 @@ export default function Home() {
             Download
           </Button>
           <Button
+            href="https://discord.gg/pppHybq9xT"
+            variant="blurple"
+            external
+          >
+            Discord
+          </Button>
+          <Button
             href="https://github.com/VanillaSquared/Website/wiki"
             variant="blue"
             external
