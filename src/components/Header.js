@@ -1,13 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { auth } from "@/app/actions";
 import settingsIcon from "@/assets/icons/settings.svg";
 import vsqLogo from "@/assets/VSQLogo_circle.png";
 import Button from "@/components/Button";
 import SearchBar from "@/components/SearchBar";
 
-export default function TopBar({ search = {} }) {
+export default async function TopBar({ search = {} }) {
   const searchProps = search ?? {};
+  const subject = await auth();
 
   return (
     <header className="sticky top-0 z-50 border-b border-divider bg-background">
@@ -25,18 +27,24 @@ export default function TopBar({ search = {} }) {
           />
           <span>Vanilla²</span>
         </Link>
-        <div className="ml-auto flex items-center gap-2">
-          <div className="w-44 sm:w-64 md:w-80">
+        <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
+          <div className="w-full max-w-44 sm:max-w-64 md:max-w-80">
             <SearchBar {...searchProps} />
           </div>
-          <Button
-            href="/settings"
-            size="icon"
-            variant="search"
-            border={false}
-            icon={settingsIcon}
-            aria-label="Settings"
-          />
+          {subject ? (
+            <Button
+              href="/settings"
+              size="icon"
+              variant="search"
+              border={false}
+              icon={settingsIcon}
+              aria-label="Settings"
+            />
+          ) : (
+            <Button href="/login" variant="secondary" className="shrink-0">
+              Login
+            </Button>
+          )}
         </div>
       </nav>
     </header>

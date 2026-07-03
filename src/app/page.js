@@ -1,11 +1,9 @@
-import { auth, logout } from "./actions";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 
-export default async function Home() {
-  const subject = await auth();
+export default function Home() {
   const features = [
     "Rebalanced combat for swords, axes, spears, maces, shields, and fishing rods",
     "Expanded armor & protection scaling beyond vanilla limits",
@@ -40,15 +38,6 @@ export default async function Home() {
           <Tag>Java ≥25</Tag>
         </div>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          {subject ? (
-            <form action={logout}>
-              <Button type="submit" variant="secondary">
-                Logout {subject.properties.username}
-              </Button>
-            </form>
-          ) : (
-            <Button href="/login">Login</Button>
-          )}
           <Button href="https://modrinth.com/mod/vsq" external>
             Download
           </Button>
