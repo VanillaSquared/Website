@@ -8,9 +8,12 @@
     "start": "next start"
   },
   "dependencies": {
+    "@openauthjs/openauth": "^0.4.3",
+    "hono": "^4.12.27",
     "next": "16.2.10",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "valibot": "^1.4.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

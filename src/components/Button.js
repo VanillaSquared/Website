@@ -43,22 +43,37 @@ export default function Button({
   iconAlt = "",
   iconPosition = "left",
   className = "",
+  type = "button",
   ...props
 }) {
   const iconElement = renderIcon(icon, iconAlt);
   const borderClass = border ? "border-[2.0px]" : "border-0";
+  const content = (
+    <>
+      {iconPosition === "left" ? iconElement : null}
+      {children}
+      {iconPosition === "right" ? iconElement : null}
+    </>
+  );
+  const classes = `${sizes[size] ?? sizes.md} ${borderClass} inline-flex items-center justify-center gap-2 font-semibold transition-colors ${variants[variant] ?? variants.primary} ${className}`;
+
+  if (!href) {
+    return (
+      <button type={type} className={classes} {...props}>
+        {content}
+      </button>
+    );
+  }
 
   return (
     <a
       href={href}
       target={external ? "_blank" : undefined}
       rel={external ? "noopener noreferrer" : undefined}
-      className={`${sizes[size] ?? sizes.md} ${borderClass} inline-flex items-center justify-center gap-2 font-semibold transition-colors ${variants[variant] ?? variants.primary} ${className}`}
+      className={classes}
       {...props}
     >
-      {iconPosition === "left" ? iconElement : null}
-      {children}
-      {iconPosition === "right" ? iconElement : null}
+      {content}
     </a>
   );
 }
