@@ -1,12 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import settingsIcon from "@/assets/icons/settings.svg";
 import vsqLogo from "@/assets/VSQLogo_circle.png";
+import Button from "@/components/Button";
+import SearchBar from "@/components/SearchBar";
 
-export default function TopBar({ items = [], search = null }) {
+export default function TopBar({ search = {} }) {
+  const searchProps = search ?? {};
+
   return (
     <header className="sticky top-0 z-50 border-b border-divider bg-background">
-      <nav className="mx-auto flex min-h-16 max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-3">
+      <nav className="flex min-h-16 w-full items-center gap-3 px-4 py-3">
         <Link
           href="/"
           className="group flex items-center gap-2 text-base font-semibold tracking-wide text-soft transition-colors hover:text-muted"
@@ -20,17 +25,18 @@ export default function TopBar({ items = [], search = null }) {
           />
           <span>Vanilla²</span>
         </Link>
-        {search ? (
-          <div className="order-last w-full flex-1 sm:order-none sm:max-w-md">
-            {search}
+        <div className="ml-auto flex items-center gap-2">
+          <div className="w-44 sm:w-64 md:w-80">
+            <SearchBar {...searchProps} />
           </div>
-        ) : null}
-        <div className="flex flex-wrap items-center justify-end gap-3 text-sm text-soft">
-          {items.map((item, index) => (
-            <div key={index} className="flex items-center">
-              {item}
-            </div>
-          ))}
+          <Button
+            href="/settings"
+            size="icon"
+            variant="search"
+            border={false}
+            icon={settingsIcon}
+            aria-label="Settings"
+          />
         </div>
       </nav>
     </header>

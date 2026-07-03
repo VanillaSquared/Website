@@ -7,10 +7,9 @@ export default function ErrorTemplatePage({
   description,
   actionHref = "/",
   actionLabel = "Return home",
-  barItems,
 }) {
   return (
-    <DefaultTemplatePage barItems={barItems}>
+    <DefaultTemplatePage>
       <section className="flex flex-1 items-center justify-center bg-background px-6 py-24 text-center">
         <div className="mx-auto max-w-2xl">
           {code ? (
