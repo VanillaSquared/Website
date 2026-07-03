@@ -1,7 +1,7 @@
 const variants = {
   primary: "border-button-primary-outline bg-button-primary text-button-text hover:border-button-primary-outline-hover hover:bg-button-primary-hover",
   secondary: "border-button-secondary-outline bg-button-secondary text-button-text hover:border-button-secondary-outline-hover hover:bg-button-secondary-hover",
-  search: "border-search-border bg-search text-heading hover:border-search-border-hover hover:bg-search-hover focus-visible:border-search-focus focus-visible:bg-search-hover focus-visible:outline-none",
+  tertiary : "border-tertiary-border bg-tertiary text-heading hover:border-tertiary-border-hover hover:bg-tertiary-hover focus-visible:border-tertiary-focus focus-visible:bg-tertiary-hover focus-visible:outline-none",
   blue: "border-button-blue-outline bg-button-blue text-button-text hover:border-button-blue-outline-hover hover:bg-button-blue-hover",
   purple: "border-button-purple-outline bg-button-purple text-button-text hover:border-button-purple-outline-hover hover:bg-button-purple-hover",
   blurple: "border-button-blurple-outline bg-button-blurple text-button-text hover:border-button-blurple-outline-hover hover:bg-button-blurple-hover"
