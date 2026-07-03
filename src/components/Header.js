@@ -35,8 +35,7 @@ export default async function TopBar({ search = {} }) {
             <Button
               href="/settings"
               size="icon"
-              variant="search"
-              border={false}
+              variant="tertiary"
               icon={settingsIcon}
               aria-label="Settings"
             />

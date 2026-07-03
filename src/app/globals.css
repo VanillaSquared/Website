@@ -36,6 +36,11 @@
   --vsq-button-secondary-hover: #32394a;
   --vsq-button-secondary-outline: #48546a;
   --vsq-button-secondary-outline-hover: #445069;
+  --vsq-button-tertiary: #202020;
+  --vsq-button-tertiary-hover: #242424;
+  --vsq-button-tertiary-outline: #343434;
+  --vsq-button-tertiary-outline-hover: #424242;
+  --vsq-button-tertiary-text: #ffffff;
   --vsq-button-blue: #374bad;
   --vsq-button-blue-hover: #2e409a;
   --vsq-button-blue-outline: #4158c0;
@@ -86,6 +91,11 @@
   --color-button-secondary-hover: var(--vsq-button-secondary-hover);
   --color-button-secondary-outline: var(--vsq-button-secondary-outline);
   --color-button-secondary-outline-hover: var(--vsq-button-secondary-outline-hover);
+  --color-button-tertiary: var(--vsq-button-tertiary);
+  --color-button-tertiary-hover: var(--vsq-button-tertiary-hover);
+  --color-button-tertiary-outline: var(--vsq-button-tertiary-outline);
+  --color-button-tertiary-outline-hover: var(--vsq-button-tertiary-outline-hover);
+  --color-button-tertiary-text: var(--vsq-button-tertiary-text);
   --color-button-blue: var(--vsq-button-blue);
   --color-button-blue-hover: var(--vsq-button-blue-hover);
   --color-button-blue-outline: var(--vsq-button-blue-outline);

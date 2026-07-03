@@ -9,7 +9,7 @@ export const metadata = {
   title: "Component Preview - Vanilla²",
 };
 
-const buttonVariants = ["primary", "secondary", "search", "blue", "purple", "blurple"];
+const buttonVariants = ["primary", "secondary", "tertiary", "blue", "purple", "blurple"];
 const buttonSizes = ["sm", "md", "icon"];
 const cardSizes = ["sm", "md", "lg", "popup"];
 
