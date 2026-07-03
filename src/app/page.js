@@ -1,9 +1,8 @@
 "use client";
 
-import Link from "next/link";
-
 import Button from "@/components/Button";
 import Card from "@/components/Card";
+import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 
 export default function Home() {
@@ -104,26 +103,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-background px-6 py-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <p className="text-sm text-subtle">© Vanilla² (VSQ)</p>
-          <div className="flex gap-6 text-sm text-subtle">
-            <Link
-              href="https://github.com/VanillaSquared/"
-              className="hover:text-soft transition-colors"
-            >
-              GitHub
-            </Link>
-            <Link
-              href="https://modrinth.com/mod/vsq"
-              className="hover:text-soft transition-colors"
-            >
-              Modrinth
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
