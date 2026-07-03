@@ -3,6 +3,7 @@ import { cookies as getCookies, headers as getHeaders } from "next/headers";
 
 const ACCESS_TOKEN_COOKIE = "access_token";
 const REFRESH_TOKEN_COOKIE = "refresh_token";
+export const AUTH_RETURN_TO_COOKIE = "auth_return_to";
 const TOKEN_MAX_AGE = 60 * 60 * 24 * 400;
 
 export async function getOrigin() {
@@ -18,6 +19,20 @@ export function getAuthClient(origin) {
     clientID: "vanillasquaredwebsite",
     issuer: process.env.OPENAUTH_ISSUER ?? origin,
   });
+}
+
+export function sanitizeReturnTo(value) {
+  const returnTo = String(value ?? "").trim();
+
+  if (!returnTo || !returnTo.startsWith("/") || returnTo.startsWith("//")) {
+    return "/";
+  }
+
+  if (returnTo.startsWith("/login") || returnTo.startsWith("/signup") || returnTo.startsWith("/api/callback")) {
+    return "/";
+  }
+
+  return returnTo;
 }
 
 export async function setTokens(access, refresh) {

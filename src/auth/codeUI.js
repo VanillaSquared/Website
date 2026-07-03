@@ -75,7 +75,7 @@ export function PendingEmailCodeUI({ cookieName, usernameCookieName }) {
 
         return page({
           title: "Enter login code",
-          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"><input name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus /><button name="action" value="verify">Verify code</button></form><form method="post"><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary" name="action" value="resend">Resend code</button></form>${adminAutoSubmit}`,
+          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"><input type="hidden" name="action" value="verify" /><input name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus /><button>Verify code</button></form><form method="post"><input type="hidden" name="action" value="resend" /><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary">Resend code</button></form>${adminAutoSubmit}`,
         });
       }
 

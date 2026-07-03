@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { cookies } from "next/headers";
 
-import { getAuthClient, setTokens } from "@/app/auth";
+import { AUTH_RETURN_TO_COOKIE, getAuthClient, sanitizeReturnTo, setTokens } from "@/app/auth";
 import { PENDING_LOGIN_EMAIL_COOKIE, PENDING_SIGNUP_USERNAME_COOKIE } from "@/auth/issuer";
 
 export async function GET(request) {
@@ -23,8 +23,10 @@ export async function GET(request) {
   await setTokens(exchanged.tokens.access, exchanged.tokens.refresh);
 
   const cookieStore = await cookies();
+  const returnTo = sanitizeReturnTo(cookieStore.get(AUTH_RETURN_TO_COOKIE)?.value);
   cookieStore.delete(PENDING_LOGIN_EMAIL_COOKIE);
   cookieStore.delete(PENDING_SIGNUP_USERNAME_COOKIE);
+  cookieStore.delete(AUTH_RETURN_TO_COOKIE);
 
-  return NextResponse.redirect(url.origin);
+  return NextResponse.redirect(new URL(returnTo, url.origin));
 }

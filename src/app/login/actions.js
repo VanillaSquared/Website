@@ -15,7 +15,7 @@ import {
   getUserByUsername,
   getUserByUsernameAndEmail,
 } from "@/auth/openSQL";
-import { getAuthClient, getOrigin } from "@/app/auth";
+import { AUTH_RETURN_TO_COOKIE, getAuthClient, getOrigin, sanitizeReturnTo } from "@/app/auth";
 
 function redirectWithError(path, message) {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
@@ -36,8 +36,9 @@ function redirectDatabaseError(path, error) {
 function getCredentials(formData) {
   const username = normalizeUsername(formData.get("username"));
   const email = normalizeEmail(formData.get("email"));
+  const returnTo = sanitizeReturnTo(formData.get("returnTo"));
 
-  return { username, email };
+  return { username, email, returnTo };
 }
 
 function validateCredentials(path, { username, email }) {
@@ -50,7 +51,7 @@ function validateCredentials(path, { username, email }) {
   }
 }
 
-async function startEmailCodeLogin(email, username = "") {
+async function startEmailCodeLogin(email, username = "", returnTo = "/") {
   const cookieStore = await cookies();
   const secure = process.env.NODE_ENV === "production";
   const cookieOptions = {
@@ -65,6 +66,12 @@ async function startEmailCodeLogin(email, username = "") {
     ...cookieOptions,
     name: PENDING_LOGIN_EMAIL_COOKIE,
     value: email,
+  });
+
+  cookieStore.set({
+    ...cookieOptions,
+    name: AUTH_RETURN_TO_COOKIE,
+    value: sanitizeReturnTo(returnTo),
   });
 
   if (username) {
@@ -103,7 +110,7 @@ export async function loginWithEmailCode(formData) {
     redirectWithError("/login", "Username and email do not match an account.");
   }
 
-  await startEmailCodeLogin(user.email);
+  await startEmailCodeLogin(user.email, "", credentials.returnTo);
 }
 
 export async function signupWithEmailCode(formData) {
@@ -122,5 +129,5 @@ export async function signupWithEmailCode(formData) {
     redirectDatabaseError("/signup", error);
   }
 
-  await startEmailCodeLogin(credentials.email, credentials.username);
+  await startEmailCodeLogin(credentials.email, credentials.username, credentials.returnTo);
 }
