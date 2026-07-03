@@ -68,9 +68,18 @@ export function PendingEmailCodeUI({ cookieName }) {
         });
       }
 
+      const requestForm = `<form id="send-code-form" method="post"><input type="hidden" name="action" value="request" /><input type="hidden" name="email" value="${escapeHtml(email)}" /><input type="hidden" name="email_signature" value="${escapeHtml(emailSignature)}" /><button autofocus>Send code</button></form>`;
+
+      if (error) {
+        return page({
+          title: "Send login code",
+          body: `<h1>Email verification</h1><p>We couldn't send a login code to <strong>${escapeHtml(email)}</strong>.</p>${errorHtml}${requestForm}`,
+        });
+      }
+
       return page({
-        title: "Send login code",
-        body: `<h1>Email verification</h1><p>We'll send a login code to <strong>${escapeHtml(email)}</strong>.</p>${errorHtml}<form method="post"><input type="hidden" name="email" value="${escapeHtml(email)}" /><input type="hidden" name="email_signature" value="${escapeHtml(emailSignature)}" /><button name="action" value="request" autofocus>Send code</button></form>`,
+        title: "Sending login code",
+        body: `<h1>Sending login code</h1><p>We're sending a login code to <strong>${escapeHtml(email)}</strong>.</p>${requestForm}<script>document.getElementById("send-code-form").requestSubmit();</script>`,
       });
     },
   };
