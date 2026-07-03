@@ -1,0 +1,69 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
+import settingsIcon from "@/assets/icons/settings.svg";
+import Button from "@/components/Button";
+
+export default function HeaderAuthButton({ initialLoggedIn = false }) {
+  const pathname = usePathname();
+  const [loggedIn, setLoggedIn] = useState(initialLoggedIn);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function updateAuthState() {
+      try {
+        const response = await fetch("/api/auth/status", {
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        const authenticated = Boolean(data.authenticated);
+
+        if (!cancelled) {
+          setLoggedIn(authenticated);
+          document.cookie = authenticated
+            ? "auth_ui=1; path=/; max-age=34560000; samesite=lax"
+            : "auth_ui=; path=/; max-age=0; samesite=lax";
+        }
+      } catch {
+        // Keep the server-rendered state if the status check fails.
+      }
+    }
+
+    updateAuthState();
+    window.addEventListener("focus", updateAuthState);
+    window.addEventListener("pageshow", updateAuthState);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", updateAuthState);
+      window.removeEventListener("pageshow", updateAuthState);
+    };
+  }, [pathname]);
+
+  if (loggedIn) {
+    return (
+      <Button
+        href="/settings"
+        size="icon"
+        variant="tertiary"
+        icon={settingsIcon}
+        aria-label="Settings"
+      />
+    );
+  }
+
+  return (
+    <Button href="/login" variant="tertiary" size="sm" className="h-9 min-w-20 shrink-0 px-4">
+      Login
+    </Button>
+  );
+}

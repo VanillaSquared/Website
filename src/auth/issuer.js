@@ -1,3 +1,5 @@
+import { mkdirSync } from "fs";
+
 import { issuer } from "@openauthjs/openauth";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
@@ -19,9 +21,11 @@ import { subjects } from "./subjects";
 export const PENDING_LOGIN_EMAIL_COOKIE = "pending_login_email";
 export const PENDING_SIGNUP_USERNAME_COOKIE = "pending_signup_username";
 
+mkdirSync(".data", { recursive: true });
+
 export const authIssuer = issuer({
   subjects,
-  storage: MemoryStorage(),
+  storage: MemoryStorage({ persist: ".data/openauth-storage.json" }),
   providers: {
     internal_email: InternalEmailProvider(),
     code: CodeProvider({
