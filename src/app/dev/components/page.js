@@ -1,3 +1,4 @@
+import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import SearchBar from "@/components/SearchBar";
@@ -42,6 +43,17 @@ export default function ComponentPreviewPage() {
                 </Button>
               ))}
             </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Auth button</h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <HeaderAuthButton />
+              <HeaderAuthButton initialLoggedIn />
+            </div>
+            <p className="text-sm text-muted">
+              Shows the login state and the settings state used in the header.
+            </p>
           </section>
 
           <section className="space-y-4">

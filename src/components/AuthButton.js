@@ -29,9 +29,6 @@ export default function HeaderAuthButton({ initialLoggedIn = false }) {
 
         if (!cancelled) {
           setLoggedIn(authenticated);
-          document.cookie = authenticated
-            ? "auth_ui=1; path=/; max-age=34560000; samesite=lax"
-            : "auth_ui=; path=/; max-age=0; samesite=lax";
         }
       } catch {
         // Keep the server-rendered state if the status check fails.

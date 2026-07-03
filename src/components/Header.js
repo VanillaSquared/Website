@@ -1,14 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { getAuthSubject, getAuthUiState } from "@/app/auth";
+import { getAuthSubject } from "@/app/auth";
 import vsqLogo from "@/assets/VSQLogo_circle.png";
 import HeaderAuthButton from "@/components/AuthButton";
 import SearchBar from "@/components/SearchBar";
 
 export default async function TopBar({ search = {} }) {
   const searchProps = search ?? {};
-  const authUiState = await getAuthUiState();
   const subject = await getAuthSubject({ updateTokens: false });
 
   return (
@@ -31,7 +30,7 @@ export default async function TopBar({ search = {} }) {
           <div className="w-full max-w-44 sm:max-w-64 md:max-w-80">
             <SearchBar {...searchProps} />
           </div>
-          <HeaderAuthButton initialLoggedIn={authUiState || Boolean(subject)} />
+          <HeaderAuthButton initialLoggedIn={Boolean(subject)} />
         </div>
       </nav>
     </header>

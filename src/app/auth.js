@@ -5,7 +5,6 @@ import { subjects } from "@/auth/subjects";
 
 const ACCESS_TOKEN_COOKIE = "access_token";
 const REFRESH_TOKEN_COOKIE = "refresh_token";
-const AUTH_UI_COOKIE = "auth_ui";
 export const AUTH_RETURN_TO_COOKIE = "auth_return_to";
 const TOKEN_MAX_AGE = 60 * 60 * 24 * 400;
 
@@ -62,15 +61,6 @@ export async function setTokens(access, refresh) {
     maxAge: TOKEN_MAX_AGE,
   });
 
-  cookies.set({
-    name: AUTH_UI_COOKIE,
-    value: "1",
-    httpOnly: false,
-    sameSite: "lax",
-    secure,
-    path: "/",
-    maxAge: TOKEN_MAX_AGE,
-  });
 }
 
 export async function clearTokens() {
@@ -78,7 +68,6 @@ export async function clearTokens() {
 
   cookies.delete(ACCESS_TOKEN_COOKIE);
   cookies.delete(REFRESH_TOKEN_COOKIE);
-  cookies.delete(AUTH_UI_COOKIE);
 }
 
 export async function getTokenCookies() {
@@ -88,12 +77,6 @@ export async function getTokenCookies() {
     accessToken: cookies.get(ACCESS_TOKEN_COOKIE)?.value,
     refreshToken: cookies.get(REFRESH_TOKEN_COOKIE)?.value,
   };
-}
-
-export async function getAuthUiState() {
-  const cookies = await getCookies();
-
-  return cookies.get(AUTH_UI_COOKIE)?.value === "1";
 }
 
 export async function getAuthSubject({ updateTokens = true } = {}) {
