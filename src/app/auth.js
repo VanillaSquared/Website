@@ -1,6 +1,8 @@
 import { createClient } from "@openauthjs/openauth/client";
 import { cookies as getCookies, headers as getHeaders } from "next/headers";
 
+import { subjects } from "@/auth/subjects";
+
 const ACCESS_TOKEN_COOKIE = "access_token";
 const REFRESH_TOKEN_COOKIE = "refresh_token";
 export const AUTH_RETURN_TO_COOKIE = "auth_return_to";
@@ -74,4 +76,28 @@ export async function getTokenCookies() {
     accessToken: cookies.get(ACCESS_TOKEN_COOKIE)?.value,
     refreshToken: cookies.get(REFRESH_TOKEN_COOKIE)?.value,
   };
+}
+
+export async function getAuthSubject({ updateTokens = true } = {}) {
+  const origin = await getOrigin();
+  const client = getAuthClient(origin);
+  const { accessToken, refreshToken } = await getTokenCookies();
+
+  if (!accessToken) {
+    return false;
+  }
+
+  const verified = await client.verify(subjects, accessToken, refreshToken ? {
+    refresh: refreshToken,
+  } : undefined);
+
+  if (verified.err) {
+    return false;
+  }
+
+  if (verified.tokens && updateTokens) {
+    await setTokens(verified.tokens.access, verified.tokens.refresh);
+  }
+
+  return verified.subject;
 }

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { auth } from "@/app/actions";
+import { getAuthSubject } from "@/app/auth";
 import settingsIcon from "@/assets/icons/settings.svg";
 import vsqLogo from "@/assets/VSQLogo_circle.png";
 import Button from "@/components/Button";
@@ -9,7 +9,7 @@ import SearchBar from "@/components/SearchBar";
 
 export default async function TopBar({ search = {} }) {
   const searchProps = search ?? {};
-  const subject = await auth();
+  const subject = await getAuthSubject({ updateTokens: false });
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#262626]/70 bg-[#171717]/75 backdrop-blur-xl">

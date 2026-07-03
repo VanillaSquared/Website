@@ -17,7 +17,7 @@ export default async function LoginCodePage({ searchParams }) {
         description={`Enter the login code sent to ${email}. In development, type admin to skip the code.`}
         error={error}
       >
-        {message ? <p className="rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-soft">{message}</p> : null}
+        {message ? <p className="text-sm text-soft">{message}</p> : null}
         <form action={verifyEmailCode} className="flex flex-col gap-4" data-1p-ignore="true">
           <label className="flex flex-col gap-2 text-sm font-semibold text-soft">
             Login code
@@ -34,13 +34,8 @@ export default async function LoginCodePage({ searchParams }) {
           </label>
           <Button type="submit" className="mt-2 w-full">Verify code</Button>
         </form>
-        <form action={resendEmailCode} className="mt-4 text-center" data-1p-ignore="true">
-          <button
-            type="submit"
-            className="bg-transparent p-0 text-sm font-semibold text-accent underline-offset-4 transition-colors hover:text-soft hover:underline"
-          >
-            Resend code
-          </button>
+        <form action={resendEmailCode} className="mt-4" data-1p-ignore="true">
+          <Button type="submit" variant="secondary" className="w-full">Resend code</Button>
         </form>
       </Card>
     </main>

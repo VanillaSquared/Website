@@ -40,8 +40,7 @@ function page({ title, body }) {
     form { display: grid; gap: 16px; margin-top: 24px; }
     input { border: 1px solid #343434; border-radius: 8px; background: #202020; color: #fff; padding: 12px; font-size: 16px; }
     button, a { border: 2px solid #c781c7; border-radius: 12px; background: #bd72bd; color: #fff; padding: 10px 16px; font-weight: 700; text-align: center; text-decoration: none; cursor: pointer; }
-    .text-button { border: 0; border-radius: 0; background: transparent; color: #c269c2; padding: 0; font-size: 14px; }
-    .text-button:hover { color: #d1d5db; text-decoration: underline; text-underline-offset: 4px; }
+    .secondary { border-color: #48546a; background: #3b4658; }
     .error { border-radius: 8px; background: #3b1f28; color: #fca5a5; padding: 12px; }
   </style>
 </head>
@@ -78,7 +77,7 @@ export function PendingEmailCodeUI({ cookieName, usernameCookieName, useOnePassw
 
         return page({
           title: "Enter login code",
-          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"${onePasswordIgnoreAttribute}><input name="code" inputmode="numeric" autocomplete="one-time-code"${onePasswordIgnoreAttribute} required autofocus /><input type="hidden" name="action" value="verify" /><button>Verify code</button></form><form method="post"${onePasswordIgnoreAttribute}><input type="hidden" name="action" value="resend" /><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="text-button">Resend code</button></form>${adminAutoSubmit}`,
+          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"${onePasswordIgnoreAttribute}><input name="code" inputmode="numeric" autocomplete="one-time-code"${onePasswordIgnoreAttribute} required autofocus /><input type="hidden" name="action" value="verify" /><button>Verify code</button></form><form method="post"${onePasswordIgnoreAttribute}><input type="hidden" name="action" value="resend" /><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary">Resend code</button></form>${adminAutoSubmit}`,
         });
       }
 
