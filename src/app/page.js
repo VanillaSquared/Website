@@ -89,7 +89,7 @@ export default async function Home() {
           <h2 className="text-center text-3xl font-bold text-heading">Features</h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
-              <Card key={f}>
+              <Card key={f} preset="homepage">
                 <p className="text-soft">{f}</p>
               </Card>
             ))}
@@ -111,7 +111,7 @@ export default async function Home() {
           </p>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {enchantments.map((e) => (
-              <Card key={e.name} title={e.name}>
+              <Card key={e.name} preset="homepage" title={e.name}>
                 <p className="mt-2 text-sm text-muted">{e.desc}</p>
               </Card>
             ))}

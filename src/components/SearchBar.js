@@ -54,14 +54,14 @@ export default function SearchBar({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder={placeholder}
-          className={`${value ? "bg-search-hover" : "bg-search"} h-9 w-full rounded-lg py-1.5 pr-9 pl-9 text-sm text-heading outline-none transition-colors placeholder:text-search-placeholder hover:bg-search-hover focus:bg-search-hover`}
+          className={`${value ? "bg-input-focus" : "bg-input"} h-9 w-full rounded-lg py-1.5 pr-9 pl-9 text-sm text-heading outline-none transition-colors placeholder:text-search-placeholder hover:bg-input-hover focus:bg-input-focus`}
         />
         {value ? (
           <button
             type="button"
             aria-label="Clear search"
             onClick={() => setValue("")}
-            className="absolute right-2 rounded-md p-1 transition-colors hover:bg-search-hover focus:outline-none"
+            className="absolute right-2 rounded-md p-1 transition-colors hover:bg-input-hover focus:outline-none"
           >
             <img src={xIcon.src} alt="" aria-hidden="true" className="h-4 w-4" />
           </button>

@@ -15,11 +15,16 @@
   --vsq-surface-search: #202020;
   --vsq-surface-search-hover: #242424;
   --vsq-surface-input: #202020;
+  --vsq-surface-input-hover: #262626;
+  --vsq-surface-input-focus: #2a2a2a;
   --vsq-surface-error: #3b1f28;
   --vsq-border-divider: #262626;
   --vsq-border-search: #343434;
   --vsq-border-input: #343434;
+  --vsq-border-input-hover: #424242;
+  --vsq-border-input-focus: #525252;
   --vsq-search-placeholder: #8f8f8f;
+  --vsq-input-sample: #6b7280;
   --vsq-accent: #c269c2;
   --vsq-error: #fca5a5;
 
@@ -58,13 +63,18 @@
   --color-search: var(--vsq-surface-search);
   --color-search-hover: var(--vsq-surface-search-hover);
   --color-input: var(--vsq-surface-input);
+  --color-input-hover: var(--vsq-surface-input-hover);
+  --color-input-focus: var(--vsq-surface-input-focus);
   --color-error-surface: var(--vsq-surface-error);
   --color-divider: var(--vsq-border-divider);
   --color-search-border: var(--vsq-border-search);
   --color-input-border: var(--vsq-border-input);
+  --color-input-border-hover: var(--vsq-border-input-hover);
+  --color-input-border-focus: var(--vsq-border-input-focus);
   --color-search-border-hover: var(--vsq-border-search-hover);
   --color-search-focus: var(--vsq-border-search-focus);
   --color-search-placeholder: var(--vsq-search-placeholder);
+  --color-input-sample: var(--vsq-input-sample);
   --color-accent: var(--vsq-accent);
   --color-error: var(--vsq-error);
   --color-button-text: var(--vsq-text-inverse);
