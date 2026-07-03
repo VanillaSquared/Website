@@ -12,7 +12,7 @@ export default async function TopBar({ search = {} }) {
   const subject = await auth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-divider bg-background">
+    <header className="sticky top-0 z-50 border-b border-divider bg-[#171717]/80">
       <nav className="flex min-h-16 w-full items-center gap-3 px-4 py-3">
         <Link
           href="/"
@@ -40,7 +40,7 @@ export default async function TopBar({ search = {} }) {
               aria-label="Settings"
             />
           ) : (
-            <Button href="/login" variant="tertiary" className="shrink-0">
+            <Button href="/login" variant="tertiary" size="sm" className="h-9 shrink-0">
               Login
             </Button>
           )}
