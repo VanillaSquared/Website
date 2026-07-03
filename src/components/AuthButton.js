@@ -36,13 +36,24 @@ export default function HeaderAuthButton({ initialLoggedIn = false }) {
     }
 
     updateAuthState();
+    function handleAuthChange(event) {
+      if (typeof event.detail?.authenticated === "boolean") {
+        setLoggedIn(event.detail.authenticated);
+        return;
+      }
+
+      updateAuthState();
+    }
+
     window.addEventListener("focus", updateAuthState);
     window.addEventListener("pageshow", updateAuthState);
+    window.addEventListener("authchange", handleAuthChange);
 
     return () => {
       cancelled = true;
       window.removeEventListener("focus", updateAuthState);
       window.removeEventListener("pageshow", updateAuthState);
+      window.removeEventListener("authchange", handleAuthChange);
     };
   }, [pathname]);
 
