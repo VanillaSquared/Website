@@ -40,7 +40,7 @@ export default async function TopBar({ search = {} }) {
               aria-label="Settings"
             />
           ) : (
-            <Button href="/login" variant="secondary" className="shrink-0">
+            <Button href="/login" variant="tertiary" className="shrink-0">
               Login
             </Button>
           )}

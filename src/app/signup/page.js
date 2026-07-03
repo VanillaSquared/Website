@@ -34,6 +34,7 @@ export default async function SignupPage({ searchParams }) {
             label="Username"
             name="username"
             autoComplete="username"
+            allowBrowserExtensions
             required
             minLength={3}
             maxLength={32}
@@ -44,6 +45,7 @@ export default async function SignupPage({ searchParams }) {
             name="email"
             type="email"
             autoComplete="email"
+            allowBrowserExtensions
             required
             sampleText="you@example.com"
           />
