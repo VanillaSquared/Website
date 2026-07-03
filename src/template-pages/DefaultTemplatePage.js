@@ -1,6 +1,6 @@
 import Button from "@/components/Button";
 import Footer from "@/components/Footer";
-import TopBar from "@/components/TopBar";
+import TopBar from "@/components/Header";
 
 const defaultBarItems = [
   "Combat overhaul",
