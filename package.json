@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/next-with-admin.mjs dev",
+    "dev": "next dev",
     "build": "next build",
-    "start": "node scripts/next-with-admin.mjs start"
+    "start": "next start"
   },
   "dependencies": {
     "@openauthjs/openauth": "^0.4.3",

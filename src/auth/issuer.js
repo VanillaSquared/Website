@@ -4,6 +4,7 @@ import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 
 import { saveAdminEmailCode } from "./adminCodeBypass";
 import { PendingEmailCodeUI } from "./codeUI";
+import { InternalEmailProvider } from "./internalEmailProvider";
 import {
   normalizeEmail,
   normalizeUsername,
@@ -22,6 +23,7 @@ export const authIssuer = issuer({
   subjects,
   storage: MemoryStorage(),
   providers: {
+    internal_email: InternalEmailProvider(),
     code: CodeProvider({
       ...PendingEmailCodeUI({
         cookieName: PENDING_LOGIN_EMAIL_COOKIE,
@@ -52,7 +54,7 @@ export const authIssuer = issuer({
     }),
   },
   async success(ctx, value) {
-    if (value.provider === "code") {
+    if (value.provider === "code" || value.provider === "internal_email") {
       const email = normalizeEmail(value.claims.email);
       const username = normalizeUsername(value.claims.username);
       const isSignup = Boolean(username);

@@ -2,7 +2,7 @@ const ADMIN_CODE_TTL_MS = 10 * 60 * 1000;
 const codes = new Map();
 
 export function isAdminCodeBypassEnabled() {
-  return process.env.NODE_ENV !== "production" && process.env.ADMIN_CODE_BYPASS === "1";
+  return process.env.NODE_ENV !== "production";
 }
 
 export function saveAdminEmailCode(email, code) {
