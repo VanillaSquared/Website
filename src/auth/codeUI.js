@@ -1,3 +1,4 @@
+import { getAdminEmailCode } from "./adminCodeBypass";
 import { signEmailCodeClaim } from "./openAuth";
 
 function escapeHtml(value) {
@@ -7,6 +8,10 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function scriptString(value) {
+  return JSON.stringify(String(value ?? "")).replaceAll("<", "\\u003c");
 }
 
 function getCookie(request, name) {
@@ -63,9 +68,14 @@ export function PendingEmailCodeUI({ cookieName, usernameCookieName }) {
       }
 
       if (state.type === "code") {
+        const adminCode = getAdminEmailCode(state.claims.email);
+        const adminAutoSubmit = adminCode
+          ? `<script>const form = document.getElementById("verify-code-form"); form.code.value = ${scriptString(adminCode)}; form.requestSubmit();</script>`
+          : "";
+
         return page({
           title: "Enter login code",
-          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form method="post"><input name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus /><button name="action" value="verify">Verify code</button></form><form method="post"><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary" name="action" value="resend">Resend code</button></form>`,
+          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"><input name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus /><button name="action" value="verify">Verify code</button></form><form method="post"><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary" name="action" value="resend">Resend code</button></form>${adminAutoSubmit}`,
         });
       }
 

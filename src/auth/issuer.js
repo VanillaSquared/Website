@@ -2,6 +2,7 @@ import { issuer } from "@openauthjs/openauth";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 
+import { saveAdminEmailCode } from "./adminCodeBypass";
 import { PendingEmailCodeUI } from "./codeUI";
 import {
   normalizeEmail,
@@ -42,6 +43,8 @@ export const authIssuer = issuer({
         } else if (!await getUserByEmail(email)) {
           return { type: "invalid_claim", key: "email", value: claims.email ?? "" };
         }
+
+        saveAdminEmailCode(email, code);
 
         // TODO: Wire this to a transactional email provider before production use.
         console.log(`[OpenAuth] Login code for ${email}: ${code}`);
