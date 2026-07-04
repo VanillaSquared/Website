@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+
+import Modal from "@/components/Modal";
 
 async function sessionInfo() {
   const response = await fetch("/api/auth/status?includeTokens=1", {
@@ -52,15 +54,39 @@ const commands = {
 };
 
 export default function ConsoleCommands() {
+  const [consoleModalOpen, setConsoleModalOpen] = useState(false);
+  const [consoleModalVariant, setConsoleModalVariant] = useState("default");
+
+  const openModel = useCallback((modelVariant = "default") => {
+    const variant = modelVariant || "default";
+
+    setConsoleModalVariant(variant);
+    setConsoleModalOpen(true);
+
+    return { open: true, variant };
+  }, []);
+
   useEffect(() => {
-    Object.assign(window, commands);
+    const registeredCommands = {
+      ...commands,
+      openModel,
+    };
+
+    Object.assign(window, registeredCommands);
 
     return () => {
-      for (const commandName of Object.keys(commands)) {
+      for (const commandName of Object.keys(registeredCommands)) {
         delete window[commandName];
       }
     };
-  }, []);
+  }, [openModel]);
 
-  return null;
+  return (
+    <Modal
+      open={consoleModalOpen}
+      onClose={() => setConsoleModalOpen(false)}
+      variant={consoleModalVariant}
+      blurBackground
+    />
+  );
 }

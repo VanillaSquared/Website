@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 
 import settingsIcon from "@/assets/icons/settings.svg";
 import Button from "@/components/Button";
+import Modal from "@/components/Modal";
 
 export default function HeaderAuthButton({ initialLoggedIn = false }) {
   const pathname = usePathname();
   const [loggedIn, setLoggedIn] = useState(initialLoggedIn);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -57,15 +59,31 @@ export default function HeaderAuthButton({ initialLoggedIn = false }) {
     };
   }, [pathname]);
 
+  useEffect(() => {
+    if (!loggedIn) {
+      setSettingsOpen(false);
+    }
+  }, [loggedIn]);
+
   if (loggedIn) {
     return (
-      <Button
-        href="/settings"
-        size="icon"
-        variant="tertiary"
-        icon={settingsIcon}
-        aria-label="Settings"
-      />
+      <>
+        <Button
+          size="icon"
+          variant="tertiary"
+          icon={settingsIcon}
+          aria-label="Settings"
+          aria-haspopup="dialog"
+          aria-expanded={settingsOpen}
+          onClick={() => setSettingsOpen((open) => !open)}
+        />
+        <Modal
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          variant="settings"
+          blurBackground
+        />
+      </>
     );
   }
 
