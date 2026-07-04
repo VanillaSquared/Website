@@ -1,6 +1,7 @@
 import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
+import ModalShowcase from "@/components/ModalShowcase";
 import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
@@ -55,6 +56,8 @@ export default function ComponentPreviewPage() {
               Shows the login state and the settings state used in the header.
             </p>
           </section>
+
+          <ModalShowcase />
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Cards</h2>

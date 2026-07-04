@@ -5,13 +5,38 @@ import { createPortal } from "react-dom";
 
 import Card from "@/components/Card";
 
-const MODAL_POPUP_ANIMATION_MS = 120;
+const MODAL_POPUP_ANIMATION_MS = 140;
 
 const variants = {
   default: {
     overlay: "items-center justify-center overflow-y-auto p-4",
     card: "w-full max-w-lg min-h-24",
     popupAnimation: true,
+  },
+  compact: {
+    overlay: "items-center justify-center overflow-y-auto p-4",
+    card: "w-full max-w-sm min-h-24",
+    popupAnimation: true,
+  },
+  wide: {
+    overlay: "items-center justify-center overflow-y-auto p-4",
+    card: "w-full max-w-3xl min-h-40",
+    popupAnimation: true,
+  },
+  drawer: {
+    overlay: "items-stretch justify-end overflow-hidden",
+    card: "h-full w-full max-w-md rounded-none !border-y-0 !border-r-0",
+    popupAnimation: true,
+  },
+  bottomSheet: {
+    overlay: "items-end justify-center overflow-hidden p-0 sm:p-4",
+    card: "w-full max-w-2xl rounded-b-none sm:rounded-b-xl",
+    popupAnimation: true,
+  },
+  fullscreen: {
+    overlay: "items-stretch justify-stretch overflow-y-auto p-0 sm:p-6",
+    card: "min-h-full w-full rounded-none sm:rounded-xl",
+    popupAnimation: false,
   },
   settings: {
     overlay: "items-center justify-center overflow-y-auto p-4",
@@ -20,16 +45,23 @@ const variants = {
   },
 };
 
+const backgrounds = {
+  dim: "bg-modal-backdrop",
+  none: "bg-transparent",
+};
+
 export default function Modal({
   open,
   onClose,
   children,
   variant = "default",
   blurBackground = true,
+  background,
   popupAnimation,
   className = "",
 }) {
   const variantConfig = variants[variant] ?? variants.default;
+  const backdropBackground = backgrounds[background ?? (blurBackground ? "dim" : "none")] ?? backgrounds.dim;
   const popupAnimationEnabled = popupAnimation ?? variantConfig.popupAnimation ?? false;
   const [shouldRender, setShouldRender] = useState(open);
 
@@ -118,7 +150,7 @@ export default function Modal({
     <div className={`fixed inset-0 z-[100] flex ${variantConfig.overlay}`}>
       <button
         type="button"
-        className={`absolute inset-0 ${blurBackground ? "bg-modal-backdrop" : "bg-transparent"} ${backdropAnimationClass}`}
+        className={`absolute inset-0 ${backdropBackground} ${backdropAnimationClass}`}
         aria-label="Close modal"
         onClick={onClose}
       />
