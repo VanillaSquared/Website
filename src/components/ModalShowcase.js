@@ -13,60 +13,78 @@ const modalExamples = [
   {
     id: "defaultAnimated",
     title: "Default modal",
-    button: "Default + animation + background",
+    button: "Default · fade+pop in/out · backdrop",
     variant: "default",
     background: "dim",
-    popupAnimation: true,
+    openAnimation: "fade+pop",
+    closeAnimation: "fade+pop",
     content: "default",
   },
   {
     id: "compactNoAnimation",
     title: "Compact modal",
-    button: "Compact + no animation + background",
+    button: "Compact · no animations · backdrop",
     variant: "compact",
     background: "dim",
-    popupAnimation: false,
+    openAnimation: "none",
+    closeAnimation: "none",
     content: "form",
   },
   {
     id: "wideNoBackground",
     title: "Wide modal",
-    button: "Wide + animation + no background",
+    button: "Wide · fade+pop in · instant close",
     variant: "wide",
     background: "none",
-    popupAnimation: true,
+    openAnimation: "fade+pop",
+    closeAnimation: "none",
     content: "cards",
   },
   {
     id: "drawerNoBackground",
     title: "Drawer modal",
-    button: "Drawer + animation + no background",
+    button: "Drawer · instant open · fade+pop out",
     variant: "drawer",
     background: "none",
-    popupAnimation: true,
+    openAnimation: "none",
+    closeAnimation: "fade+pop",
     content: "drawer",
   },
   {
     id: "bottomSheet",
     title: "Bottom sheet modal",
-    button: "Bottom sheet + animation + background",
+    button: "Bottom sheet · fade+pop in/out",
     variant: "bottomSheet",
     background: "dim",
-    popupAnimation: true,
+    openAnimation: "fade+pop",
+    closeAnimation: "fade+pop",
     content: "bottomSheet",
+  },
+  {
+    id: "nestedModals",
+    title: "Modal stack",
+    button: "Default · contains child modals",
+    variant: "default",
+    background: "dim",
+    openAnimation: "fade+pop",
+    closeAnimation: "fade+pop",
+    content: "nested",
   },
   {
     id: "fullscreenNoAnimation",
     title: "Fullscreen modal",
-    button: "Fullscreen + no animation + background",
+    button: "Fullscreen · no animations · backdrop",
     variant: "fullscreen",
     background: "dim",
-    popupAnimation: false,
+    openAnimation: "none",
+    closeAnimation: "none",
     content: "fullscreen",
   },
 ];
 
 function ModalContent({ type, title, onClose }) {
+  const [nestedModal, setNestedModal] = useState(null);
+
   if (type === "form") {
     return (
       <div className="space-y-5">
@@ -91,7 +109,7 @@ function ModalContent({ type, title, onClose }) {
     return (
       <div className="space-y-5">
         <div>
-          <Tag>No background</Tag>
+          <Tag>No close animation</Tag>
           <h3 className="mt-3 text-2xl font-bold text-heading">{title}</h3>
           <p className="mt-2 text-sm text-muted">A wider modal with regular Card components inside it.</p>
         </div>
@@ -115,13 +133,13 @@ function ModalContent({ type, title, onClose }) {
     return (
       <div className="flex h-full flex-col gap-5">
         <div>
-          <Tag>Drawer</Tag>
+          <Tag>No open animation</Tag>
           <h3 className="mt-3 text-2xl font-bold text-heading">{title}</h3>
           <p className="mt-2 text-sm text-muted">A side panel variant with a transparent page background.</p>
         </div>
         <SearchBar placeholder="Search from a drawer..." className="max-w-none" />
         <div className="grid gap-3">
-          {['Profile tools', 'Project settings', 'Quick actions'].map((item) => (
+          {["Profile tools", "Project settings", "Quick actions"].map((item) => (
             <Card key={item} title={item} size="sm">
               <p className="text-sm text-muted">Reusable content inside a drawer modal.</p>
             </Card>
@@ -155,6 +173,68 @@ function ModalContent({ type, title, onClose }) {
     );
   }
 
+  if (type === "nested") {
+    return (
+      <div className="space-y-5">
+        <div>
+          <Tag>Nested modals</Tag>
+          <h3 className="mt-3 text-2xl font-bold text-heading">{title}</h3>
+          <p className="mt-2 text-sm text-muted">This parent modal can open additional modal layers.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <Button size="sm" variant="blue" onClick={() => setNestedModal("details")}>Open details modal</Button>
+          <Button size="sm" variant="purple" onClick={() => setNestedModal("confirm")}>Open confirm modal</Button>
+        </div>
+        <Card title="Parent modal content" size="sm">
+          <p className="text-sm text-muted">The child modals render above this modal and can be closed independently.</p>
+        </Card>
+        <div className="flex justify-end">
+          <Button variant="tertiary" onClick={onClose}>Close parent</Button>
+        </div>
+
+        <Modal
+          open={nestedModal === "details"}
+          onClose={() => setNestedModal(null)}
+          variant="compact"
+          background="dim"
+          openAnimation="fade+pop"
+          closeAnimation="fade+pop"
+        >
+          <div className="space-y-4">
+            <div>
+              <Tag>Child modal</Tag>
+              <h4 className="mt-3 text-xl font-bold text-heading">Details inside a modal</h4>
+              <p className="mt-2 text-sm text-muted">A compact child modal opened from the parent modal.</p>
+            </div>
+            <TextInput label="Nested note" name="nested-note" sampleText="Opened from the parent modal" />
+            <Button size="sm" onClick={() => setNestedModal(null)}>Close details</Button>
+          </div>
+        </Modal>
+
+        <Modal
+          open={nestedModal === "confirm"}
+          onClose={() => setNestedModal(null)}
+          variant="settings"
+          background="dim"
+          openAnimation="none"
+          closeAnimation="fade+pop"
+        >
+          <div className="space-y-4">
+            <div>
+              <Tag>Instant open</Tag>
+              <h4 className="mt-3 text-xl font-bold text-heading">Confirm nested action</h4>
+              <p className="mt-2 text-sm text-muted">This child modal opens instantly and fades/pops on close.</p>
+            </div>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button size="sm" variant="tertiary" onClick={() => setNestedModal(null)}>Cancel</Button>
+              <Button size="sm" onClick={() => setNestedModal(null)}>Confirm</Button>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    );
+  }
+
   if (type === "fullscreen") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-4xl flex-col gap-6">
@@ -164,7 +244,7 @@ function ModalContent({ type, title, onClose }) {
           <p className="mt-2 text-muted">A large modal without popup animation for full-page workflows.</p>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
-          {['Plan', 'Build', 'Ship'].map((item) => (
+          {["Plan", "Build", "Ship"].map((item) => (
             <Card key={item} title={item}>
               <p className="text-sm text-muted">Example workflow card inside the fullscreen modal.</p>
             </Card>
@@ -183,7 +263,7 @@ function ModalContent({ type, title, onClose }) {
       <div>
         <Tag>Animated</Tag>
         <h3 className="mt-3 text-2xl font-bold text-heading">{title}</h3>
-        <p className="mt-2 text-sm text-muted">The default modal uses a backdrop and popup animation.</p>
+        <p className="mt-2 text-sm text-muted">The default modal uses a backdrop and fade+pop open/close animations.</p>
       </div>
       <Card title="Modal content card" size="sm">
         <p className="text-sm text-muted">This is a Card component rendered inside the modal.</p>
@@ -203,11 +283,17 @@ export default function ModalShowcase() {
     <section className="space-y-4">
       <h2 className="text-2xl font-semibold text-heading">Modals</h2>
       <p className="max-w-2xl text-sm text-muted">
-        Modal variants with and without animations/backgrounds, each containing other reusable components.
+        Modal variants with separately selectable open and close animations/backgrounds, each containing other reusable components.
       </p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-wrap gap-2">
         {modalExamples.map((example) => (
-          <Button key={example.id} variant="secondary" onClick={() => setOpenModal(example.id)}>
+          <Button
+            key={example.id}
+            variant="secondary"
+            size="sm"
+            className="justify-start text-left leading-tight"
+            onClick={() => setOpenModal(example.id)}
+          >
             {example.button}
           </Button>
         ))}
@@ -220,7 +306,8 @@ export default function ModalShowcase() {
           onClose={() => setOpenModal(null)}
           variant={example.variant}
           background={example.background}
-          popupAnimation={example.popupAnimation}
+          openAnimation={example.openAnimation}
+          closeAnimation={example.closeAnimation}
         >
           <ModalContent type={example.content} title={example.title} onClose={() => setOpenModal(null)} />
         </Modal>
