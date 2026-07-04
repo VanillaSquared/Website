@@ -1,18 +1,22 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 import Card from "@/components/Card";
+
+const MODAL_POPUP_ANIMATION_MS = 120;
 
 const variants = {
   default: {
     overlay: "items-center justify-center overflow-y-auto p-4",
     card: "w-full max-w-lg min-h-24",
+    popupAnimation: true,
   },
   settings: {
     overlay: "items-center justify-center overflow-y-auto p-4",
     card: "w-full max-w-sm min-h-64",
+    popupAnimation: true,
   },
 };
 
@@ -22,12 +26,33 @@ export default function Modal({
   children,
   variant = "default",
   blurBackground = true,
+  popupAnimation,
   className = "",
 }) {
   const variantConfig = variants[variant] ?? variants.default;
+  const popupAnimationEnabled = popupAnimation ?? variantConfig.popupAnimation ?? false;
+  const [shouldRender, setShouldRender] = useState(open);
 
   useEffect(() => {
-    if (!open) {
+    if (open) {
+      setShouldRender(true);
+      return undefined;
+    }
+
+    if (!popupAnimationEnabled) {
+      setShouldRender(false);
+      return undefined;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setShouldRender(false);
+    }, MODAL_POPUP_ANIMATION_MS);
+
+    return () => window.clearTimeout(timeout);
+  }, [open, popupAnimationEnabled]);
+
+  useEffect(() => {
+    if (!shouldRender) {
       return;
     }
 
@@ -72,17 +97,28 @@ export default function Modal({
       document.body.style.paddingRight = originalBodyStyles.paddingRight;
       window.scrollTo(0, scrollY);
     };
-  }, [open, onClose]);
+  }, [shouldRender, onClose]);
 
-  if (!open || typeof document === "undefined") {
+  if (!shouldRender || typeof document === "undefined") {
     return null;
   }
+
+  const popupAnimationClass = popupAnimationEnabled
+    ? open
+      ? "modal-popup-enter"
+      : "modal-popup-exit"
+    : "";
+  const backdropAnimationClass = popupAnimationEnabled
+    ? open
+      ? "modal-backdrop-enter"
+      : "modal-backdrop-exit"
+    : "";
 
   return createPortal(
     <div className={`fixed inset-0 z-[100] flex ${variantConfig.overlay}`}>
       <button
         type="button"
-        className={`absolute inset-0 bg-modal-backdrop ${blurBackground ? "backdrop-blur-sm" : ""}`}
+        className={`absolute inset-0 ${blurBackground ? "bg-modal-backdrop" : "bg-transparent"} ${backdropAnimationClass}`}
         aria-label="Close modal"
         onClick={onClose}
       />
@@ -91,7 +127,7 @@ export default function Modal({
         aria-modal="true"
         preset="homepage"
         hoverAccent={false}
-        className={`relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${className}`}
+        className={`relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${popupAnimationClass} ${className}`}
         onClick={(event) => event.stopPropagation()}
       >
         {children}

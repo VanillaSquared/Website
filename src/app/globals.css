@@ -124,3 +124,75 @@ body {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
 }
+
+@keyframes modal-popup-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-popup-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes modal-backdrop-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-backdrop-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.modal-popup-enter {
+  animation: modal-popup-in 120ms ease-out both;
+  transform-origin: center;
+}
+
+.modal-popup-exit {
+  animation: modal-popup-out 120ms ease-in both;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.modal-backdrop-enter {
+  animation: modal-backdrop-in 140ms ease-out both;
+}
+
+.modal-backdrop-exit {
+  animation: modal-backdrop-out 140ms ease-in both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-popup-enter,
+  .modal-popup-exit,
+  .modal-backdrop-enter,
+  .modal-backdrop-exit {
+    animation-duration: 1ms;
+  }
+}
