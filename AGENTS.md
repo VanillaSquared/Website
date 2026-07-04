@@ -4,6 +4,8 @@
 
 - Format JSON files with VS Code's default pretty-print formatting.
 - Always make css variables for colors in order to make them reusable (in `src/app/globals.css`).
+- Never generate .svg images inside the code, always when generating .svg files, generate them once nad put them in `src/assets/...`.
+- Always code .svg images, never generate .png files or similar.
 
 ## Development Workflow
 
