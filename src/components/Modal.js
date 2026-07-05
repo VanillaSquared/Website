@@ -3,6 +3,15 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import accountIcon from "@/assets/icons/settings/account.svg";
+import accessibilityIcon from "@/assets/icons/settings/accessibility.svg";
+import appearanceIcon from "@/assets/icons/settings/appearance.svg";
+import beakerIcon from "@/assets/icons/settings/beaker.svg";
+import codeIcon from "@/assets/icons/settings/code.svg";
+import logoutIcon from "@/assets/icons/settings/logout.svg";
+import privacyIcon from "@/assets/icons/settings/privacy.svg";
+import supportIcon from "@/assets/icons/settings/support.svg";
+import timeIcon from "@/assets/icons/settings/time.svg";
 import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
@@ -96,6 +105,17 @@ const settingsCategories = [
   },
 ];
 
+const settingsItemIcons = {
+  Account: accountIcon,
+  Privacy: privacyIcon,
+  Appearance: appearanceIcon,
+  Accessibility: accessibilityIcon,
+  "Language&Time": timeIcon,
+  "Dev Options": codeIcon,
+  "Support Panel": supportIcon,
+  "Design Test": beakerIcon,
+};
+
 function getInitials(username, email) {
   const displayName = username || email || "VS";
 
@@ -149,7 +169,9 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
                     size="sm"
                     variant="tertiary"
                     border={false}
-                    className={`h-7 w-full !justify-start rounded-md px-2 py-1 text-sm ${activeItem === item ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
+                    icon={settingsItemIcons[item]}
+                    iconClassName="h-[18px] w-[18px]"
+                    className={`h-8 w-full !justify-start rounded-lg px-2.5 py-1.5 text-sm ${activeItem === item ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
                     onClick={() => setActiveItem(item)}
                   >
                     {item}
@@ -161,7 +183,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
         </nav>
 
         {onLogout ? (
-          <Button className="mt-4 shrink-0 !justify-start" size="sm" variant="secondary" onClick={onLogout}>
+          <Button className="mt-4 h-8 shrink-0 !justify-start px-2.5 py-1.5" size="sm" variant="secondary" icon={logoutIcon} iconClassName="h-[18px] w-[18px]" onClick={onLogout}>
             Logout
           </Button>
         ) : null}

@@ -17,18 +17,33 @@ const sizes = {
   icon: "h-9 w-9 rounded-lg p-0 text-sm",
 };
 
-function renderIcon(icon, iconAlt) {
+function renderIcon(icon, iconAlt, iconClassName = "h-4 w-4") {
   if (!icon) {
     return null;
   }
 
   if (typeof icon === "string" || icon.src) {
+    const iconSrc = typeof icon === "string" ? icon : icon.src;
+
+    if (!iconAlt && iconSrc.endsWith(".svg")) {
+      return (
+        <span
+          aria-hidden="true"
+          className={`${iconClassName} shrink-0 bg-current`}
+          style={{
+            WebkitMask: `url(${iconSrc}) center / contain no-repeat`,
+            mask: `url(${iconSrc}) center / contain no-repeat`,
+          }}
+        />
+      );
+    }
+
     return (
       <img
-        src={typeof icon === "string" ? icon : icon.src}
+        src={iconSrc}
         alt={iconAlt}
         aria-hidden={iconAlt ? undefined : "true"}
-        className="h-4 w-4 shrink-0"
+        className={`${iconClassName} shrink-0`}
       />
     );
   }
@@ -45,12 +60,13 @@ export default function Button({
   border,
   icon = null,
   iconAlt = "",
+  iconClassName,
   iconPosition = "left",
   className = "",
   type = "button",
   ...props
 }) {
-  const iconElement = renderIcon(icon, iconAlt);
+  const iconElement = renderIcon(icon, iconAlt, iconClassName);
   const hasBorder = border ?? variantBorders[variant] ?? true;
   const borderClass = hasBorder ? "border-[2.0px]" : "border-0";
   const content = (
