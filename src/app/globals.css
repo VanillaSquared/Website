@@ -20,6 +20,7 @@
   --vsq-surface-input-focus: #2a2a2a;
   --vsq-surface-error: #3b1f28;
   --vsq-border-divider: #262626;
+  --vsq-border-separator: #343434;
   --vsq-border-modal: #383838;
   --vsq-border-search: #343434;
   --vsq-border-input: #343434;
@@ -76,6 +77,7 @@
   --color-input-focus: var(--vsq-surface-input-focus);
   --color-error-surface: var(--vsq-surface-error);
   --color-divider: var(--vsq-border-divider);
+  --color-separator: var(--vsq-border-separator);
   --color-modal-border: var(--vsq-border-modal);
   --color-search-border: var(--vsq-border-search);
   --color-input-border: var(--vsq-border-input);

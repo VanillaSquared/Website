@@ -16,6 +16,7 @@ import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import SearchBar from "@/components/SearchBar";
+import Separator from "@/components/Separator";
 
 const MODAL_ANIMATIONS = {
   none: {
@@ -131,7 +132,7 @@ function getVisibleSettingsCategories(permissions) {
   return settingsCategories.filter((category) => !category.permission || permissions?.[category.permission]);
 }
 
-function SettingsModalContent({ user, permissions, onClose, onLogout }) {
+function SettingsModalContent({ user, permissions, onClose, onLogout, children }) {
   const visibleCategories = getVisibleSettingsCategories(permissions);
   const [activeItem, setActiveItem] = useState(visibleCategories[0]?.items[0] ?? "Account");
   const username = user?.username || "VanillaSquared User";
@@ -145,23 +146,26 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-modal text-soft md:flex-row">
-      <aside className="flex min-h-0 shrink-0 flex-col border-b border-divider bg-card/50 p-5 md:w-72 md:border-b-0 md:border-r">
-        <div className="flex shrink-0 items-center gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/50 bg-accent/20 text-lg font-bold text-heading">
-            {getInitials(username, email)}
+      <aside className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-divider bg-card/50 p-5 md:w-72 md:border-b-0 md:border-r">
+        <div className="shrink-0 bg-card/50 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/50 bg-accent/20 text-lg font-bold text-heading">
+              {getInitials(username, email)}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-semibold text-heading">{username}</p>
+              <p className="truncate text-sm text-muted">{email}</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-heading">{username}</p>
-            <p className="truncate text-sm text-muted">{email}</p>
-          </div>
+
+          <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" />
         </div>
 
-        <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" />
-
         <nav className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
-          {visibleCategories.map((category) => (
+          {visibleCategories.map((category, categoryIndex) => (
             <div key={category.label}>
-              <p className="mb-1.5 px-2 text-xs font-semibold uppercase tracking-wide text-subtle">{category.label}</p>
+              {categoryIndex > 0 ? <Separator className="mb-5" /> : null}
+              <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-wide text-subtle">{category.label}</p>
               <div className="space-y-0.5">
                 {category.items.map((item) => (
                   <Button
@@ -183,9 +187,20 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
         </nav>
 
         {onLogout ? (
-          <Button className="mt-4 h-8 shrink-0 !justify-start px-2.5 py-1.5 leading-none" size="sm" variant="secondary" icon={logoutIcon} iconClassName="h-[18px] w-[18px] self-center" onClick={onLogout}>
-            <span className="inline-flex items-center leading-none">Logout</span>
-          </Button>
+          <div className="mt-4 shrink-0">
+            <Separator className="mb-4" />
+            <Button
+              className="h-8 w-full !justify-start rounded-lg bg-transparent px-2.5 py-1.5 leading-none text-muted hover:text-soft"
+              size="sm"
+              variant="tertiary"
+              border={false}
+              icon={logoutIcon}
+              iconClassName="h-[18px] w-[18px] self-center"
+              onClick={onLogout}
+            >
+              <span className="inline-flex items-center leading-none">Logout</span>
+            </Button>
+          </div>
         ) : null}
       </aside>
 
@@ -195,7 +210,9 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
           <Button size="icon" variant="tertiary" icon={closeIcon} aria-label="Close settings" onClick={onClose} />
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12" />
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12">
+          {children}
+        </div>
       </section>
     </div>
   );
@@ -264,6 +281,7 @@ export default function Modal({
   settingsUser,
   settingsPermissions,
   onSettingsLogout,
+  settingsContent,
   className = "",
 }) {
   const variantConfig = variants[variant] ?? variants.default;
@@ -322,7 +340,7 @@ export default function Modal({
   const popupAnimationClass = open ? activeAnimationConfig.popupEnter : activeAnimationConfig.popupExit;
   const backdropAnimationClass = open ? activeAnimationConfig.backdropEnter : activeAnimationConfig.backdropExit;
   const content = variant === "settings"
-    ? <SettingsModalContent user={settingsUser} permissions={settingsPermissions} onClose={onClose} onLogout={onSettingsLogout} />
+    ? <SettingsModalContent user={settingsUser} permissions={settingsPermissions} onClose={onClose} onLogout={onSettingsLogout}>{settingsContent ?? children}</SettingsModalContent>
     : children;
 
   return createPortal(
