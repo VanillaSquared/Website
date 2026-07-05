@@ -64,8 +64,9 @@ const variants = {
     closeAnimation: "none",
   },
   settings: {
-    overlay: "items-center justify-center overflow-y-auto p-4",
-    card: "w-full max-w-sm min-h-64",
+    overlay: "items-center justify-center overflow-y-auto p-3 sm:p-6",
+    card: "h-[min(760px,calc(100dvh-2rem))] w-full max-w-6xl overflow-hidden !p-0",
+    content: "h-full",
     openAnimation: "fade+pop",
     closeAnimation: "fade+pop",
   },
@@ -208,6 +209,7 @@ export default function Modal({
         preset="homepage"
         hoverAccent={false}
         className={`relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${popupAnimationClass} ${className}`}
+        contentClassName={variantConfig.content ?? ""}
         onClick={(event) => event.stopPropagation()}
       >
         {children}
