@@ -1,10 +1,14 @@
 import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
+import Checkmark from "@/components/Checkmark";
+import FileUpload from "@/components/FileUpload";
 import ModalShowcase from "@/components/ModalShowcase";
+import MultiSelect from "@/components/MultiSelect";
 import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
+import Toggle from "@/components/Toggle";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export const metadata = {
@@ -14,6 +18,22 @@ export const metadata = {
 const buttonVariants = ["primary", "secondary", "tertiary", "blue", "purple", "blurple"];
 const buttonSizes = ["sm", "md", "icon"];
 const cardSizes = ["sm", "md", "lg", "popup"];
+const selectOptions = [
+  { label: "Vanilla", value: "vanilla" },
+  { label: "Fabric", value: "fabric" },
+  { label: "Quilt", value: "quilt" },
+  { label: "NeoForge", value: "neoforge" },
+  { label: "Forge", value: "forge" },
+  { label: "Paper", value: "paper" },
+  { label: "Spigot", value: "spigot" },
+  { label: "Bukkit", value: "bukkit" },
+  { label: "Sponge", value: "sponge" },
+  { label: "Purpur", value: "purpur" },
+  { label: "Velocity", value: "velocity" },
+  { label: "BungeeCord", value: "bungeecord" },
+  { label: "LiteLoader", value: "liteloader" },
+  { label: "Rift", value: "rift" },
+];
 
 export default function ComponentPreviewPage() {
   return (
@@ -102,6 +122,40 @@ export default function ComponentPreviewPage() {
               <Tag>Fabric</Tag>
               <Tag>Java 25</Tag>
             </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Controls</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card title="Toggle" size="md">
+                <Toggle label="Automatic updates" description="Apple-like switch styling." defaultChecked />
+              </Card>
+              <Card title="Checkmark" size="md">
+                <div className="flex items-center gap-3 text-sm text-soft">
+                  <Checkmark defaultChecked interactive />
+                  <Checkmark defaultChecked={false} interactive />
+                  <span>Click to toggle selected and unselected states.</span>
+                </div>
+              </Card>
+              <Card title="Multi select" size="md" className="overflow-visible">
+                <MultiSelect label="Targets" options={selectOptions} defaultValue={["vanilla", "fabric"]} min={1} max={4} />
+              </Card>
+              <Card title="Limited multi select" size="md" className="overflow-visible">
+                <MultiSelect label="Server software" options={selectOptions} defaultValue={["paper"]} max={2} />
+              </Card>
+            </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">File upload</h2>
+            <FileUpload
+              label="Mod pack"
+              description="Drop up to 3 zip or jar files here, or browse from your computer."
+              fileTypes={[".zip", ".jar"]}
+              maxFiles={3}
+              maxFileSize={10 * 1024 * 1024}
+              multiple
+            />
           </section>
         </div>
       </section>

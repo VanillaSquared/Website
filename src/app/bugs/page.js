@@ -1,13 +1,17 @@
-import Button from "@/components/Button";
-import Card from "@/components/Card";
+import { getAuthSubject } from "@/app/auth";
+import { BUG_REPORT_CATEGORIES, BUG_REPORT_VERSIONS } from "@/bugs/reporter";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
+
+import BugReporterForm from "./BugReporterForm";
 
 export const metadata = {
   title: "Bug Reporter | Vanilla²",
   description: "Report a bug for Vanilla².",
 };
 
-export default function BugsPage() {
+export default async function BugsPage() {
+  const subject = await getAuthSubject({ updateTokens: false });
+
   return (
     <DefaultTemplatePage>
       <section className="flex flex-1 items-center justify-center bg-background px-6 py-20">
@@ -22,22 +26,11 @@ export default function BugsPage() {
             </p>
           </div>
 
-          <Card
-            title="Bug reports coming soon"
-            description="The bug reporter form is temporarily unavailable while we prepare it."
-            className="rounded-2xl border-divider text-center"
-            hoverAccent={false}
-          >
-            <div className="mt-6 flex justify-center">
-              <Button
-                href="https://github.com/VanillaSquared/Website/issues"
-                variant="secondary"
-                external
-              >
-                View existing reports
-              </Button>
-            </div>
-          </Card>
+          <BugReporterForm
+            categories={BUG_REPORT_CATEGORIES}
+            versions={BUG_REPORT_VERSIONS}
+            authenticated={Boolean(subject)}
+          />
         </div>
       </section>
     </DefaultTemplatePage>
