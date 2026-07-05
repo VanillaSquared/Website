@@ -1,33 +1,22 @@
 import "server-only";
 
+import { getUserRolesByUserId } from "@/auth/openSQL";
+
 export const PERMISSIONS = {
   STAFF_SETTINGS: "staff:settings",
 };
 
-function getDeveloperIdentifiers() {
-  return new Set(
-    String(process.env.DEVELOPER_USERS ?? "")
-      .split(",")
-      .map((value) => value.trim().toLowerCase())
-      .filter(Boolean)
-  );
+export async function getUserRoles(user) {
+  return getUserRolesByUserId(user?.id);
 }
 
-export function getUserRoles(user) {
-  const developers = getDeveloperIdentifiers();
-  const identifiers = [user?.id, user?.username, user?.email]
-    .map((value) => String(value ?? "").trim().toLowerCase())
-    .filter(Boolean);
-
-  return identifiers.some((identifier) => developers.has(identifier)) ? ["developer"] : [];
-}
-
-export function getUserPermissions(user) {
-  const roles = getUserRoles(user);
+export async function getUserPermissions(user) {
+  const roles = await getUserRoles(user);
+  const canViewStaffSettings = roles.includes("developer");
 
   return {
     roles,
-    canViewStaffSettings: roles.includes("developer"),
-    permissions: roles.includes("developer") ? [PERMISSIONS.STAFF_SETTINGS] : [],
+    canViewStaffSettings,
+    permissions: canViewStaffSettings ? [PERMISSIONS.STAFF_SETTINGS] : [],
   };
 }

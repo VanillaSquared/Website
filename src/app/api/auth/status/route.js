@@ -61,7 +61,7 @@ export async function GET(request) {
     email: subject.properties?.email,
   } : null;
 
-  const body = { authenticated, user, permissions: getUserPermissions(user) };
+  const body = { authenticated, user, permissions: await getUserPermissions(user) };
 
   if (includeTokens) {
     const tokens = await getTokenCookies();
