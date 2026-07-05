@@ -4,6 +4,25 @@ import searchIcon from "@/assets/icons/search.svg";
 import xIcon from "@/assets/icons/x.svg";
 import { useId, useState } from "react";
 
+const variants = {
+  default: {
+    form: "max-w-sm",
+    input: "h-9 rounded-lg py-1.5 text-sm",
+    filled: "bg-[#25262a]/90",
+    empty: "bg-[#202124]/85",
+    hover: "hover:bg-[#25262a]/90 focus:bg-[#25262a]/90",
+    clear: "hover:bg-[#2b2c30]/90",
+  },
+  settings: {
+    form: "max-w-none",
+    input: "h-11 rounded-xl py-2 text-base",
+    filled: "bg-search-hover",
+    empty: "bg-search",
+    hover: "hover:bg-search-hover focus:bg-search-hover",
+    clear: "hover:bg-button-tertiary-hover",
+  },
+};
+
 export default function SearchBar({
   action,
   className = "",
@@ -13,9 +32,11 @@ export default function SearchBar({
   name = "q",
   onSearch,
   placeholder = "Search...",
+  variant = "default",
 }) {
   const inputId = useId();
   const [value, setValue] = useState(defaultValue);
+  const variantConfig = variants[variant] ?? variants.default;
 
   function handleSubmit(event) {
     if (!onSearch && !action) {
@@ -35,7 +56,7 @@ export default function SearchBar({
       action={onSearch ? undefined : action}
       method={method}
       onSubmit={handleSubmit}
-      className={`w-full max-w-sm ${className}`}
+      className={`w-full ${variantConfig.form} ${className}`}
     >
       <label htmlFor={inputId} className="sr-only">
         {label}
@@ -54,14 +75,14 @@ export default function SearchBar({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           placeholder={placeholder}
-          className={`${value ? "bg-[#25262a]/90" : "bg-[#202124]/85"} relative h-9 w-full rounded-lg py-1.5 pr-9 pl-9 text-sm text-heading outline-none backdrop-blur-md transition-colors placeholder:text-search-placeholder hover:bg-[#25262a]/90 focus:bg-[#25262a]/90`}
+          className={`${value ? variantConfig.filled : variantConfig.empty} ${variantConfig.input} ${variantConfig.hover} relative w-full pr-9 pl-9 text-heading outline-none backdrop-blur-md transition-colors placeholder:text-search-placeholder`}
         />
         {value ? (
           <button
             type="button"
             aria-label="Clear search"
             onClick={() => setValue("")}
-            className="absolute right-2 z-10 rounded-md p-1 transition-colors hover:bg-[#2b2c30]/90 focus:outline-none"
+            className={`absolute right-2 z-10 rounded-md p-1 transition-colors focus:outline-none ${variantConfig.clear}`}
           >
             <img src={xIcon.src} alt="" aria-hidden="true" className="h-4 w-4" />
           </button>

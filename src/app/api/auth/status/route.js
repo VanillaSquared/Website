@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAuthSubject, getTokenCookies } from "@/app/auth";
+import { getUserPermissions } from "@/auth/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -60,7 +61,7 @@ export async function GET(request) {
     email: subject.properties?.email,
   } : null;
 
-  const body = { authenticated, user };
+  const body = { authenticated, user, permissions: getUserPermissions(user) };
 
   if (includeTokens) {
     const tokens = await getTokenCookies();

@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import closeIcon from "@/assets/icons/x.svg";
+import Button from "@/components/Button";
 import Card from "@/components/Card";
+import SearchBar from "@/components/SearchBar";
 
 const MODAL_ANIMATIONS = {
   none: {
@@ -77,6 +80,105 @@ const backgrounds = {
   none: "bg-transparent",
 };
 
+const settingsCategories = [
+  {
+    label: "Account",
+    items: ["Account", "Privacy"],
+  },
+  {
+    label: "Experience",
+    items: ["Appearance", "Accessibility", "Language&Time"],
+  },
+  {
+    label: "Staff",
+    permission: "canViewStaffSettings",
+    items: ["Dev Options", "Support Panel", "Design Test"],
+  },
+];
+
+function getInitials(username, email) {
+  const displayName = username || email || "VS";
+
+  return displayName
+    .split(/[\s._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase())
+    .join("") || "VS";
+}
+
+function getVisibleSettingsCategories(permissions) {
+  return settingsCategories.filter((category) => !category.permission || permissions?.[category.permission]);
+}
+
+function SettingsModalContent({ user, permissions, onClose, onLogout }) {
+  const visibleCategories = getVisibleSettingsCategories(permissions);
+  const [activeItem, setActiveItem] = useState(visibleCategories[0]?.items[0] ?? "Account");
+  const username = user?.username || "VanillaSquared User";
+  const email = user?.email || "Manage your account";
+
+  useEffect(() => {
+    if (!visibleCategories.some((category) => category.items.includes(activeItem))) {
+      setActiveItem(visibleCategories[0]?.items[0] ?? "Account");
+    }
+  }, [activeItem, visibleCategories]);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col bg-modal text-soft md:flex-row">
+      <aside className="flex min-h-0 shrink-0 flex-col border-b border-divider bg-card/50 p-5 md:w-72 md:border-b-0 md:border-r">
+        <div className="flex shrink-0 items-center gap-3">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/50 bg-accent/20 text-lg font-bold text-heading">
+            {getInitials(username, email)}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-heading">{username}</p>
+            <p className="truncate text-sm text-muted">{email}</p>
+          </div>
+        </div>
+
+        <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" />
+
+        <nav className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
+          {visibleCategories.map((category) => (
+            <div key={category.label}>
+              <p className="mb-1.5 px-2 text-xs font-semibold uppercase tracking-wide text-subtle">{category.label}</p>
+              <div className="space-y-0.5">
+                {category.items.map((item) => (
+                  <Button
+                    key={item}
+                    size="sm"
+                    variant="tertiary"
+                    border={false}
+                    className={`h-7 w-full !justify-start rounded-md px-2 py-1 text-sm ${activeItem === item ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
+                    onClick={() => setActiveItem(item)}
+                  >
+                    {item}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {onLogout ? (
+          <Button className="mt-4 shrink-0 !justify-start" size="sm" variant="secondary" onClick={onLogout}>
+            Logout
+          </Button>
+        ) : null}
+      </aside>
+
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-divider px-6">
+          <h2 className="text-xl font-semibold text-heading">{activeItem}</h2>
+          <Button size="icon" variant="tertiary" icon={closeIcon} aria-label="Close settings" onClick={onClose} />
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12" />
+      </section>
+    </div>
+  );
+}
+
 let bodyScrollLockCount = 0;
 let restoreBodyScroll = null;
 
@@ -137,6 +239,9 @@ export default function Modal({
   openAnimation,
   closeAnimation,
   popupAnimation,
+  settingsUser,
+  settingsPermissions,
+  onSettingsLogout,
   className = "",
 }) {
   const variantConfig = variants[variant] ?? variants.default;
@@ -194,6 +299,9 @@ export default function Modal({
   const activeAnimationConfig = MODAL_ANIMATIONS[open ? resolvedOpenAnimation : resolvedCloseAnimation];
   const popupAnimationClass = open ? activeAnimationConfig.popupEnter : activeAnimationConfig.popupExit;
   const backdropAnimationClass = open ? activeAnimationConfig.backdropEnter : activeAnimationConfig.backdropExit;
+  const content = variant === "settings"
+    ? <SettingsModalContent user={settingsUser} permissions={settingsPermissions} onClose={onClose} onLogout={onSettingsLogout} />
+    : children;
 
   return createPortal(
     <div className={`fixed inset-0 z-[100] flex ${variantConfig.overlay}`}>
@@ -212,7 +320,7 @@ export default function Modal({
         contentClassName={variantConfig.content ?? ""}
         onClick={(event) => event.stopPropagation()}
       >
-        {children}
+        {content}
       </Card>
     </div>,
     document.body
