@@ -57,8 +57,8 @@ export default function ConsoleCommands() {
   const [consoleModalOpen, setConsoleModalOpen] = useState(false);
   const [consoleModalVariant, setConsoleModalVariant] = useState("default");
 
-  const openModel = useCallback((modelVariant = "default") => {
-    const variant = modelVariant || "default";
+  const openmodal = useCallback((modalVariant = "default") => {
+    const variant = modalVariant || "default";
 
     setConsoleModalVariant(variant);
     setConsoleModalOpen(true);
@@ -69,7 +69,7 @@ export default function ConsoleCommands() {
   useEffect(() => {
     const registeredCommands = {
       ...commands,
-      openModel,
+      openmodal,
     };
 
     Object.assign(window, registeredCommands);
@@ -79,7 +79,7 @@ export default function ConsoleCommands() {
         delete window[commandName];
       }
     };
-  }, [openModel]);
+  }, [openmodal]);
 
   return (
     <Modal
