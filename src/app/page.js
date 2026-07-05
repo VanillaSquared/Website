@@ -55,11 +55,7 @@ export default function Home() {
           >
             Docs
           </Button>
-          <Button
-            href="https://github.com/VanillaSquared/Website/issues/new"
-            variant="purple"
-            external
-          >
+          <Button href="/bugs" variant="purple">
             Bug Reporter
           </Button>
           <Button
