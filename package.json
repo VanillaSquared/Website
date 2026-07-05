@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/start-mysql.js",
     "dev": "next dev",
     "build": "next build",
+    "prestart": "node scripts/start-mysql.js",
     "start": "next start"
   },
   "dependencies": {
