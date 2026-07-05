@@ -170,11 +170,11 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
                     variant="tertiary"
                     border={false}
                     icon={settingsItemIcons[item]}
-                    iconClassName="h-[18px] w-[18px]"
-                    className={`h-8 w-full !justify-start rounded-lg px-2.5 py-1.5 text-sm ${activeItem === item ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
+                    iconClassName="h-[18px] w-[18px] self-center"
+                    className={`h-8 w-full !justify-start rounded-lg px-2.5 py-1.5 text-sm leading-none ${activeItem === item ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
                     onClick={() => setActiveItem(item)}
                   >
-                    {item}
+                    <span className="inline-flex items-center leading-none">{item}</span>
                   </Button>
                 ))}
               </div>
@@ -183,8 +183,8 @@ function SettingsModalContent({ user, permissions, onClose, onLogout }) {
         </nav>
 
         {onLogout ? (
-          <Button className="mt-4 h-8 shrink-0 !justify-start px-2.5 py-1.5" size="sm" variant="secondary" icon={logoutIcon} iconClassName="h-[18px] w-[18px]" onClick={onLogout}>
-            Logout
+          <Button className="mt-4 h-8 shrink-0 !justify-start px-2.5 py-1.5 leading-none" size="sm" variant="secondary" icon={logoutIcon} iconClassName="h-[18px] w-[18px] self-center" onClick={onLogout}>
+            <span className="inline-flex items-center leading-none">Logout</span>
           </Button>
         ) : null}
       </aside>
