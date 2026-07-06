@@ -11,6 +11,7 @@
   --vsq-text-inverse: #ffffff;
 
   --vsq-surface-card: #1e1e1e;
+  --vsq-surface-header: rgb(23 23 23 / 0.75);
   --vsq-surface-modal: #1b1b1b;
   --vsq-surface-tag: #2d2d2d;
   --vsq-tag-low-bg: rgb(52 211 153 / 0.1);
@@ -46,6 +47,7 @@
   --vsq-surface-input-focus: #2a2a2a;
   --vsq-surface-error: #3b1f28;
   --vsq-border-divider: #262626;
+  --vsq-border-header: rgb(38 38 38 / 0.7);
   --vsq-border-separator: #343434;
   --vsq-border-modal: #383838;
   --vsq-border-search: #343434;

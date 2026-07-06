@@ -11,7 +11,7 @@ export default async function TopBar({ search = {} }) {
   const subject = await getAuthSubject({ updateTokens: false });
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#262626]/70 bg-[#171717]/75 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 bg-[var(--vsq-surface-header)] backdrop-blur-xl after:pointer-events-none after:fixed after:top-16 after:left-0 after:right-0 after:h-px after:bg-[var(--vsq-border-header)]">
       <nav className="flex min-h-16 w-full items-center gap-3 px-4 py-3">
         <Link
           href="/"
