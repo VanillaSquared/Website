@@ -22,7 +22,7 @@ export default function Checkmark({
   };
   const checkedVariants = {
     default: "border-control-accent bg-control-accent text-control-accent-text",
-    green: "border-[var(--vsq-checkmark-green-border)] bg-[var(--vsq-checkmark-green-bg)] text-[var(--vsq-checkmark-green-text)]",
+    green: "border-transparent bg-[var(--vsq-checkmark-green-bg)] text-[var(--vsq-checkmark-green-text)]",
   };
   const isInteractive = Boolean(interactive || onChange || onClick);
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
