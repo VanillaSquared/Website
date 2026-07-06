@@ -200,7 +200,7 @@ html {
 }
 
 .scrollbar-while-scrolling.is-scrolling,
-.scrollbar-while-scrolling.is-scrolling * {
+.scrollbar-while-scrolling .is-scrolling {
   scrollbar-color: var(--vsq-scrollbar-thumb) var(--vsq-scrollbar-track);
 }
 
@@ -211,7 +211,7 @@ html {
 }
 
 .scrollbar-while-scrolling.is-scrolling::-webkit-scrollbar-thumb,
-.scrollbar-while-scrolling.is-scrolling *::-webkit-scrollbar-thumb {
+.scrollbar-while-scrolling .is-scrolling::-webkit-scrollbar-thumb {
   background: var(--vsq-scrollbar-thumb);
   background-clip: content-box;
 }
