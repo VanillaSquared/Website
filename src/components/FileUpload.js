@@ -69,6 +69,7 @@ export default function FileUpload({
   id,
   onChange,
   className = "",
+  locked = false,
 }) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
@@ -124,6 +125,10 @@ export default function FileUpload({
   }
 
   function handleFiles(fileList, event) {
+    if (locked) {
+      return;
+    }
+
     const incomingFiles = Array.from(fileList ?? []);
     const candidateFiles = multiple ? [...files, ...incomingFiles] : incomingFiles.slice(0, 1);
     const result = validateFiles(candidateFiles);
@@ -133,15 +138,22 @@ export default function FileUpload({
   function handleDrop(event) {
     event.preventDefault();
     setIsDragging(false);
-    handleFiles(event.dataTransfer.files, event);
+
+    if (!locked) {
+      handleFiles(event.dataTransfer.files, event);
+    }
   }
 
   function renameUploadedFile(index, nextName) {
-    syncFiles(files.map((file, fileIndex) => (fileIndex === index ? renameFile(file, nextName) : file)));
+    if (!locked) {
+      syncFiles(files.map((file, fileIndex) => (fileIndex === index ? renameFile(file, nextName) : file)));
+    }
   }
 
   function deleteUploadedFile(index) {
-    syncFiles(files.filter((_, fileIndex) => fileIndex !== index));
+    if (!locked) {
+      syncFiles(files.filter((_, fileIndex) => fileIndex !== index));
+    }
   }
 
   return (
@@ -156,9 +168,11 @@ export default function FileUpload({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         className={`flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed px-5 py-8 text-center transition-colors ${
-          isDragging
-            ? "border-control-accent bg-control-accent-soft"
-            : "border-control-border bg-control hover:border-control-border-hover hover:bg-control-hover"
+          locked
+            ? "border-locked-input-border bg-locked-input"
+            : isDragging
+              ? "border-control-accent bg-control-accent-soft"
+              : "border-control-border bg-control hover:border-control-border-hover hover:bg-control-hover"
         }`}
       >
         <span className="flex h-12 w-12 items-center justify-center rounded-full bg-control-panel text-2xl text-control-accent">
@@ -171,8 +185,8 @@ export default function FileUpload({
           <span>Limit: {fileLimitText}</span>
         </div>
         <label
-          htmlFor={inputId}
-          className="cursor-pointer rounded-lg border border-control-border bg-control-panel px-3 py-1.5 text-xs text-soft transition-colors hover:border-control-border-hover hover:bg-control-hover hover:text-heading"
+          htmlFor={locked ? undefined : inputId}
+          className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${locked ? "cursor-not-allowed border-locked-border bg-locked text-locked-text" : "cursor-pointer border-control-border bg-control-panel text-soft hover:border-control-border-hover hover:bg-control-hover hover:text-heading"}`}
         >
           Browse files
         </label>
@@ -184,6 +198,7 @@ export default function FileUpload({
           accept={acceptedTypes}
           multiple={multiple && fileLimit !== 1}
           className="sr-only"
+          disabled={locked}
           onChange={(event) => handleFiles(event.target.files, event)}
         />
 
@@ -207,7 +222,8 @@ export default function FileUpload({
                   aria-label={`Rename ${file.name}`}
                   value={file.name}
                   onChange={(event) => renameUploadedFile(index, event.target.value)}
-                  className="min-w-0 flex-1 rounded-md border border-input-border bg-input px-2 py-1 text-sm text-heading outline-none transition-colors hover:border-input-border-hover focus:border-input-border-focus"
+                  disabled={locked}
+                  className={`min-w-0 flex-1 rounded-md border px-2 py-1 text-sm outline-none transition-colors ${locked ? "cursor-not-allowed border-locked-input-border bg-locked-input text-locked-text" : "border-input-border bg-input text-heading hover:border-input-border-hover focus:border-input-border-focus"}`}
                 />
                 <span className="text-xs font-normal text-muted sm:w-20 sm:text-right">
                   {formatBytes(file.size)}
@@ -215,7 +231,8 @@ export default function FileUpload({
                 <button
                   type="button"
                   onClick={() => deleteUploadedFile(index)}
-                  className="rounded-md border border-control-border bg-control-panel px-2 py-1 text-xs text-soft transition-colors hover:border-control-border-hover hover:bg-control-hover hover:text-heading"
+                  disabled={locked}
+                  className={`rounded-md border px-2 py-1 text-xs transition-colors ${locked ? "cursor-not-allowed border-locked-border bg-locked text-locked-text" : "border-control-border bg-control-panel text-soft hover:border-control-border-hover hover:bg-control-hover hover:text-heading"}`}
                 >
                   Delete
                 </button>

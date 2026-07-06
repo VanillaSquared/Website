@@ -1,7 +1,10 @@
 import mysql from "mysql2/promise";
 
-let pool;
-let initialized;
+const poolGlobalKey = Symbol.for("vanillasquared.mysql.pool");
+const initializedGlobalKey = Symbol.for("vanillasquared.mysql.initialized");
+
+let pool = globalThis[poolGlobalKey];
+let initialized = globalThis[initializedGlobalKey];
 
 function getDatabaseUrlConfig() {
   if (!process.env.DATABASE_URL) {
@@ -27,10 +30,12 @@ export function getPool() {
   if (!pool) {
     pool = mysql.createPool({
       ...getPoolConfig(),
-      connectionLimit: Number(process.env.MYSQL_CONNECTION_LIMIT ?? 10),
+      connectionLimit: Number(process.env.MYSQL_CONNECTION_LIMIT ?? 3),
       waitForConnections: true,
+      queueLimit: 0,
       namedPlaceholders: true,
     });
+    globalThis[poolGlobalKey] = pool;
   }
 
   return pool;
@@ -69,9 +74,11 @@ export async function initializeUsersTable() {
         }
       } catch (error) {
         initialized = undefined;
+        globalThis[initializedGlobalKey] = undefined;
         throw error;
       }
     })();
+    globalThis[initializedGlobalKey] = initialized;
   }
 
   await initialized;

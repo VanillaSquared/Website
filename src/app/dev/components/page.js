@@ -1,3 +1,4 @@
+import settingsIcon from "@/assets/icons/settings.svg";
 import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
@@ -52,15 +53,23 @@ export default function ComponentPreviewPage() {
             <h2 className="text-2xl font-semibold text-heading">Buttons</h2>
             <div className="flex flex-wrap items-center gap-3">
               {buttonVariants.map((variant) => (
-                <Button key={variant} href="#" variant={variant}>
-                  {variant}
+                <Button
+                  key={variant}
+                  href="#"
+                  variant={variant}
+                  icon={variant === "iconButton" ? settingsIcon : null}
+                  aria-label={variant === "iconButton" ? "iconButton" : undefined}
+                >
+                  {variant === "iconButton" ? null : variant}
                 </Button>
               ))}
+              <Button variant="locked">locked</Button>
+              <Button locked>locked prop</Button>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {buttonSizes.map((size) => (
-                <Button key={size} href="#" size={size} aria-label={`Button ${size}`}>
-                  {size === "icon" ? "i" : size}
+                <Button key={size} href="#" size={size} icon={size === "icon" || size === "iconButton" ? settingsIcon : null} aria-label={`Button ${size}`}>
+                  {size === "icon" || size === "iconButton" ? null : size}
                 </Button>
               ))}
             </div>
@@ -108,6 +117,7 @@ export default function ComponentPreviewPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <SearchBar placeholder="Default search..." />
               <SearchBar defaultValue="Vanilla²" placeholder="Filled search..." />
+              <SearchBar locked defaultValue="Locked search" placeholder="Locked search..." />
             </div>
           </section>
 
@@ -116,6 +126,7 @@ export default function ComponentPreviewPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput label="Text input" name="preview-text" sampleText="Sample text" />
               <TextInput label="Password input" name="preview-password" type="password" sampleText="Secret" />
+              <TextInput locked label="Locked text input" name="preview-locked-text" defaultValue="Cannot edit this" />
               <TextInput
                 label="Three-line input"
                 name="preview-three-line"
@@ -144,6 +155,9 @@ export default function ComponentPreviewPage() {
               <Card title="Toggle" size="md">
                 <Toggle label="Automatic updates" description="Apple-like switch styling." defaultChecked />
               </Card>
+              <Card title="Locked toggle" size="md">
+                <Toggle locked label="Locked updates" description="This control cannot be changed." defaultChecked />
+              </Card>
               <Card title="Checkmark" size="md">
                 <div className="flex items-center gap-3 text-sm text-soft">
                   <Checkmark defaultChecked interactive />
@@ -157,6 +171,9 @@ export default function ComponentPreviewPage() {
               <Card title="Limited multi select" size="md" className="overflow-visible">
                 <MultiSelect label="Server software" options={selectOptions} defaultValue={["paper"]} max={2} />
               </Card>
+              <Card title="Locked multi select" size="md" className="overflow-visible">
+                <MultiSelect locked label="Locked targets" options={selectOptions} defaultValue={["vanilla", "fabric"]} />
+              </Card>
             </div>
           </section>
 
@@ -169,6 +186,13 @@ export default function ComponentPreviewPage() {
               maxFiles={3}
               maxFileSize={10 * 1024 * 1024}
               multiple
+            />
+            <FileUpload
+              locked
+              label="Locked upload"
+              description="Uploads are locked for this example."
+              fileTypes={[".zip", ".jar"]}
+              maxFiles={1}
             />
           </section>
         </div>

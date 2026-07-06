@@ -55,6 +55,7 @@ export default function SearchBar({
   previewDescriptionKey = "description",
   previewMetaKey,
   variant = "default",
+  locked = false,
 }) {
   const inputId = useId();
   const [value, setValue] = useState(defaultValue);
@@ -63,7 +64,7 @@ export default function SearchBar({
   const variantConfig = variants[variant] ?? variants.default;
 
   useEffect(() => {
-    if (!previewEndpoint || !value.trim()) {
+    if (locked || !previewEndpoint || !value.trim()) {
       setPreviewItems([]);
       setPreviewLoading(false);
       return undefined;
@@ -125,7 +126,7 @@ export default function SearchBar({
   }
 
   function submitSearch(event, close, nextValue = value) {
-    if (!onSearch && !action) {
+    if (locked || (!onSearch && !action)) {
       event.preventDefault();
       return;
     }
@@ -146,6 +147,7 @@ export default function SearchBar({
       className={`w-full ${variantConfig.form} ${className}`}
       menuClassName="p-2"
       menuMaxHeight="max-h-72"
+      locked={locked}
       renderTrigger={({ setOpen, close }) => (
         <form
           role="search"
@@ -172,15 +174,16 @@ export default function SearchBar({
               type="text"
               name={name}
               value={value}
-              onFocus={() => setOpen(true)}
+              disabled={locked}
+              onFocus={() => !locked && setOpen(true)}
               onChange={(event) => {
                 setValue(event.target.value);
                 setOpen(true);
               }}
               placeholder={placeholder}
-              className={`${value ? variantConfig.filled : variantConfig.empty} ${variantConfig.input} ${variantConfig.hover} relative w-full pr-9 pl-9 text-heading outline-none backdrop-blur-md transition-colors placeholder:text-search-placeholder`}
+              className={`${locked ? "cursor-not-allowed bg-locked-input text-locked-text placeholder:text-locked-text" : `${value ? variantConfig.filled : variantConfig.empty} ${variantConfig.hover} text-heading placeholder:text-search-placeholder`} ${variantConfig.input} relative w-full pr-9 pl-9 outline-none backdrop-blur-md transition-colors`}
             />
-            {value ? (
+            {!locked && value ? (
               <button
                 type="button"
                 aria-label="Clear search"

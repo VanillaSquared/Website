@@ -46,6 +46,11 @@
   --vsq-border-input-focus: #525252;
   --vsq-search-placeholder: #8f8f8f;
   --vsq-input-sample: #6b7280;
+  --vsq-locked-bg: #151515;
+  --vsq-locked-border: #2a2a2a;
+  --vsq-locked-text: #737373;
+  --vsq-locked-input-bg: #141414;
+  --vsq-locked-input-border: #242424;
   --vsq-accent: #c269c2;
   --vsq-control: #202020;
   --vsq-control-hover: #262626;
@@ -118,6 +123,11 @@
   --color-search-focus: var(--vsq-border-search-focus);
   --color-search-placeholder: var(--vsq-search-placeholder);
   --color-input-sample: var(--vsq-input-sample);
+  --color-locked: var(--vsq-locked-bg);
+  --color-locked-border: var(--vsq-locked-border);
+  --color-locked-text: var(--vsq-locked-text);
+  --color-locked-input: var(--vsq-locked-input-bg);
+  --color-locked-input-border: var(--vsq-locked-input-border);
   --color-accent: var(--vsq-accent);
   --color-control: var(--vsq-control);
   --color-control-hover: var(--vsq-control-hover);

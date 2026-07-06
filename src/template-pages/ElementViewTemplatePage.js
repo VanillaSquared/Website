@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import Card from "@/components/Card";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export default function ElementViewTemplatePage({
@@ -44,9 +45,9 @@ export default function ElementViewTemplatePage({
           ) : null}
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <article className="min-w-0 overflow-hidden rounded-2xl border border-divider bg-card shadow-2xl shadow-black/10">
+            <article className="min-w-0 overflow-hidden rounded-2xl border border-divider bg-card">
               <header className="border-b border-divider px-5 py-5 sm:px-7">
-                {eyebrow ? <p className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-accent">{eyebrow}</p> : null}
+                {eyebrow ? <p className="mb-2 font-mono text-xs font-bold text-accent">{eyebrow}</p> : null}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
                     <h1 className="text-2xl font-bold tracking-tight text-heading sm:text-3xl">{title}</h1>
@@ -61,17 +62,16 @@ export default function ElementViewTemplatePage({
 
             <aside className="space-y-4">
               {meta.length ? (
-                <section className="rounded-2xl border border-divider bg-card p-5">
-                  <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-muted">Details</h2>
-                  <dl className="mt-4 space-y-3">
+                <Card title="Details" preset="auth" size="md" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="mt-4" hoverAccent={false}>
+                  <dl className="space-y-3">
                     {meta.map((item) => (
                       <div key={item.label}>
-                        <dt className="text-xs font-semibold uppercase tracking-wide text-subtle">{item.label}</dt>
-                        <dd className="mt-1 text-sm text-soft">{item.value}</dd>
+                        <dt className="text-xs font-semibold text-subtle">{item.label}</dt>
+                        <dd className={`mt-1 text-sm ${item.className ?? "text-soft"}`}>{item.value}</dd>
                       </div>
                     ))}
                   </dl>
-                </section>
+                </Card>
               ) : null}
               {aside}
             </aside>

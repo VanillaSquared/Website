@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import Checkmark from "@/components/Checkmark";
 import Separator from "@/components/Separator";
 import Tag from "@/components/Tag";
 
@@ -68,22 +69,25 @@ export default function BugList({ bugs }) {
             className="block cursor-pointer px-4 py-3 transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
             aria-label={`View bug ${bug.publicId}: ${bug.title}`}
           >
-            <article>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-accent">{bug.publicId?.toLowerCase()}</span>
-                    <Tag variant="subtle">{categoryLabels[bug.category] ?? bug.category}</Tag>
+            <article className="flex gap-3">
+              <Checkmark checked className="mt-1" />
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-accent">{bug.publicId?.toLowerCase()}</span>
+                      <Tag variant="subtle">{categoryLabels[bug.category] ?? bug.category}</Tag>
+                    </div>
+                    <h2 className="mt-2 text-base font-semibold text-heading">{bug.title}</h2>
+                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{bug.description}</p>
                   </div>
-                  <h2 className="mt-2 text-base font-semibold text-heading">{bug.title}</h2>
-                  <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{bug.description}</p>
+                  <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+                    <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
+                    <Tag variant="accent">{bug.status}</Tag>
+                  </div>
                 </div>
-                <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
-                  <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
-                  <Tag variant="accent">{bug.status}</Tag>
-                </div>
+                <p className="mt-2 truncate text-xs text-subtle">Creator: {bug.creatorUsername ?? "Unknown"}</p>
               </div>
-              <p className="mt-2 truncate text-xs text-subtle">Creator: {bug.creatorUsername ?? "Unknown"}</p>
             </article>
           </Link>
         </div>

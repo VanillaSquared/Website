@@ -37,6 +37,7 @@ export default function Preview({
   buttonClassName = "",
   menuClassName = "",
   menuMaxHeight = "max-h-64",
+  locked = false,
 }) {
   const [open, setOpen] = useState(false);
   const [internalValue, setInternalValue] = useState(normalizeValue(defaultValue, multiple));
@@ -82,6 +83,10 @@ export default function Preview({
   }
 
   function toggleOption(nextValue) {
+    if (locked) {
+      return;
+    }
+
     const selected = selectedValues.includes(nextValue);
     let nextValues;
 
@@ -145,12 +150,14 @@ export default function Preview({
           <button
             type="button"
             aria-expanded={open}
+            disabled={locked}
             onClick={() => setOpen((current) => !current)}
-            className={`flex w-full items-center justify-between gap-3 rounded-lg border border-input-border bg-input px-3 py-2 text-left text-heading outline-none transition-colors hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus ${buttonClassName}`}
+            className={`flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left outline-none transition-colors ${locked ? "cursor-not-allowed border-locked-input-border bg-locked-input text-locked-text" : "border-input-border bg-input text-heading hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus"} ${buttonClassName}`}
           >
-            <span className={selectedLabels.length ? "truncate" : "truncate text-input-sample italic"}>
+            <span className={selectedLabels.length ? "truncate" : `truncate italic ${locked ? "text-locked-text" : "text-input-sample"}`}>
               {selectedLabels.join(", ") || placeholder}
             </span>
+
             <span
               aria-hidden="true"
               className={`h-2 w-2 shrink-0 rotate-45 border-r-2 border-b-2 border-muted transition-transform ${

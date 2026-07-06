@@ -59,6 +59,8 @@ export default function TextInput({
   useOnePassword,
   onInput,
   style,
+  locked = false,
+  disabled = false,
   value,
   defaultValue,
   ...props
@@ -74,6 +76,9 @@ export default function TextInput({
   const characterLimit = normalizeCharacterLimit(maxCharacters ?? maxCharacterLimit ?? maxLength);
   const characterCount = value != null ? getCharacterCount(value) : uncontrolledCharacterCount;
   const showCharacterLimit = characterLimit != null;
+  const stateInputClasses = locked
+    ? "rounded-lg border border-locked-input-border bg-locked-input px-3 py-2 text-locked-text outline-none transition-colors placeholder:text-locked-text placeholder:italic cursor-not-allowed"
+    : inputClasses;
 
   function resizeTextarea(textarea) {
     if (!textarea || maxVisibleLines == null) {
@@ -113,12 +118,14 @@ export default function TextInput({
           name={name}
           placeholder={sampleText}
           rows={visibleLines}
-          className={`${inputClasses} resize-none ${inputClassName}`}
+          className={`${stateInputClasses} resize-none ${inputClassName}`}
           style={style}
           value={value}
           defaultValue={defaultValue}
           maxLength={characterLimit ?? undefined}
           onInput={handleInput}
+          disabled={disabled || locked}
+          aria-disabled={locked ? "true" : undefined}
           {...browserExtensionProps}
           {...props}
         />
@@ -128,12 +135,14 @@ export default function TextInput({
           name={name}
           type={type}
           placeholder={sampleText}
-          className={`${inputClasses} ${inputClassName}`}
+          className={`${stateInputClasses} ${inputClassName}`}
           style={style}
           value={value}
           defaultValue={defaultValue}
           maxLength={characterLimit ?? undefined}
           onInput={handleInput}
+          disabled={disabled || locked}
+          aria-disabled={locked ? "true" : undefined}
           {...browserExtensionProps}
           {...props}
         />

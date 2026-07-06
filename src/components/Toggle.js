@@ -9,6 +9,7 @@ export default function Toggle({
   defaultChecked = false,
   onChange,
   disabled = false,
+  locked = false,
   id,
   name,
   className = "",
@@ -20,6 +21,10 @@ export default function Toggle({
   const isChecked = isControlled ? checked : internalChecked;
 
   function handleChange(event) {
+    if (locked) {
+      return;
+    }
+
     if (!isControlled) {
       setInternalChecked(event.target.checked);
     }
@@ -31,7 +36,7 @@ export default function Toggle({
     <label
       htmlFor={inputId}
       className={`flex w-fit items-center gap-3 text-sm font-semibold text-soft ${
-        disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+        disabled || locked ? "cursor-not-allowed opacity-60" : "cursor-pointer"
       } ${className}`}
     >
       <input
@@ -40,12 +45,12 @@ export default function Toggle({
         type="checkbox"
         className="peer sr-only"
         checked={isChecked}
-        disabled={disabled}
+        disabled={disabled || locked}
         onChange={handleChange}
       />
       <span
         className={`relative h-8 w-14 rounded-full border shadow-inner transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-control-focus ${
-          isChecked ? "border-control-accent bg-control-accent" : "border-control-border bg-control"
+          locked ? "border-locked-input-border bg-locked-input" : isChecked ? "border-control-accent bg-control-accent" : "border-control-border bg-control"
         }`}
       >
         <span
