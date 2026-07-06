@@ -110,7 +110,9 @@ export default function Checkmark({
         </span>
       ) : null}
       {selectedIcon === "dash" ? (
-        <span className="h-0.5 w-[55%] rounded-full bg-current" />
+        <span className="absolute inset-0 flex items-center justify-center">
+          <span className="h-0.5 w-[55%] rounded-full bg-current" />
+        </span>
       ) : null}
     </Component>
   );

@@ -3,6 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { getPool, initializeUsersTable } from "@/auth/openSQL";
+import { validateNoClientControlledFields } from "@/security/serverFieldGuard";
 
 export const BUG_REPORT_CATEGORY_CONFIGS = [
   { slug: "vanilla-squared", label: "Vanilla Squared", shortening: "vsq", order: 1 },
@@ -34,6 +35,7 @@ export const BUG_REPORT_VERSIONS = [
 export const BUG_REPORT_ALLOWED_EXTENSIONS = [".log", ".png", ".txt", ".json", ".html"];
 export const BUG_REPORT_MAX_FILE_SIZE = 10 * 1024 * 1024;
 export const BUG_REPORT_MAX_FILES = 3;
+export const BUG_REPORT_SERVER_CONTROLLED_FIELDS = ["priority", "status"];
 
 const MAX_TITLE_LENGTH = 160;
 const MAX_DESCRIPTION_LENGTH = 8000;
@@ -155,7 +157,7 @@ async function ensureDemoBugReporterUser(connection = getPool()) {
   return id;
 }
 
-async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed" }) {
+async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed", fixed = false, affectedVersions = ["Unknown"], fixedVersion = null }) {
   const categoryConfig = getBugReportCategoryConfig(category);
 
   if (!categoryConfig) {
@@ -181,9 +183,9 @@ async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), c
 
   await connection.execute(
     `INSERT INTO bug_reports
-      (id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description, priority, status, affected_versions)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, publicId, creatorUserId, category, categoryConfig.shortening, sequence, title, description, priority, status, JSON.stringify(["Unknown"])]
+      (id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, publicId, creatorUserId, category, categoryConfig.shortening, sequence, title, description, priority, status, fixed, JSON.stringify(affectedVersions), fixedVersion]
   );
 
   return { id, publicId };
@@ -385,23 +387,21 @@ export function validateBugReportFormData(formData) {
   const category = getString(formData, "category");
   const title = getString(formData, "title");
   const description = getString(formData, "description");
-  const priority = getString(formData, "priority") || "unset";
-  const status = getString(formData, "status") || "Unconfirmed";
+  const priority = "unset";
+  const status = "Unconfirmed";
   const fixed = getString(formData, "fixed") === "true";
   const affectedVersions = [...new Set(getAllStrings(formData, "affectedVersions"))];
   const fixedVersion = fixed ? getString(formData, "fixedVersion") : null;
   const files = formData.getAll("files").filter((file) => isFileLike(file) && file.size > 0);
 
+  const serverControlledFieldError = validateNoClientControlledFields(formData, BUG_REPORT_SERVER_CONTROLLED_FIELDS, "bug report field");
+
+  if (serverControlledFieldError) {
+    return { error: serverControlledFieldError };
+  }
+
   if (!BUG_REPORT_CATEGORIES.includes(category)) {
     return { error: "Choose a valid bug report category." };
-  }
-
-  if (!BUG_REPORT_PRIORITIES.includes(priority)) {
-    return { error: "Choose a valid bug report priority." };
-  }
-
-  if (!BUG_REPORT_STATUSES.includes(status)) {
-    return { error: "Choose a valid bug report status." };
   }
 
   if (!title || title.length > MAX_TITLE_LENGTH) {
@@ -505,6 +505,9 @@ export async function createBugReport({ creatorUserId, formData }) {
       description: report.description,
       priority: report.priority,
       status: report.status,
+      fixed: report.fixed,
+      affectedVersions: report.affectedVersions,
+      fixedVersion: report.fixedVersion,
     });
 
     for (const file of files) {
