@@ -577,6 +577,16 @@ function mapBugReportFileRow(row) {
   };
 }
 
+function normalizeFilterValues(value, allowedValues) {
+  const values = Array.isArray(value) ? value : [value];
+  const normalizedValues = values
+    .map((item) => String(item ?? "").trim())
+    .map((item) => allowedValues.find((allowedValue) => allowedValue.toLowerCase() === item.toLowerCase()))
+    .filter(Boolean);
+
+  return [...new Set(normalizedValues)];
+}
+
 export async function listBugReports({ q, category, priority, status, seed = true } = {}) {
   if (seed) {
     await seedDemoBugReports();
@@ -593,19 +603,23 @@ export async function listBugReports({ q, category, priority, status, seed = tru
     params.push(like, like, like);
   }
 
-  if (category && BUG_REPORT_CATEGORIES.includes(category)) {
-    where.push("category = ?");
-    params.push(category);
+  const categoryFilters = normalizeFilterValues(category, BUG_REPORT_CATEGORIES);
+  const priorityFilters = normalizeFilterValues(priority, BUG_REPORT_PRIORITIES);
+  const statusFilters = normalizeFilterValues(status, BUG_REPORT_STATUSES);
+
+  if (categoryFilters.length) {
+    where.push(`category IN (${categoryFilters.map(() => "?").join(", ")})`);
+    params.push(...categoryFilters);
   }
 
-  if (priority && BUG_REPORT_PRIORITIES.includes(priority)) {
-    where.push("priority = ?");
-    params.push(priority);
+  if (priorityFilters.length) {
+    where.push(`priority IN (${priorityFilters.map(() => "?").join(", ")})`);
+    params.push(...priorityFilters);
   }
 
-  if (status && BUG_REPORT_STATUSES.includes(status)) {
-    where.push("status = ?");
-    params.push(status);
+  if (statusFilters.length) {
+    where.push(`status IN (${statusFilters.map(() => "?").join(", ")})`);
+    params.push(...statusFilters);
   }
 
   const orderCase = BUG_REPORT_CATEGORY_CONFIGS.map((config) => `WHEN category = '${config.slug}' THEN ${config.order}`).join(" ");

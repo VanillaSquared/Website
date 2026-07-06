@@ -126,6 +126,7 @@ export default async function BugViewPage({ params }) {
           <Tag variant="accent">{bug.status}</Tag>
         </div>
         <p className="whitespace-pre-wrap text-base leading-6 text-soft">{bug.description}</p>
+        <div className="-mx-5 h-px bg-divider sm:-mx-7" />
         <section className="rounded-2xl border border-divider bg-control p-4 sm:p-5">
           <h2 className="text-base font-semibold text-heading">Attachments</h2>
           {bug.files?.length ? (

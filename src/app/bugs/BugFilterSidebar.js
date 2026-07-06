@@ -28,20 +28,20 @@ const filterTextColors = {
   },
 };
 
-function FilterGroup({ label, name, value, options, onChange }) {
+function FilterGroup({ label, name, values, options, onChange }) {
   return (
     <section>
       <h3 className="text-sm font-semibold text-heading">{label}</h3>
       <div className="mt-1 space-y-0.5">
         {options.map((option) => {
-          const checked = value === option.value;
+          const checked = values.includes(option.value);
           const textColor = filterTextColors[name]?.[option.value] ?? "text-soft";
 
           return (
             <button
               key={option.value}
               type="button"
-              onClick={() => onChange(name, checked ? "" : option.value)}
+              onClick={() => onChange(name, option.value)}
               className="flex w-full items-center gap-3 rounded-lg px-1 py-1.5 text-left text-sm transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
             >
               <Checkmark checked={checked} size="sm" />
@@ -62,12 +62,13 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
 
   function updateFilter(name, value) {
     const nextParams = new URLSearchParams(searchParams.toString());
+    const values = nextParams.getAll(name);
+    const nextValues = values.includes(value)
+      ? values.filter((filterValue) => filterValue !== value)
+      : [...values, value];
 
-    if (value) {
-      nextParams.set(name, value);
-    } else {
-      nextParams.delete(name);
-    }
+    nextParams.delete(name);
+    nextValues.forEach((filterValue) => nextParams.append(name, filterValue));
 
     startTransition(() => {
       router.push(`/bugs${nextParams.toString() ? `?${nextParams.toString()}` : ""}`);
@@ -123,7 +124,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
             <FilterGroup
               label="Category"
               name="category"
-              value={searchParams.get("category") ?? ""}
+              values={searchParams.getAll("category")}
               options={categories.map((category) => ({ value: category.slug, label: category.label }))}
               onChange={updateFilter}
             />
@@ -131,7 +132,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
             <FilterGroup
               label="Priority"
               name="priority"
-              value={searchParams.get("priority") ?? ""}
+              values={searchParams.getAll("priority")}
               options={priorities.map((priority) => ({ value: priority, label: priority }))}
               onChange={updateFilter}
             />
@@ -139,7 +140,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
             <FilterGroup
               label="Status"
               name="status"
-              value={searchParams.get("status") ?? ""}
+              values={searchParams.getAll("status")}
               options={statuses.map((status) => ({ value: status, label: status }))}
               onChange={updateFilter}
             />

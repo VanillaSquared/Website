@@ -13,9 +13,9 @@ export async function GET(request) {
   try {
     const bugs = await listBugReports({
       q: searchParams.get("q")?.trim(),
-      category: searchParams.get("category")?.trim(),
-      priority: searchParams.get("priority")?.trim(),
-      status: searchParams.get("status")?.trim(),
+      category: searchParams.getAll("category").map((value) => value.trim()).filter(Boolean),
+      priority: searchParams.getAll("priority").map((value) => value.trim()).filter(Boolean),
+      status: searchParams.getAll("status").map((value) => value.trim()).filter(Boolean),
     });
 
     return NextResponse.json({ bugs });

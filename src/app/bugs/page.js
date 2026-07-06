@@ -16,13 +16,24 @@ export const metadata = {
   description: "Browse known Vanilla² bug reports.",
 };
 
+function getSearchParamValue(params, name) {
+  const value = params?.[name];
+  return String(Array.isArray(value) ? value[0] ?? "" : value ?? "").trim();
+}
+
+function getSearchParamValues(params, name) {
+  const value = params?.[name];
+  const values = Array.isArray(value) ? value : [value];
+  return values.map((item) => String(item ?? "").trim()).filter(Boolean);
+}
+
 export default async function BugsPage({ searchParams }) {
   const params = await searchParams;
   const filters = {
-    q: String(params?.q ?? "").trim(),
-    category: String(params?.category ?? "").trim(),
-    priority: String(params?.priority ?? "").trim(),
-    status: String(params?.status ?? "").trim(),
+    q: getSearchParamValue(params, "q"),
+    category: getSearchParamValues(params, "category"),
+    priority: getSearchParamValues(params, "priority"),
+    status: getSearchParamValues(params, "status"),
   };
   const bugs = await listBugReports(filters);
   const searchHiddenFields = {

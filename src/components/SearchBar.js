@@ -39,6 +39,16 @@ function getPathValue(item, path) {
   return String(path.split(".").reduce((value, key) => value?.[key], item) ?? "");
 }
 
+function appendParamValues(params, fieldName, fieldValue) {
+  const values = Array.isArray(fieldValue) ? fieldValue : [fieldValue];
+
+  values.forEach((value) => {
+    if (value) {
+      params.append(fieldName, value);
+    }
+  });
+}
+
 export default function SearchBar({
   action,
   className = "",
@@ -77,9 +87,7 @@ export default function SearchBar({
       try {
         const url = new URL(previewEndpoint, window.location.origin);
         Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
-          if (fieldValue) {
-            url.searchParams.set(fieldName, fieldValue);
-          }
+          appendParamValues(url.searchParams, fieldName, fieldValue);
         });
         url.searchParams.set(name, value.trim());
         const response = await fetch(url, { signal: controller.signal });
@@ -106,9 +114,7 @@ export default function SearchBar({
   function getSearchHref(nextValue) {
     const params = new URLSearchParams();
     Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
-      if (fieldValue) {
-        params.set(fieldName, fieldValue);
-      }
+      appendParamValues(params, fieldName, fieldValue);
     });
     if (nextValue) {
       params.set(name, nextValue);
@@ -159,9 +165,13 @@ export default function SearchBar({
           <label htmlFor={inputId} className="sr-only">
             {label}
           </label>
-          {Object.entries(hiddenFields).map(([fieldName, fieldValue]) => (
-            fieldValue ? <input key={fieldName} type="hidden" name={fieldName} value={fieldValue} /> : null
-          ))}
+          {Object.entries(hiddenFields).flatMap(([fieldName, fieldValue]) => {
+            const values = Array.isArray(fieldValue) ? fieldValue : [fieldValue];
+
+            return values.map((value, index) => (
+              value ? <input key={`${fieldName}-${index}`} type="hidden" name={fieldName} value={value} /> : null
+            ));
+          })}
           <div className="relative flex items-center">
             <img
               src={searchIcon.src}
