@@ -194,6 +194,24 @@ html {
   background-clip: content-box;
 }
 
+.scrollbar-while-scrolling {
+  scrollbar-color: transparent var(--vsq-scrollbar-track);
+}
+
+.scrollbar-while-scrolling.is-scrolling {
+  scrollbar-color: var(--vsq-scrollbar-thumb) var(--vsq-scrollbar-track);
+}
+
+.scrollbar-while-scrolling::-webkit-scrollbar-thumb {
+  background: transparent;
+  background-clip: content-box;
+}
+
+.scrollbar-while-scrolling.is-scrolling::-webkit-scrollbar-thumb {
+  background: var(--vsq-scrollbar-thumb);
+  background-clip: content-box;
+}
+
 *::-webkit-scrollbar-button,
 *::-webkit-scrollbar-button:single-button,
 *::-webkit-scrollbar-button:vertical:start:decrement,

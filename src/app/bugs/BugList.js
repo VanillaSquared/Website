@@ -1,3 +1,7 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import Separator from "@/components/Separator";
 import Tag from "@/components/Tag";
 
@@ -16,6 +20,30 @@ const priorityVariants = {
 };
 
 export default function BugList({ bugs }) {
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+
+  const handleScroll = useCallback(() => {
+    setIsScrolling(true);
+
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      setIsScrolling(false);
+      scrollTimeoutRef.current = null;
+    }, 700);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (!bugs.length) {
     return (
       <div className="border-y border-divider px-4 py-8 text-center">
@@ -27,7 +55,10 @@ export default function BugList({ bugs }) {
 
   return (
     <div className="relative h-[calc(100dvh-20rem)] min-h-64 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
-      <div className="h-full overflow-y-auto">
+      <div
+        className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`}
+        onScroll={handleScroll}
+      >
         {bugs.map((bug, index) => (
         <div key={bug.id}>
           {index > 0 ? <Separator /> : null}
