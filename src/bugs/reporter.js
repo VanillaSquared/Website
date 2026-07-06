@@ -502,6 +502,23 @@ export async function createBugReport({ creatorUserId, formData }) {
   return created;
 }
 
+function parseJsonArray(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const parsed = typeof value === "string" ? JSON.parse(value) : value;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function mapBugReportRow(row) {
   return {
     id: row.id,
@@ -513,10 +530,23 @@ function mapBugReportRow(row) {
     description: row.description,
     priority: row.priority,
     status: row.status,
+    fixed: Boolean(row.fixed),
+    affectedVersions: parseJsonArray(row.affected_versions),
+    fixedVersion: row.fixed_version,
     creatorUserId: row.creator_user_id,
     creatorUsername: row.creator_username,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+function mapBugReportFileRow(row) {
+  return {
+    id: row.id,
+    originalName: row.original_name,
+    extension: row.extension,
+    sizeBytes: row.size_bytes,
+    createdAt: row.created_at,
   };
 }
 
@@ -553,7 +583,7 @@ export async function listBugReports({ q, category, priority, status, seed = tru
 
   const orderCase = BUG_REPORT_CATEGORY_CONFIGS.map((config) => `WHEN category = '${config.slug}' THEN ${config.order}`).join(" ");
   const [rows] = await getPool().execute(
-    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
      FROM bug_reports
      INNER JOIN users ON users.id = bug_reports.creator_user_id
      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
@@ -562,4 +592,45 @@ export async function listBugReports({ q, category, priority, status, seed = tru
   );
 
   return rows.map(mapBugReportRow);
+}
+
+export async function getBugReportByPublicId(publicId, { seed = true } = {}) {
+  const normalizedPublicId = String(publicId ?? "").trim();
+
+  if (!normalizedPublicId) {
+    return null;
+  }
+
+  if (seed) {
+    await seedDemoBugReports();
+  } else {
+    await initializeBugReporterTables();
+  }
+
+  const [rows] = await getPool().execute(
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+     FROM bug_reports
+     INNER JOIN users ON users.id = bug_reports.creator_user_id
+     WHERE LOWER(public_id) = LOWER(?)
+     LIMIT 1`,
+    [normalizedPublicId]
+  );
+
+  if (!rows.length) {
+    return null;
+  }
+
+  const bug = mapBugReportRow(rows[0]);
+  const [fileRows] = await getPool().execute(
+    `SELECT id, original_name, extension, size_bytes, created_at
+     FROM bug_report_files
+     WHERE bug_report_id = ?
+     ORDER BY created_at ASC`,
+    [bug.id]
+  );
+
+  return {
+    ...bug,
+    files: fileRows.map(mapBugReportFileRow),
+  };
 }
