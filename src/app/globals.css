@@ -13,6 +13,18 @@
   --vsq-surface-card: #1e1e1e;
   --vsq-surface-modal: #1b1b1b;
   --vsq-surface-tag: #2d2d2d;
+  --vsq-tag-low-bg: rgb(52 211 153 / 0.1);
+  --vsq-tag-low-border: rgb(52 211 153 / 0.4);
+  --vsq-tag-low-text: #a7f3d0;
+  --vsq-tag-medium-bg: rgb(250 204 21 / 0.1);
+  --vsq-tag-medium-border: rgb(250 204 21 / 0.4);
+  --vsq-tag-medium-text: #fef3c7;
+  --vsq-tag-high-bg: rgb(251 146 60 / 0.1);
+  --vsq-tag-high-border: rgb(251 146 60 / 0.4);
+  --vsq-tag-high-text: #ffedd5;
+  --vsq-tag-code-red-bg: rgb(248 113 113 / 0.1);
+  --vsq-tag-code-red-border: rgb(248 113 113 / 0.5);
+  --vsq-tag-code-red-text: #fee2e2;
   --vsq-surface-search: #202020;
   --vsq-surface-search-hover: #242424;
   --vsq-surface-input: #202020;
@@ -246,6 +258,26 @@ body {
   }
 }
 
+@keyframes modal-slide-right-in {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes modal-slide-right-out {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
 .modal-popup-enter {
   animation: modal-popup-in 120ms ease-out both;
   transform-origin: center;
@@ -265,11 +297,22 @@ body {
   animation: modal-backdrop-out 140ms ease-in both;
 }
 
+.modal-slide-right-enter {
+  animation: modal-slide-right-in 180ms ease-out both;
+}
+
+.modal-slide-right-exit {
+  animation: modal-slide-right-out 180ms ease-in both;
+  pointer-events: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .modal-popup-enter,
   .modal-popup-exit,
   .modal-backdrop-enter,
-  .modal-backdrop-exit {
+  .modal-backdrop-exit,
+  .modal-slide-right-enter,
+  .modal-slide-right-exit {
     animation-duration: 1ms;
   }
 }

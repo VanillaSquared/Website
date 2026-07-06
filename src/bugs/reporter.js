@@ -4,14 +4,21 @@ import { randomUUID } from "node:crypto";
 
 import { getPool, initializeUsersTable } from "@/auth/openSQL";
 
-export const BUG_REPORT_CATEGORIES = [
-  "Gameplay",
-  "Launcher",
-  "Website",
-  "Account",
-  "Performance",
-  "Crash",
-  "Other",
+export const BUG_REPORT_CATEGORY_CONFIGS = [
+  { slug: "vanilla-squared", label: "Vanilla Squared", shortening: "vsq", order: 1 },
+  { slug: "website", label: "Website", shortening: "web", order: 2 },
+  { slug: "test", label: "Test", shortening: "dev", order: 3 },
+];
+
+export const BUG_REPORT_CATEGORIES = BUG_REPORT_CATEGORY_CONFIGS.map((category) => category.slug);
+export const BUG_REPORT_PRIORITIES = ["Low", "Medium", "High", "Code Red", "unset"];
+export const BUG_REPORT_STATUSES = [
+  "Fixed",
+  "Unfixable",
+  "Unconfirmed",
+  "Confirmed",
+  "Works as intended",
+  "Vanilla bug",
 ];
 
 export const BUG_REPORT_VERSIONS = [
@@ -32,6 +39,21 @@ const MAX_TITLE_LENGTH = 160;
 const MAX_DESCRIPTION_LENGTH = 8000;
 const uploadsRoot = path.join(process.cwd(), ".data", "bug-reports");
 let bugReporterInitialized;
+let bugReporterSeeded;
+
+export function getBugReportCategoryConfig(slug) {
+  return BUG_REPORT_CATEGORY_CONFIGS.find((category) => category.slug === slug) ?? null;
+}
+
+async function runSchemaUpdate(sql) {
+  try {
+    await getPool().query(sql);
+  } catch (error) {
+    if (!["ER_DUP_FIELDNAME", "ER_DUP_KEYNAME", "ER_CANT_DROP_FIELD_OR_KEY"].includes(error.code)) {
+      throw error;
+    }
+  }
+}
 
 export async function initializeBugReporterTables() {
   if (!bugReporterInitialized) {
@@ -42,18 +64,48 @@ export async function initializeBugReporterTables() {
         await getPool().query(`
           CREATE TABLE IF NOT EXISTS bug_reports (
             id CHAR(36) PRIMARY KEY,
+            public_id VARCHAR(32) NULL UNIQUE,
             creator_user_id CHAR(36) NOT NULL,
             category VARCHAR(64) NOT NULL,
+            category_shortening VARCHAR(16) NULL,
+            category_sequence INT UNSIGNED NULL,
             title VARCHAR(160) NOT NULL,
             description TEXT NOT NULL,
+            priority VARCHAR(32) NOT NULL DEFAULT 'unset',
+            status VARCHAR(64) NOT NULL DEFAULT 'Unconfirmed',
             fixed BOOLEAN NOT NULL DEFAULT FALSE,
-            affected_versions JSON NOT NULL,
+            affected_versions JSON NULL,
             fixed_version VARCHAR(64) NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            CONSTRAINT bug_reports_creator_user_id_fk FOREIGN KEY (creator_user_id) REFERENCES users(id) ON DELETE CASCADE
+            CONSTRAINT bug_reports_creator_user_id_fk FOREIGN KEY (creator_user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE KEY bug_reports_category_sequence_unique (category, category_sequence)
           )
         `);
+
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN public_id VARCHAR(32) NULL UNIQUE AFTER id");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN category_shortening VARCHAR(16) NULL AFTER category");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN category_sequence INT UNSIGNED NULL AFTER category_shortening");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN priority VARCHAR(32) NOT NULL DEFAULT 'unset' AFTER description");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN status VARCHAR(64) NOT NULL DEFAULT 'Unconfirmed' AFTER priority");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD UNIQUE KEY bug_reports_category_sequence_unique (category, category_sequence)");
+        await runSchemaUpdate("ALTER TABLE bug_reports MODIFY affected_versions JSON NULL");
+
+        await getPool().query(`
+          CREATE TABLE IF NOT EXISTS bug_report_counters (
+            category VARCHAR(64) PRIMARY KEY,
+            next_sequence INT UNSIGNED NOT NULL
+          )
+        `);
+
+        for (const category of BUG_REPORT_CATEGORY_CONFIGS) {
+          await getPool().execute(
+            `INSERT INTO bug_report_counters (category, next_sequence)
+             SELECT ?, COALESCE(MAX(category_sequence), 0) + 1 FROM bug_reports WHERE category = ?
+             ON DUPLICATE KEY UPDATE next_sequence = GREATEST(next_sequence, VALUES(next_sequence))`,
+            [category.slug, category.slug]
+          );
+        }
 
         await getPool().query(`
           CREATE TABLE IF NOT EXISTS bug_report_files (
@@ -76,6 +128,108 @@ export async function initializeBugReporterTables() {
   }
 
   await bugReporterInitialized;
+}
+
+async function ensureDemoBugReporterUser(connection = getPool()) {
+  const id = "00000000-0000-4000-8000-000000000001";
+  await connection.execute(
+    "INSERT IGNORE INTO users (id, username, email) VALUES (?, ?, ?)",
+    [id, "bug-reporter-system", "bug-reporter-system@vanillasquared.local"]
+  );
+
+  return id;
+}
+
+async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed" }) {
+  const categoryConfig = getBugReportCategoryConfig(category);
+
+  if (!categoryConfig) {
+    throw new Error(`Unknown bug category: ${category}`);
+  }
+
+  await connection.execute(
+    "INSERT IGNORE INTO bug_report_counters (category, next_sequence) VALUES (?, 1)",
+    [category]
+  );
+
+  const [counterRows] = await connection.execute(
+    "SELECT next_sequence FROM bug_report_counters WHERE category = ? FOR UPDATE",
+    [category]
+  );
+  const sequence = counterRows[0]?.next_sequence ?? 1;
+  const publicId = `${categoryConfig.shortening}-${sequence}`;
+
+  await connection.execute(
+    "UPDATE bug_report_counters SET next_sequence = ? WHERE category = ?",
+    [sequence + 1, category]
+  );
+
+  await connection.execute(
+    `INSERT INTO bug_reports
+      (id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description, priority, status, affected_versions)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, publicId, creatorUserId, category, categoryConfig.shortening, sequence, title, description, priority, status, JSON.stringify(["Unknown"])]
+  );
+
+  return { id, publicId };
+}
+
+export async function seedDemoBugReports() {
+  await initializeBugReporterTables();
+
+  if (!bugReporterSeeded) {
+    bugReporterSeeded = (async () => {
+      const [[{ count }]] = await getPool().query("SELECT COUNT(*) AS count FROM bug_reports");
+
+      if (Number(count) > 0) {
+        return;
+      }
+
+      const connection = await getPool().getConnection();
+
+      try {
+        await connection.beginTransaction();
+        const creatorUserId = await ensureDemoBugReporterUser(connection);
+        const demos = [
+          {
+            category: "vanilla-squared",
+            title: "Spawn guide book can duplicate on first join",
+            description: "New players sometimes receive two guide books when their first join event retries after a reconnect.",
+            priority: "Medium",
+            status: "Confirmed",
+          },
+          {
+            category: "website",
+            title: "Components page search loses focus after submit",
+            description: "Submitting a search on the components page reloads correctly, but the input is no longer focused afterwards.",
+            priority: "Low",
+            status: "Unconfirmed",
+          },
+          {
+            category: "test",
+            title: "Development seed entry for filter sidebar testing",
+            description: "Demo report used to verify category grouping, URL filters, and right-side filter sidebar behavior.",
+            priority: "unset",
+            status: "Works as intended",
+          },
+        ];
+
+        for (const demo of demos) {
+          await insertBugReportWithGeneratedId(connection, { creatorUserId, ...demo });
+        }
+
+        await connection.commit();
+      } catch (error) {
+        await connection.rollback();
+        bugReporterSeeded = undefined;
+        throw error;
+      } finally {
+        connection.release();
+      }
+    })();
+  }
+
+  await bugReporterSeeded;
 }
 
 function getString(formData, name) {
@@ -102,6 +256,8 @@ export function validateBugReportFormData(formData) {
   const category = getString(formData, "category");
   const title = getString(formData, "title");
   const description = getString(formData, "description");
+  const priority = getString(formData, "priority") || "unset";
+  const status = getString(formData, "status") || "Unconfirmed";
   const fixed = getString(formData, "fixed") === "true";
   const affectedVersions = [...new Set(getAllStrings(formData, "affectedVersions"))];
   const fixedVersion = fixed ? getString(formData, "fixedVersion") : null;
@@ -109,6 +265,14 @@ export function validateBugReportFormData(formData) {
 
   if (!BUG_REPORT_CATEGORIES.includes(category)) {
     return { error: "Choose a valid bug report category." };
+  }
+
+  if (!BUG_REPORT_PRIORITIES.includes(priority)) {
+    return { error: "Choose a valid bug report priority." };
+  }
+
+  if (!BUG_REPORT_STATUSES.includes(status)) {
+    return { error: "Choose a valid bug report status." };
   }
 
   if (!title || title.length > MAX_TITLE_LENGTH) {
@@ -119,8 +283,8 @@ export function validateBugReportFormData(formData) {
     return { error: `Enter a description between 1 and ${MAX_DESCRIPTION_LENGTH} characters.` };
   }
 
-  if (!affectedVersions.length || affectedVersions.some((version) => !BUG_REPORT_VERSIONS.includes(version))) {
-    return { error: "Choose at least one valid affected version." };
+  if (affectedVersions.some((version) => !BUG_REPORT_VERSIONS.includes(version))) {
+    return { error: "Choose valid affected versions." };
   }
 
   if (fixed && !BUG_REPORT_VERSIONS.includes(fixedVersion)) {
@@ -149,8 +313,10 @@ export function validateBugReportFormData(formData) {
       category,
       title,
       description,
+      priority,
+      status,
       fixed,
-      affectedVersions,
+      affectedVersions: affectedVersions.length ? affectedVersions : ["Unknown"],
       fixedVersion,
       files,
     },
@@ -198,29 +364,25 @@ export async function createBugReport({ creatorUserId, formData }) {
   const id = randomUUID();
   const files = await saveBugReportFiles(id, report.files);
   const connection = await getPool().getConnection();
+  let created;
 
   try {
     await connection.beginTransaction();
-    await connection.execute(
-      `INSERT INTO bug_reports (id, creator_user_id, category, title, description, fixed, affected_versions, fixed_version)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`, 
-      [
-        id,
-        creatorUserId,
-        report.category,
-        report.title,
-        report.description,
-        report.fixed,
-        JSON.stringify(report.affectedVersions),
-        report.fixedVersion,
-      ]
-    );
+    created = await insertBugReportWithGeneratedId(connection, {
+      id,
+      creatorUserId,
+      category: report.category,
+      title: report.title,
+      description: report.description,
+      priority: report.priority,
+      status: report.status,
+    });
 
     for (const file of files) {
       await connection.execute(
         `INSERT INTO bug_report_files (id, bug_report_id, original_name, stored_name, extension, size_bytes, storage_path)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [file.id, id, file.originalName, file.storedName, file.extension, file.sizeBytes, file.storagePath]
+        [file.id, created.id, file.originalName, file.storedName, file.extension, file.sizeBytes, file.storagePath]
       );
     }
 
@@ -232,5 +394,67 @@ export async function createBugReport({ creatorUserId, formData }) {
     connection.release();
   }
 
-  return { id };
+  return created;
+}
+
+function mapBugReportRow(row) {
+  return {
+    id: row.id,
+    publicId: row.public_id,
+    category: row.category,
+    categoryShortening: row.category_shortening,
+    categorySequence: row.category_sequence,
+    title: row.title,
+    description: row.description,
+    priority: row.priority,
+    status: row.status,
+    creatorUserId: row.creator_user_id,
+    creatorUsername: row.creator_username,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function listBugReports({ q, category, priority, status, seed = true } = {}) {
+  if (seed) {
+    await seedDemoBugReports();
+  } else {
+    await initializeBugReporterTables();
+  }
+
+  const where = [];
+  const params = [];
+
+  if (q) {
+    where.push("(public_id LIKE ? OR title LIKE ? OR description LIKE ?)");
+    const like = `%${q}%`;
+    params.push(like, like, like);
+  }
+
+  if (category && BUG_REPORT_CATEGORIES.includes(category)) {
+    where.push("category = ?");
+    params.push(category);
+  }
+
+  if (priority && BUG_REPORT_PRIORITIES.includes(priority)) {
+    where.push("priority = ?");
+    params.push(priority);
+  }
+
+  if (status && BUG_REPORT_STATUSES.includes(status)) {
+    where.push("status = ?");
+    params.push(status);
+  }
+
+  const orderCase = BUG_REPORT_CATEGORY_CONFIGS.map((config) => `WHEN category = '${config.slug}' THEN ${config.order}`).join(" ");
+  const [rows] = await getPool().execute(
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+     FROM bug_reports
+     INNER JOIN users ON users.id = bug_reports.creator_user_id
+     ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+     ORDER BY CASE ${orderCase} ELSE 99 END, category_sequence ASC, bug_reports.created_at ASC`,
+    params
+  );
+
+  return rows.map(mapBugReportRow);
 }

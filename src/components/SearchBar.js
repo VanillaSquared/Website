@@ -22,12 +22,21 @@ const variants = {
     hover: "hover:bg-search-hover focus:bg-search-hover",
     clear: "hover:bg-button-tertiary-hover",
   },
+  large: {
+    form: "max-w-none",
+    input: "h-12 rounded-xl py-2.5 text-base",
+    filled: "bg-search-hover",
+    empty: "bg-search",
+    hover: "hover:bg-search-hover focus:bg-search-hover",
+    clear: "hover:bg-button-tertiary-hover",
+  },
 };
 
 export default function SearchBar({
   action,
   className = "",
   defaultValue = "",
+  hiddenFields = {},
   label = "Search",
   method = "GET",
   name = "q",
@@ -69,6 +78,9 @@ export default function SearchBar({
           <label htmlFor={inputId} className="sr-only">
             {label}
           </label>
+          {Object.entries(hiddenFields).map(([fieldName, fieldValue]) => (
+            fieldValue ? <input key={fieldName} type="hidden" name={fieldName} value={fieldValue} /> : null
+          ))}
           <div className="relative flex items-center">
             <img
               src={searchIcon.src}

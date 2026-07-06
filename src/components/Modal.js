@@ -33,6 +33,13 @@ const MODAL_ANIMATIONS = {
     backdropEnter: "modal-backdrop-enter",
     backdropExit: "modal-backdrop-exit",
   },
+  "slide-right": {
+    duration: 180,
+    popupEnter: "modal-slide-right-enter",
+    popupExit: "modal-slide-right-exit",
+    backdropEnter: "",
+    backdropExit: "",
+  },
 };
 
 function getModalAnimation(animation, fallback = "fade+pop") {
@@ -63,6 +70,13 @@ const variants = {
     card: "h-full w-full max-w-md rounded-none !border-y-0 !border-r-0",
     openAnimation: "fade+pop",
     closeAnimation: "fade+pop",
+  },
+  filterSidebar: {
+    root: "top-16 right-0 bottom-0 left-0",
+    overlay: "items-stretch justify-end overflow-hidden",
+    card: "h-full w-full max-w-sm rounded-none !border-y-0 !border-r-0",
+    openAnimation: "slide-right",
+    closeAnimation: "slide-right",
   },
   bottomSheet: {
     overlay: "items-end justify-center overflow-hidden p-0 sm:p-4",
@@ -344,7 +358,7 @@ export default function Modal({
     : children;
 
   return createPortal(
-    <div className={`fixed inset-0 z-[100] flex ${variantConfig.overlay}`}>
+    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`}>
       <button
         type="button"
         className={`absolute inset-0 ${backdropBackground} ${backdropAnimationClass}`}
