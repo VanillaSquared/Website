@@ -31,6 +31,9 @@
   --vsq-filter-status-confirmed: #3b82f6;
   --vsq-filter-status-intended: #eab308;
   --vsq-filter-status-vanilla: #f97316;
+  --vsq-checkmark-green-bg: #22c55e;
+  --vsq-checkmark-green-border: #34d399;
+  --vsq-checkmark-green-text: #ffffff;
   --vsq-surface-search: #202020;
   --vsq-surface-search-hover: #242424;
   --vsq-surface-input: #202020;

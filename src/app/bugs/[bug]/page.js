@@ -101,7 +101,7 @@ export default async function BugViewPage({ params }) {
       eyebrow={bug.publicId?.toLowerCase()}
       title={(
         <span className="flex items-start gap-3">
-          <Checkmark checked size="lg" className="mt-1" />
+          <Checkmark checked variant="green" size="lg" className="mt-1" />
           <span>{bug.title}</span>
         </span>
       )}

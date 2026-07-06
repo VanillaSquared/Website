@@ -11,6 +11,7 @@ export default function Checkmark({
   disabled = false,
   className = "",
   size = "md",
+  variant = "default",
   "aria-label": ariaLabel = "Toggle checked state",
   ...props
 }) {
@@ -18,6 +19,10 @@ export default function Checkmark({
     sm: "h-4 w-4",
     md: "h-5 w-5",
     lg: "h-6 w-6",
+  };
+  const checkedVariants = {
+    default: "border-control-accent bg-control-accent text-control-accent-text",
+    green: "border-[var(--vsq-checkmark-green-border)] bg-[var(--vsq-checkmark-green-bg)] text-[var(--vsq-checkmark-green-text)]",
   };
   const isInteractive = Boolean(interactive || onChange || onClick);
   const [internalChecked, setInternalChecked] = useState(defaultChecked);
@@ -54,7 +59,7 @@ export default function Checkmark({
         disabled ? "cursor-not-allowed opacity-60" : ""
       } ${
         isChecked
-          ? "border-control-accent bg-control-accent text-control-accent-text"
+          ? checkedVariants[variant] ?? checkedVariants.default
           : "border-control-border bg-control text-transparent"
       } ${className}`}
       {...props}

@@ -70,7 +70,7 @@ export default function BugList({ bugs }) {
             aria-label={`View bug ${bug.publicId}: ${bug.title}`}
           >
             <article className="flex gap-3">
-              <Checkmark checked className="mt-1" />
+              <Checkmark checked variant="green" className="mt-1" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
