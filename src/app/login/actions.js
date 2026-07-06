@@ -12,6 +12,7 @@ import {
   validateUsername,
 } from "@/auth/openAuth";
 import { isAdminCodeBypassEnabled, saveAdminEmailCode } from "@/auth/adminCodeBypass";
+import { createInternalAuthHeader, getInternalAuthSecret, INTERNAL_AUTH_HEADER } from "@/auth/internalAuthGuard";
 import { authIssuer } from "@/auth/issuer";
 import {
   getUserByEmail,
@@ -57,16 +58,6 @@ function validateCredentials(path, { username, email }) {
 
 const EMAIL_CODE_COOKIE = "pending_email_code";
 const EMAIL_CODE_MAX_AGE = 10 * 60;
-
-function getInternalAuthSecret() {
-  const secret = process.env.INTERNAL_AUTH_SECRET;
-
-  if (!secret && process.env.NODE_ENV === "production") {
-    throw new Error("INTERNAL_AUTH_SECRET is required for email code login.");
-  }
-
-  return secret ?? "dev-internal-auth-secret";
-}
 
 function hashCode(code) {
   return createHash("sha256").update(code).digest("hex");
@@ -138,7 +129,10 @@ async function completeEmailLogin(pending) {
   const origin = await getOrigin();
   const tokenResponse = await authIssuer.fetch(new Request(`${origin}/token`, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      [INTERNAL_AUTH_HEADER]: createInternalAuthHeader("internal_email"),
+    },
     body: new URLSearchParams({
       grant_type: "client_credentials",
       provider: "internal_email",

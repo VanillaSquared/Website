@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 
 import { clearTokens, getAuthSubject } from "@/app/auth";
+import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+export async function POST(request) {
+  const blocked = guardSameOriginRequest(request);
+
+  if (blocked) {
+    return blocked;
+  }
+
   const subject = await getAuthSubject({ updateTokens: false });
 
   if (!subject) {

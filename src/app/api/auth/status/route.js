@@ -61,9 +61,10 @@ export async function GET(request) {
     email: subject.properties?.email,
   } : null;
 
-  const body = { authenticated, user, permissions: await getUserPermissions(user) };
+  const permissions = await getUserPermissions(user);
+  const body = { authenticated, user, permissions };
 
-  if (includeTokens) {
+  if (includeTokens && permissions.canViewStaffSettings) {
     const tokens = await getTokenCookies();
 
     body.tokens = {

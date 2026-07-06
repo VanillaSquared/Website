@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthSubject } from "@/app/auth";
 import { createBugReport, listBugReports } from "@/bugs/reporter";
+import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -25,6 +26,12 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
+  const blocked = guardSameOriginRequest(request);
+
+  if (blocked) {
+    return blocked;
+  }
+
   const subject = await getAuthSubject();
   const creatorUserId = subject?.properties?.id;
 
