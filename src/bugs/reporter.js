@@ -41,6 +41,21 @@ const uploadsRoot = path.join(process.cwd(), ".data", "bug-reports");
 let bugReporterInitialized;
 let bugReporterSeeded;
 
+const LONG_SCROLL_TEST_LOREM = [
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer malesuada nunc non orci pulvinar, sed pretium mauris facilisis. Donec sit amet arcu non justo mollis lacinia.",
+  "Praesent laoreet, mi vel commodo pulvinar, enim nisl facilisis massa, a gravida augue lectus at nibh. Suspendisse potenti. Maecenas dictum ligula nec neque blandit posuere.",
+  "Curabitur pretium tellus vel risus convallis, sed vulputate nisl consequat. Etiam blandit sem sit amet ipsum placerat, vitae elementum enim molestie. Pellentesque habitant morbi tristique senectus et netus.",
+  "Aliquam erat volutpat. Donec non mauris vitae lectus luctus rhoncus. Sed consequat, risus ac luctus luctus, risus sapien molestie neque, vitae gravida lorem arcu vel mauris.",
+  "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Integer a lectus eu enim facilisis sodales. Morbi quis metus a lorem congue feugiat.",
+  "Nunc volutpat dui ac tellus imperdiet, quis feugiat arcu hendrerit. Nam consequat pellentesque dui, id volutpat erat consequat vitae. Vivamus a velit quis ante consequat imperdiet.",
+  "Sed in lacus in arcu feugiat iaculis. Aenean faucibus bibendum feugiat. Nullam sit amet sollicitudin leo. Mauris dignissim tortor sit amet nibh facilisis, in malesuada libero accumsan.",
+  "Fusce laoreet ipsum et metus cursus, sed euismod est vulputate. Donec efficitur commodo lorem, et posuere nulla ultricies vel. Proin sed enim id elit sagittis feugiat.",
+  "Phasellus faucibus risus non purus viverra, ac interdum nulla dignissim. Duis sagittis eros vitae velit finibus, quis porta magna convallis. In vitae lacus eu sem euismod interdum.",
+  "Integer sollicitudin, turpis non fermentum hendrerit, dolor nisi cursus eros, vitae facilisis nulla neque vitae lectus. Nulla facilisi. Donec eu turpis et risus cursus iaculis.",
+  "Morbi sit amet diam luctus, porta neque in, porta mi. Sed tempor risus at urna cursus laoreet. Donec tincidunt est at risus sagittis, at malesuada massa porta.",
+  "Ut dictum sapien at sapien vulputate, eget ullamcorper lorem facilisis. Duis sit amet feugiat enim. Sed auctor velit eu mi facilisis, nec rutrum nisl faucibus.",
+].join("\n\n");
+
 export function getBugReportCategoryConfig(slug) {
   return BUG_REPORT_CATEGORY_CONFIGS.find((category) => category.slug === slug) ?? null;
 }
@@ -179,12 +194,11 @@ export async function seedDemoBugReports() {
 
   if (!bugReporterSeeded) {
     bugReporterSeeded = (async () => {
-      const [[{ count }]] = await getPool().query("SELECT COUNT(*) AS count FROM bug_reports");
       const demos = [
         {
           category: "vanilla-squared",
           title: "Spawn guide book can duplicate on first join",
-          description: "New players sometimes receive two guide books when their first join event retries after a reconnect.\n\nSteps to reproduce:\n1. Join the server with a fresh player profile.\n2. Disconnect during the first-join setup while the guide book is being created.\n3. Reconnect before the previous join attempt fully finishes.\n\nExpected result: the player keeps one guide book.\nActual result: the retry can grant a second copy, leaving duplicate starter items in the inventory.",
+          description: `New players sometimes receive two guide books when their first join event retries after a reconnect.\n\nSteps to reproduce:\n1. Join the server with a fresh player profile.\n2. Disconnect during the first-join setup while the guide book is being created.\n3. Reconnect before the previous join attempt fully finishes.\n\nExpected result: the player keeps one guide book.\nActual result: the retry can grant a second copy, leaving duplicate starter items in the inventory.\n\nScroll testing notes:\n\n${LONG_SCROLL_TEST_LOREM}`,
           priority: "Medium",
           status: "Confirmed",
         },
@@ -205,7 +219,7 @@ export async function seedDemoBugReports() {
         {
           category: "vanilla-squared",
           title: "Nether portal cooldown occasionally persists",
-          description: "A player can remain on portal cooldown after changing dimensions during server lag spikes. The player exits the portal successfully, but the cooldown state remains active long enough that walking back into a portal does nothing.\n\nThis seems most visible when TPS drops during chunk generation or when several players use portals at the same time. Relogging clears the state, so it is likely not persisted permanently, but it is confusing in normal gameplay because there is no visible timer or message explaining why the portal is not responding.",
+          description: `A player can remain on portal cooldown after changing dimensions during server lag spikes. The player exits the portal successfully, but the cooldown state remains active long enough that walking back into a portal does nothing.\n\nThis seems most visible when TPS drops during chunk generation or when several players use portals at the same time. Relogging clears the state, so it is likely not persisted permanently, but it is confusing in normal gameplay because there is no visible timer or message explaining why the portal is not responding.\n\nExtended lorem ipsum reproduction log:\n\n${LONG_SCROLL_TEST_LOREM}`,
           priority: "High",
           status: "Confirmed",
         },
@@ -275,14 +289,14 @@ export async function seedDemoBugReports() {
         {
           category: "test",
           title: "Synthetic scrolling test report alpha",
-          description: "Seed report used to ensure long lists scroll smoothly while preserving tight row hit targets.",
+          description: `Seed report used to ensure long lists scroll smoothly while preserving tight row hit targets.\n\n${LONG_SCROLL_TEST_LOREM}\n\n${LONG_SCROLL_TEST_LOREM}`,
           priority: "unset",
           status: "Works as intended",
         },
         {
           category: "test",
           title: "Synthetic scrolling test report beta",
-          description: "Seed report used to validate search previews and category ordering with multiple rows.",
+          description: `Seed report used to validate search previews and category ordering with multiple rows.\n\n${LONG_SCROLL_TEST_LOREM}`,
           priority: "Low",
           status: "Works as intended",
         },
@@ -309,18 +323,28 @@ export async function seedDemoBugReports() {
         },
       ];
 
-      if (Number(count) >= demos.length) {
-        return;
-      }
-
       const connection = await getPool().getConnection();
 
       try {
         await connection.beginTransaction();
         const creatorUserId = await ensureDemoBugReporterUser(connection);
 
-        for (const demo of demos.slice(Number(count))) {
-          await insertBugReportWithGeneratedId(connection, { creatorUserId, ...demo });
+        for (const demo of demos) {
+          const [existingReports] = await connection.execute(
+            "SELECT id FROM bug_reports WHERE category = ? AND title = ? LIMIT 1",
+            [demo.category, demo.title]
+          );
+
+          if (existingReports.length) {
+            await connection.execute(
+              `UPDATE bug_reports
+               SET description = ?, priority = ?, status = ?, creator_user_id = ?
+               WHERE id = ?`,
+              [demo.description, demo.priority, demo.status, creatorUserId, existingReports[0].id]
+            );
+          } else {
+            await insertBugReportWithGeneratedId(connection, { creatorUserId, ...demo });
+          }
         }
 
         await connection.commit();

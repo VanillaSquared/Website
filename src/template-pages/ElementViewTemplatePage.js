@@ -62,8 +62,8 @@ export default function ElementViewTemplatePage({
 
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               {meta.length ? (
-                <Card title="Details" preset="auth" size="p-5" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="mt-3" hoverAccent={false}>
-                  <dl className="space-y-2.5">
+                <Card title="Details" preset="auth" size="p-5" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="!mt-2" hoverAccent={false}>
+                  <dl className="space-y-2">
                     {meta.map((item) => (
                       <div key={item.label}>
                         <dt className="text-xs font-semibold leading-4 text-subtle">{item.label}</dt>
