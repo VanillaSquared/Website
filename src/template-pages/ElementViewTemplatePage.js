@@ -44,7 +44,7 @@ export default function ElementViewTemplatePage({
             </Link>
           ) : null}
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
             <article className="min-w-0 overflow-hidden rounded-2xl border border-divider bg-card">
               <header className="border-b border-divider px-5 py-5 sm:px-7">
                 {eyebrow ? <p className="mb-2 font-mono text-xs font-bold text-accent">{eyebrow}</p> : null}
@@ -60,14 +60,14 @@ export default function ElementViewTemplatePage({
               <div className="px-5 py-6 sm:px-7">{children}</div>
             </article>
 
-            <aside className="space-y-4">
+            <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               {meta.length ? (
-                <Card title="Details" preset="auth" size="md" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="mt-4" hoverAccent={false}>
-                  <dl className="space-y-3">
+                <Card title="Details" preset="auth" size="p-5" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="mt-3" hoverAccent={false}>
+                  <dl className="space-y-2.5">
                     {meta.map((item) => (
                       <div key={item.label}>
-                        <dt className="text-xs font-semibold text-subtle">{item.label}</dt>
-                        <dd className={`mt-1 text-sm ${item.className ?? "text-soft"}`}>{item.value}</dd>
+                        <dt className="text-xs font-semibold leading-4 text-subtle">{item.label}</dt>
+                        <dd className={`mt-0.5 text-sm leading-5 ${item.className ?? "text-soft"}`}>{item.value}</dd>
                       </div>
                     ))}
                   </dl>

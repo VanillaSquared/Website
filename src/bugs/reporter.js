@@ -184,7 +184,7 @@ export async function seedDemoBugReports() {
         {
           category: "vanilla-squared",
           title: "Spawn guide book can duplicate on first join",
-          description: "New players sometimes receive two guide books when their first join event retries after a reconnect.",
+          description: "New players sometimes receive two guide books when their first join event retries after a reconnect.\n\nSteps to reproduce:\n1. Join the server with a fresh player profile.\n2. Disconnect during the first-join setup while the guide book is being created.\n3. Reconnect before the previous join attempt fully finishes.\n\nExpected result: the player keeps one guide book.\nActual result: the retry can grant a second copy, leaving duplicate starter items in the inventory.",
           priority: "Medium",
           status: "Confirmed",
         },
@@ -205,7 +205,7 @@ export async function seedDemoBugReports() {
         {
           category: "vanilla-squared",
           title: "Nether portal cooldown occasionally persists",
-          description: "A player can remain on portal cooldown after changing dimensions during server lag spikes.",
+          description: "A player can remain on portal cooldown after changing dimensions during server lag spikes. The player exits the portal successfully, but the cooldown state remains active long enough that walking back into a portal does nothing.\n\nThis seems most visible when TPS drops during chunk generation or when several players use portals at the same time. Relogging clears the state, so it is likely not persisted permanently, but it is confusing in normal gameplay because there is no visible timer or message explaining why the portal is not responding.",
           priority: "High",
           status: "Confirmed",
         },

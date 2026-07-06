@@ -98,6 +98,7 @@ export default async function BugViewPage({ params }) {
     <ElementViewTemplatePage
       backHref="/bugs"
       backLabel="All bugs"
+      className="py-8"
       eyebrow={bug.publicId?.toLowerCase()}
       title={(
         <span className="flex items-start gap-3">
@@ -116,14 +117,14 @@ export default async function BugViewPage({ params }) {
         { label: "Updated", value: formatDate(bug.updatedAt), className: "text-muted" },
       ]}
     >
-      <section className="space-y-6">
+      <section className="flex flex-col gap-5">
         <div className="flex flex-wrap gap-2">
           <Tag variant="subtle">{categoryLabel}</Tag>
           <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
           <Tag variant="accent">{bug.status}</Tag>
         </div>
-        <p className="whitespace-pre-wrap text-base leading-7 text-soft">{bug.description}</p>
-        <section className="rounded-2xl border border-divider bg-control p-5">
+        <p className="whitespace-pre-wrap text-base leading-6 text-soft">{bug.description}</p>
+        <section className="rounded-2xl border border-divider bg-control p-4 sm:p-5">
           <h2 className="text-base font-semibold text-heading">Attachments</h2>
           {bug.files?.length ? (
             <ul className="mt-4 space-y-2">
@@ -135,7 +136,7 @@ export default async function BugViewPage({ params }) {
               ))}
             </ul>
           ) : (
-            <p className="mt-4 text-sm text-muted">No attachments were uploaded.</p>
+            <p className="mt-3 text-sm text-muted">No attachments were uploaded.</p>
           )}
         </section>
       </section>

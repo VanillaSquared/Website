@@ -72,18 +72,16 @@ export default function BugList({ bugs }) {
             <article className="flex gap-3">
               <Checkmark checked variant="green" className="mt-1" />
               <div className="min-w-0 flex-1">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-accent">{bug.publicId?.toLowerCase()}</span>
-                      <Tag variant="subtle">{categoryLabels[bug.category] ?? bug.category}</Tag>
-                    </div>
-                    <h2 className="mt-2 text-base font-semibold text-heading">{bug.title}</h2>
-                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{bug.description}</p>
-                  </div>
-                  <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-accent">{bug.publicId?.toLowerCase()}</span>
+                    <Tag variant="subtle">{categoryLabels[bug.category] ?? bug.category}</Tag>
                     <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
                     <Tag variant="accent">{bug.status}</Tag>
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-base font-semibold text-heading">{bug.title}</h2>
+                    <p className="mt-1 line-clamp-2 text-sm leading-5 text-muted">{bug.description}</p>
                   </div>
                 </div>
                 <p className="mt-2 truncate text-xs text-subtle">Creator: {bug.creatorUsername ?? "Unknown"}</p>
