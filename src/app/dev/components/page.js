@@ -116,6 +116,20 @@ export default function ComponentPreviewPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <TextInput label="Text input" name="preview-text" sampleText="Sample text" />
               <TextInput label="Password input" name="preview-password" type="password" sampleText="Secret" />
+              <TextInput
+                label="Three-line input"
+                name="preview-three-line"
+                sampleText="Write a short message..."
+                lines={3}
+              />
+              <TextInput
+                label="Scrolling input"
+                name="preview-scrolling"
+                sampleText="This grows up to five lines, then scrolls."
+                lines={3}
+                maxLines={5}
+                maxCharacters={240}
+              />
             </div>
             <div className="flex flex-wrap gap-2">
               <Tag>Minecraft 26.2</Tag>

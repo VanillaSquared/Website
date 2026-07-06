@@ -106,6 +106,14 @@ function ModalContent({ type, title, onClose }) {
         <div className="space-y-3">
           <TextInput label="Display name" name="modal-display-name" sampleText="Vanilla" />
           <TextInput label="Email" name="modal-email" type="email" sampleText="player@example.com" />
+          <TextInput
+            label="Notes"
+            name="modal-notes"
+            sampleText="Add a few lines of context..."
+            lines={3}
+            maxLines={6}
+            maxCharacters={300}
+          />
         </div>
         <div className="flex justify-end gap-3">
           <Button variant="tertiary" onClick={onClose}>Cancel</Button>
@@ -216,7 +224,14 @@ function ModalContent({ type, title, onClose }) {
               <h4 className="mt-3 text-xl font-bold text-heading">Details inside a modal</h4>
               <p className="mt-2 text-sm text-muted">A compact child modal opened from the parent modal.</p>
             </div>
-            <TextInput label="Nested note" name="nested-note" sampleText="Opened from the parent modal" />
+            <TextInput
+              label="Nested note"
+              name="nested-note"
+              sampleText="Opened from the parent modal"
+              lines={2}
+              maxLines={4}
+              maxCharacters={160}
+            />
             <Button size="sm" onClick={() => setNestedModal(null)}>Close details</Button>
           </div>
         </Modal>

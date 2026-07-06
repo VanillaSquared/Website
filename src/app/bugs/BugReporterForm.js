@@ -73,20 +73,19 @@ export default function BugReporterForm({ categories, versions, authenticated })
           </select>
         </label>
 
-        <TextInput label="Title" name="title" sampleText="Short summary of the issue" required maxLength={160} />
+        <TextInput label="Title" name="title" sampleText="Short summary of the issue" required maxCharacters={160} />
       </div>
 
-      <label className="mt-5 flex flex-col gap-2 text-sm font-semibold text-soft">
-        Description
-        <textarea
-          name="description"
-          required
-          rows={8}
-          maxLength={8000}
-          placeholder="What happened? What did you expect? Include steps to reproduce the bug."
-          className="rounded-lg border border-input-border bg-input px-3 py-2 text-heading outline-none transition-colors placeholder:text-input-sample placeholder:italic hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus"
-        />
-      </label>
+      <TextInput
+        label="Description"
+        name="description"
+        sampleText="What happened? What did you expect? Include steps to reproduce the bug."
+        className="mt-5"
+        lines={8}
+        maxLines={14}
+        required
+        maxCharacters={8000}
+      />
 
       <fieldset className="mt-5 rounded-xl border border-divider p-4">
         <legend className="px-2 text-sm font-semibold text-soft">Affected versions</legend>
