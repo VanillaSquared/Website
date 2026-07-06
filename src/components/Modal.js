@@ -296,6 +296,7 @@ export default function Modal({
   settingsPermissions,
   onSettingsLogout,
   settingsContent,
+  closeOnOutsideClick = true,
   className = "",
 }) {
   const variantConfig = variants[variant] ?? variants.default;
@@ -358,19 +359,21 @@ export default function Modal({
     : children;
 
   return createPortal(
-    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`}>
-      <button
-        type="button"
-        className={`absolute inset-0 ${backdropBackground} ${backdropAnimationClass}`}
-        aria-label="Close modal"
-        onClick={onClose}
-      />
+    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay} ${closeOnOutsideClick ? "" : "pointer-events-none"}`}>
+      {closeOnOutsideClick ? (
+        <button
+          type="button"
+          className={`absolute inset-0 ${backdropBackground} ${backdropAnimationClass}`}
+          aria-label="Close modal"
+          onClick={onClose}
+        />
+      ) : null}
       <Card
         role="dialog"
         aria-modal="true"
         preset="homepage"
         hoverAccent={false}
-        className={`relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${popupAnimationClass} ${className}`}
+        className={`pointer-events-auto relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${popupAnimationClass} ${className}`}
         contentClassName={variantConfig.content ?? ""}
         onClick={(event) => event.stopPropagation()}
       >

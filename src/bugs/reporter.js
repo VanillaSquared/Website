@@ -180,8 +180,136 @@ export async function seedDemoBugReports() {
   if (!bugReporterSeeded) {
     bugReporterSeeded = (async () => {
       const [[{ count }]] = await getPool().query("SELECT COUNT(*) AS count FROM bug_reports");
+      const demos = [
+        {
+          category: "vanilla-squared",
+          title: "Spawn guide book can duplicate on first join",
+          description: "New players sometimes receive two guide books when their first join event retries after a reconnect.",
+          priority: "Medium",
+          status: "Confirmed",
+        },
+        {
+          category: "website",
+          title: "Components page search loses focus after submit",
+          description: "Submitting a search on the components page reloads correctly, but the input is no longer focused afterwards.",
+          priority: "Low",
+          status: "Unconfirmed",
+        },
+        {
+          category: "test",
+          title: "Development seed entry for filter sidebar testing",
+          description: "Demo report used to verify category grouping, URL filters, and right-side filter sidebar behavior.",
+          priority: "unset",
+          status: "Works as intended",
+        },
+        {
+          category: "vanilla-squared",
+          title: "Nether portal cooldown occasionally persists",
+          description: "A player can remain on portal cooldown after changing dimensions during server lag spikes.",
+          priority: "High",
+          status: "Confirmed",
+        },
+        {
+          category: "vanilla-squared",
+          title: "Villager trade restock message repeats",
+          description: "The restock notification can fire multiple times for the same villager in busy trading halls.",
+          priority: "Low",
+          status: "Unconfirmed",
+        },
+        {
+          category: "vanilla-squared",
+          title: "Claim border particles render too far away",
+          description: "Claim visualization particles are visible from neighboring areas instead of only near the selected claim.",
+          priority: "Medium",
+          status: "Confirmed",
+        },
+        {
+          category: "vanilla-squared",
+          title: "Custom recipe unlock toast appears twice",
+          description: "Some custom recipe unlocks trigger duplicate toast notifications after reconnecting.",
+          priority: "Low",
+          status: "Unconfirmed",
+        },
+        {
+          category: "vanilla-squared",
+          title: "Mob cap overlay shows stale values",
+          description: "The overlay can show a cached mob cap value for several seconds after moving between regions.",
+          priority: "Medium",
+          status: "Unconfirmed",
+        },
+        {
+          category: "website",
+          title: "Mobile navigation spacing is uneven",
+          description: "Header actions can appear cramped on narrow screens when the auth button and search are both visible.",
+          priority: "Low",
+          status: "Confirmed",
+        },
+        {
+          category: "website",
+          title: "Login callback error page lacks retry action",
+          description: "OAuth failures show an error but do not provide an obvious way to retry the login flow.",
+          priority: "Medium",
+          status: "Unconfirmed",
+        },
+        {
+          category: "website",
+          title: "Footer overlaps short dynamic pages",
+          description: "Some short server-rendered pages leave the footer visually too close to primary content.",
+          priority: "Low",
+          status: "Fixed",
+        },
+        {
+          category: "website",
+          title: "Search preview result text truncates too early",
+          description: "Long result titles can truncate before using available space in the preview dropdown.",
+          priority: "Low",
+          status: "Confirmed",
+        },
+        {
+          category: "website",
+          title: "Settings modal focus state is inconsistent",
+          description: "Keyboard focus styles differ between settings navigation items and regular buttons.",
+          priority: "Medium",
+          status: "Unconfirmed",
+        },
+        {
+          category: "test",
+          title: "Synthetic scrolling test report alpha",
+          description: "Seed report used to ensure long lists scroll smoothly while preserving tight row hit targets.",
+          priority: "unset",
+          status: "Works as intended",
+        },
+        {
+          category: "test",
+          title: "Synthetic scrolling test report beta",
+          description: "Seed report used to validate search previews and category ordering with multiple rows.",
+          priority: "Low",
+          status: "Works as intended",
+        },
+        {
+          category: "test",
+          title: "Synthetic filter state persistence test",
+          description: "Seed report used to confirm that URL filters persist while searching from either search bar.",
+          priority: "Medium",
+          status: "Works as intended",
+        },
+        {
+          category: "test",
+          title: "Synthetic code red display test",
+          description: "Seed report used to verify high-contrast Code Red priority tags in the reusable tag component.",
+          priority: "Code Red",
+          status: "Unfixable",
+        },
+        {
+          category: "test",
+          title: "Synthetic vanilla bug status test",
+          description: "Seed report used to verify the Vanilla bug status appears correctly in lists and previews.",
+          priority: "High",
+          status: "Vanilla bug",
+        },
+      ];
 
-      if (Number(count) > 0) {
+      if (Number(count) >= demos.length) {
         return;
       }
 
@@ -190,31 +318,8 @@ export async function seedDemoBugReports() {
       try {
         await connection.beginTransaction();
         const creatorUserId = await ensureDemoBugReporterUser(connection);
-        const demos = [
-          {
-            category: "vanilla-squared",
-            title: "Spawn guide book can duplicate on first join",
-            description: "New players sometimes receive two guide books when their first join event retries after a reconnect.",
-            priority: "Medium",
-            status: "Confirmed",
-          },
-          {
-            category: "website",
-            title: "Components page search loses focus after submit",
-            description: "Submitting a search on the components page reloads correctly, but the input is no longer focused afterwards.",
-            priority: "Low",
-            status: "Unconfirmed",
-          },
-          {
-            category: "test",
-            title: "Development seed entry for filter sidebar testing",
-            description: "Demo report used to verify category grouping, URL filters, and right-side filter sidebar behavior.",
-            priority: "unset",
-            status: "Works as intended",
-          },
-        ];
 
-        for (const demo of demos) {
+        for (const demo of demos.slice(Number(count))) {
           await insertBugReportWithGeneratedId(connection, { creatorUserId, ...demo });
         }
 

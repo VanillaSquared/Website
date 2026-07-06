@@ -34,7 +34,7 @@ export default function BugList({ bugs }) {
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-xs font-bold uppercase text-accent">{bug.publicId}</span>
+                  <span className="font-mono text-xs font-bold text-accent">{bug.publicId?.toLowerCase()}</span>
                   <Tag variant="subtle">{categoryLabels[bug.category] ?? bug.category}</Tag>
                 </div>
                 <h2 className="mt-2 text-base font-semibold text-heading">{bug.title}</h2>

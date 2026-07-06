@@ -4,8 +4,7 @@ import {
   BUG_REPORT_STATUSES,
   listBugReports,
 } from "@/bugs/reporter";
-import SearchBar from "@/components/SearchBar";
-import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
+import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugFilterSidebar from "./BugFilterSidebar";
 import BugList from "./BugList";
@@ -31,34 +30,30 @@ export default async function BugsPage({ searchParams }) {
     priority: filters.priority,
     status: filters.status,
   };
+  const bugSearch = {
+    action: "/bugs",
+    defaultValue: filters.q,
+    hiddenFields: searchHiddenFields,
+    placeholder: "Search bug reports",
+    previewEndpoint: "/api/bugs",
+    previewResultsKey: "bugs",
+    previewTitleKey: "title",
+    previewDescriptionKey: "description",
+    previewMetaKey: "publicId",
+  };
 
   return (
-    <DefaultTemplatePage search={{ action: "/bugs", defaultValue: filters.q, hiddenFields: searchHiddenFields, placeholder: "Search bugs" }}>
-      <section className="flex flex-1 justify-center bg-background px-6 pt-6 pb-10">
-        <div className="w-full max-w-6xl">
-          <div className="mb-5 flex justify-center">
-            <div className="flex w-full max-w-3xl items-center gap-2">
-              <SearchBar
-                action="/bugs"
-                defaultValue={filters.q}
-                hiddenFields={searchHiddenFields}
-                placeholder="Search bug reports"
-                variant="large"
-                className="flex-1"
-              />
-              <BugFilterSidebar
-                categories={BUG_REPORT_CATEGORY_CONFIGS}
-                priorities={BUG_REPORT_PRIORITIES}
-                statuses={BUG_REPORT_STATUSES}
-              />
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-4xl">
-            <BugList bugs={bugs} />
-          </div>
-        </div>
-      </section>
-    </DefaultTemplatePage>
+    <SearchListTemplatePage
+      search={{ ...bugSearch, header: { ...bugSearch, placeholder: "Search bugs" } }}
+      actions={(
+        <BugFilterSidebar
+          categories={BUG_REPORT_CATEGORY_CONFIGS}
+          priorities={BUG_REPORT_PRIORITIES}
+          statuses={BUG_REPORT_STATUSES}
+        />
+      )}
+    >
+      <BugList bugs={bugs} />
+    </SearchListTemplatePage>
   );
 }
