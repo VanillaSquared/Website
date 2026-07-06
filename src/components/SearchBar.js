@@ -73,6 +73,11 @@ export default function SearchBar({
 
       try {
         const url = new URL(previewEndpoint, window.location.origin);
+        Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
+          if (fieldValue) {
+            url.searchParams.set(fieldName, fieldValue);
+          }
+        });
         url.searchParams.set(name, value.trim());
         const response = await fetch(url, { signal: controller.signal });
         const json = await response.json();
@@ -93,7 +98,29 @@ export default function SearchBar({
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [name, previewEndpoint, previewResultsKey, value]);
+  }, [hiddenFields, name, previewEndpoint, previewResultsKey, value]);
+
+  function getSearchHref(nextValue) {
+    const params = new URLSearchParams();
+    Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
+      if (fieldValue) {
+        params.set(fieldName, fieldValue);
+      }
+    });
+    if (nextValue) {
+      params.set(name, nextValue);
+    }
+    return `${action}${params.toString() ? `?${params.toString()}` : ""}`;
+  }
+
+  function clearSearch(close) {
+    setValue("");
+    close();
+
+    if (action && defaultValue) {
+      window.location.href = getSearchHref("");
+    }
+  }
 
   function submitSearch(event, close, nextValue = value) {
     if (!onSearch && !action) {
@@ -106,16 +133,7 @@ export default function SearchBar({
       onSearch(nextValue);
     } else if (action) {
       event.preventDefault();
-      const params = new URLSearchParams();
-      Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
-        if (fieldValue) {
-          params.set(fieldName, fieldValue);
-        }
-      });
-      if (nextValue) {
-        params.set(name, nextValue);
-      }
-      window.location.href = `${action}${params.toString() ? `?${params.toString()}` : ""}`;
+      window.location.href = getSearchHref(nextValue);
     }
 
     close();
@@ -164,10 +182,7 @@ export default function SearchBar({
               <button
                 type="button"
                 aria-label="Clear search"
-                onClick={() => {
-                  setValue("");
-                  close();
-                }}
+                onClick={() => clearSearch(close)}
                 className={`absolute right-2 z-10 rounded-md p-1 text-muted transition-colors focus:outline-none ${variantConfig.clear}`}
               >
                 <span

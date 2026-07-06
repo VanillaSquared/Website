@@ -26,8 +26,9 @@ export default function BugList({ bugs }) {
   }
 
   return (
-    <div className="max-h-[calc(100dvh-12rem)] overflow-y-auto border-y border-divider">
-      {bugs.map((bug, index) => (
+    <div className="relative h-[calc(100dvh-20rem)] min-h-64 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
+      <div className="h-full overflow-y-auto">
+        {bugs.map((bug, index) => (
         <div key={bug.id}>
           {index > 0 ? <Separator /> : null}
           <article className="cursor-pointer px-4 py-3 transition-colors hover:bg-control-hover/60">
@@ -48,7 +49,8 @@ export default function BugList({ bugs }) {
             <p className="mt-2 truncate text-xs text-subtle">Creator: {bug.creatorUsername ?? "Unknown"}</p>
           </article>
         </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

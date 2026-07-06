@@ -11,16 +11,16 @@ export default function SearchListTemplatePage({
 }) {
   return (
     <DefaultTemplatePage search={search?.header ?? search}>
-      <section className={`flex flex-1 justify-center bg-background px-6 pt-10 pb-10 ${className}`}>
-        <div className={`w-full ${maxWidth}`}>
-          <div className="mb-5 flex justify-center">
+      <section className={`flex min-h-0 flex-1 justify-center bg-background px-6 pt-10 pb-10 ${className}`}>
+        <div className={`flex min-h-0 w-full flex-1 flex-col ${maxWidth}`}>
+          <div className="mb-7 flex justify-center">
             <div className="flex w-full max-w-3xl items-center gap-2">
               <SearchBar {...search} variant={search?.variant ?? "large"} className={`flex-1 ${search?.className ?? ""}`} />
               {actions}
             </div>
           </div>
 
-          <div className={`mx-auto ${listMaxWidth}`}>{children}</div>
+          <div className={`mx-auto min-h-0 w-full flex-1 ${listMaxWidth}`}>{children}</div>
         </div>
       </section>
     </DefaultTemplatePage>

@@ -3,29 +3,49 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import filterIcon from "@/assets/icons/filter.svg";
 import xIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
 import Modal from "@/components/Modal";
 import Separator from "@/components/Separator";
 
+const filterTextColors = {
+  priority: {
+    Low: "text-[var(--vsq-tag-low-text)]",
+    Medium: "text-[var(--vsq-tag-medium-text)]",
+    High: "text-[var(--vsq-tag-high-text)]",
+    "Code Red": "text-[var(--vsq-tag-code-red-text)]",
+    unset: "text-muted",
+  },
+  status: {
+    Fixed: "text-[var(--vsq-filter-status-fixed)]",
+    Unfixable: "text-[var(--vsq-filter-status-unfixable)]",
+    Unconfirmed: "text-[var(--vsq-filter-status-unconfirmed)]",
+    Confirmed: "text-[var(--vsq-filter-status-confirmed)]",
+    "Works as intended": "text-[var(--vsq-filter-status-intended)]",
+    "Vanilla bug": "text-[var(--vsq-filter-status-vanilla)]",
+  },
+};
+
 function FilterGroup({ label, name, value, options, onChange }) {
   return (
     <section>
       <h3 className="text-sm font-semibold text-heading">{label}</h3>
-      <div className="mt-2 space-y-1">
+      <div className="mt-1 space-y-0.5">
         {options.map((option) => {
           const checked = value === option.value;
+          const textColor = filterTextColors[name]?.[option.value] ?? "text-soft";
 
           return (
             <button
               key={option.value}
               type="button"
               onClick={() => onChange(name, checked ? "" : option.value)}
-              className="flex w-full items-center gap-3 rounded-lg px-1 py-2 text-left text-sm text-soft transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
+              className="flex w-full items-center gap-3 rounded-lg px-1 py-1.5 text-left text-sm transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
             >
               <Checkmark checked={checked} size="sm" />
-              <span>{option.label}</span>
+              <span className={textColor}>{option.label}</span>
             </button>
           );
         })}
@@ -67,7 +87,15 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
 
   return (
     <>
-      <Button variant="tertiary" onClick={() => setOpen(true)}>Filters</Button>
+      <Button
+        variant="iconButton"
+        size="iconButton"
+        icon={filterIcon}
+        iconClassName="h-5 w-5"
+        aria-label="Filters"
+        title="Filters"
+        onClick={() => setOpen(true)}
+      />
       <Modal
         open={open}
         onClose={() => setOpen(false)}
@@ -91,7 +119,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto py-6">
+          <div className="flex-1 overflow-y-auto py-4">
             <FilterGroup
               label="Category"
               name="category"
@@ -99,7 +127,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
               options={categories.map((category) => ({ value: category.slug, label: category.label }))}
               onChange={updateFilter}
             />
-            <Separator className="my-5" />
+            <Separator className="my-3" />
             <FilterGroup
               label="Priority"
               name="priority"
@@ -107,7 +135,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
               options={priorities.map((priority) => ({ value: priority, label: priority }))}
               onChange={updateFilter}
             />
-            <Separator className="my-5" />
+            <Separator className="my-3" />
             <FilterGroup
               label="Status"
               name="status"
@@ -117,7 +145,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
             />
           </div>
 
-          <div className="border-t border-divider pt-4">
+          <div className="border-t border-divider pt-3">
             <Button className="w-full" variant="tertiary" onClick={clearFilters} disabled={isPending}>Clear filters</Button>
           </div>
         </div>

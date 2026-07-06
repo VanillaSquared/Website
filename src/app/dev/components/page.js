@@ -15,8 +15,8 @@ export const metadata = {
   title: "Component Preview - Vanilla²",
 };
 
-const buttonVariants = ["primary", "secondary", "tertiary", "blue", "purple", "blurple"];
-const buttonSizes = ["sm", "md", "icon"];
+const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple"];
+const buttonSizes = ["sm", "md", "icon", "iconButton"];
 const cardSizes = ["sm", "md", "lg", "popup"];
 const selectOptions = [
   { label: "Vanilla", value: "vanilla" },
