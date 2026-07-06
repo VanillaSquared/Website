@@ -6,6 +6,8 @@ import searchIcon from "@/assets/icons/search.svg";
 import xIcon from "@/assets/icons/x.svg";
 import Preview from "@/components/Preview";
 
+const EMPTY_HIDDEN_FIELDS = Object.freeze({});
+
 const variants = {
   default: {
     form: "max-w-sm",
@@ -41,7 +43,7 @@ export default function SearchBar({
   action,
   className = "",
   defaultValue = "",
-  hiddenFields = {},
+  hiddenFields = EMPTY_HIDDEN_FIELDS,
   label = "Search",
   method = "GET",
   name = "q",
