@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 
+import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import { getBugReportByPublicId } from "@/bugs/reporter";
 import Checkmark from "@/components/Checkmark";
 import Tag from "@/components/Tag";
@@ -93,6 +94,7 @@ export default async function BugViewPage({ params }) {
 
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
   const affectedVersions = bug.affectedVersions?.length ? bug.affectedVersions.join(", ") : "Unknown";
+  const bugStatusCheckmark = getBugStatusCheckmarkProps(bug);
 
   return (
     <ElementViewTemplatePage
@@ -102,7 +104,7 @@ export default async function BugViewPage({ params }) {
       eyebrow={bug.publicId?.toLowerCase()}
       title={(
         <span className="flex items-start gap-3">
-          <Checkmark checked variant="green" size="lg" className="mt-1" />
+          <Checkmark {...bugStatusCheckmark} size="lg" className="mt-1" />
           <span>{bug.title}</span>
         </span>
       )}

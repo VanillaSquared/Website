@@ -19,6 +19,19 @@ export const metadata = {
 const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple"];
 const buttonSizes = ["sm", "md", "icon", "iconButton"];
 const cardSizes = ["sm", "md", "lg", "popup"];
+const checkmarkCycleStates = [
+  { checked: true, variant: "green", icon: "check" },
+  { checked: false, variant: "red", icon: "x" },
+  { checked: false, variant: "unconfirmed", icon: "dash" },
+];
+
+const customCheckmarkCycleStates = [
+  { checked: false, variant: "unconfirmed", icon: "dash" },
+  { checked: true, variant: "green", icon: "check" },
+  { checked: false, variant: "red", icon: "x" },
+  { checked: true, variant: "default", icon: "check" },
+];
+
 const selectOptions = [
   { label: "Vanilla", value: "vanilla" },
   { label: "Fabric", value: "fabric" },
@@ -159,11 +172,25 @@ export default function ComponentPreviewPage() {
                 <Toggle locked label="Locked updates" description="This control cannot be changed." defaultChecked />
               </Card>
               <Card title="Checkmark" size="md">
-                <div className="flex items-center gap-3 text-sm text-soft">
-                  <Checkmark defaultChecked interactive />
-                  <Checkmark defaultChecked={false} interactive />
-                  <Checkmark checked variant="green" />
-                  <span>Click to toggle selected and unselected states.</span>
+                <div className="space-y-4 text-sm text-soft">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Checkmark defaultChecked interactive />
+                    <Checkmark defaultChecked={false} interactive />
+                    <span>Default true/false toggle.</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Checkmark checked variant="green" />
+                    <Checkmark checked={false} variant="red" icon="x" />
+                    <Checkmark checked={false} variant="unconfirmed" icon="dash" />
+                    <Checkmark checked variant="red" icon="check" />
+                    <Checkmark checked={false} variant="green" icon="x" />
+                    <span>Variants and icons can be mixed independently.</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Checkmark defaultChecked={false} cycle cycleStates={checkmarkCycleStates} />
+                    <Checkmark defaultChecked={false} cycle={customCheckmarkCycleStates} />
+                    <span>Click to cycle through status states or a custom sequence.</span>
+                  </div>
                 </div>
               </Card>
               <Card title="Multi select" size="md" className="overflow-visible">

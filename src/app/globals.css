@@ -34,6 +34,11 @@
   --vsq-checkmark-green-bg: #22c55e;
   --vsq-checkmark-green-border: #34d399;
   --vsq-checkmark-green-text: #ffffff;
+  --vsq-checkmark-red-bg: #ef4444;
+  --vsq-checkmark-red-text: #ffffff;
+  --vsq-checkmark-unconfirmed-bg: #181818;
+  --vsq-checkmark-unconfirmed-border: #4a4a4a;
+  --vsq-checkmark-unconfirmed-text: #6b7280;
   --vsq-surface-search: #202020;
   --vsq-surface-search-hover: #242424;
   --vsq-surface-input: #202020;

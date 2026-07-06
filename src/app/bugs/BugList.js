@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import Checkmark from "@/components/Checkmark";
 import Separator from "@/components/Separator";
 import Tag from "@/components/Tag";
@@ -74,7 +75,7 @@ export default function BugList({ bugs }) {
               aria-label={`View bug ${bug.publicId}: ${bug.title}`}
             >
               <article className="flex gap-3">
-                <Checkmark checked variant="green" className="mt-1" />
+                <Checkmark {...getBugStatusCheckmarkProps(bug)} className="mt-1" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
