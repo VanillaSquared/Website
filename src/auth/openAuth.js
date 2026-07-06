@@ -8,8 +8,16 @@ export function normalizeEmail(email) {
   return String(email ?? "").trim().toLowerCase();
 }
 
+export const USERNAME_MIN_LENGTH = 3;
+export const USERNAME_MAX_LENGTH = 32;
+export const USERNAME_PATTERN = /^[a-z0-9_]+$/;
+
 export function validateUsername(username) {
-  return /^[a-z0-9_]{3,32}$/.test(username);
+  const normalizedUsername = normalizeUsername(username);
+
+  return normalizedUsername.length >= USERNAME_MIN_LENGTH
+    && normalizedUsername.length <= USERNAME_MAX_LENGTH
+    && USERNAME_PATTERN.test(normalizedUsername);
 }
 
 export function validateEmail(email) {

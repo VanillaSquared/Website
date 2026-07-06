@@ -6,6 +6,8 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
   normalizeEmail,
   normalizeUsername,
   validateEmail,
@@ -48,7 +50,7 @@ function getCredentials(formData) {
 
 function validateCredentials(path, { username, email }) {
   if (!validateUsername(username)) {
-    redirectWithError(path, "Username must be 3-32 characters and only use letters, numbers, or underscores.");
+    redirectWithError(path, `Username must be ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} characters and only use letters, numbers, or underscores.`);
   }
 
   if (!validateEmail(email)) {
@@ -79,7 +81,11 @@ function decodePendingEmailCode(value) {
     return null;
   }
 
-  return JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  try {
+    return JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
 }
 
 function safeCompare(value, expected) {
@@ -125,7 +131,27 @@ async function startEmailCodeLogin(email, username = "", returnTo = "/") {
   redirect(`/login/code?email=${encodeURIComponent(email)}`);
 }
 
+async function validatePendingEmailLogin(pending) {
+  const email = normalizeEmail(pending?.email);
+  const username = normalizeUsername(pending?.username);
+
+  if (!validateEmail(email) || (username && !validateUsername(username))) {
+    redirectWithError("/login", "Your login session is invalid. Please try again.");
+  }
+
+  if (username) {
+    if (await getUserByUsername(username) || await getUserByEmail(email)) {
+      redirectWithError("/signup", "That username or email is already in use.");
+    }
+  } else if (!await getUserByEmail(email)) {
+    redirectWithError("/login", "No account exists for this email address.");
+  }
+
+  return { ...pending, email, username };
+}
+
 async function completeEmailLogin(pending) {
+  const validatedPending = await validatePendingEmailLogin(pending);
   const origin = await getOrigin();
   const tokenResponse = await authIssuer.fetch(new Request(`${origin}/token`, {
     method: "POST",
@@ -138,8 +164,8 @@ async function completeEmailLogin(pending) {
       provider: "internal_email",
       client_id: "vanillasquaredwebsite",
       client_secret: getInternalAuthSecret(),
-      email: pending.email,
-      username: pending.username,
+      email: validatedPending.email,
+      username: validatedPending.username,
     }),
   }));
 

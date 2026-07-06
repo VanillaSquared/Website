@@ -52,6 +52,9 @@ export default function TextInput({
   type = "text",
   lines = 1,
   maxLines,
+  minCharacters,
+  minCharacterLimit,
+  minLength,
   maxCharacters,
   maxCharacterLimit,
   maxLength,
@@ -74,7 +77,9 @@ export default function TextInput({
   const isMultiline = visibleLines > 1 || maxVisibleLines != null;
   const browserExtensionProps = !browserExtensionsEnabled ? { "data-1p-ignore": "true" } : {};
   const characterLimit = normalizeCharacterLimit(maxCharacters ?? maxCharacterLimit ?? maxLength);
+  const minimumCharacters = normalizeCharacterLimit(minCharacters ?? minCharacterLimit ?? minLength);
   const characterCount = value != null ? getCharacterCount(value) : uncontrolledCharacterCount;
+  const displayedCharacterCount = minimumCharacters == null ? characterCount : Math.max(characterCount, minimumCharacters);
   const showCharacterLimit = characterLimit != null;
   const stateInputClasses = locked
     ? "rounded-lg border border-locked-input-border bg-locked-input px-3 py-2 text-locked-text outline-none transition-colors placeholder:text-locked-text placeholder:italic cursor-not-allowed"
@@ -122,6 +127,7 @@ export default function TextInput({
           style={style}
           value={value}
           defaultValue={defaultValue}
+          minLength={minimumCharacters ?? undefined}
           maxLength={characterLimit ?? undefined}
           onInput={handleInput}
           disabled={disabled || locked}
@@ -139,6 +145,7 @@ export default function TextInput({
           style={style}
           value={value}
           defaultValue={defaultValue}
+          minLength={minimumCharacters ?? undefined}
           maxLength={characterLimit ?? undefined}
           onInput={handleInput}
           disabled={disabled || locked}
@@ -149,7 +156,7 @@ export default function TextInput({
       )}
       {showCharacterLimit ? (
         <span className="self-end text-xs font-normal text-muted">
-          {characterCount}/{characterLimit}
+          {displayedCharacterCount}/{characterLimit}
         </span>
       ) : null}
     </label>

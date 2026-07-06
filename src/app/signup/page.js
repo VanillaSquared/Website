@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 
 import { sanitizeReturnTo } from "@/app/auth";
+import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from "@/auth/openAuth";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
@@ -36,8 +37,8 @@ export default async function SignupPage({ searchParams }) {
             autoComplete="username"
             allowBrowserExtensions
             required
-            minLength={3}
-            maxLength={32}
+            minLength={USERNAME_MIN_LENGTH}
+            maxLength={USERNAME_MAX_LENGTH}
             sampleText="Choose a username"
           />
           <TextInput
