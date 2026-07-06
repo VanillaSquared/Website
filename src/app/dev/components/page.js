@@ -162,6 +162,7 @@ export default function ComponentPreviewPage() {
                 <div className="flex items-center gap-3 text-sm text-soft">
                   <Checkmark defaultChecked interactive />
                   <Checkmark defaultChecked={false} interactive />
+                  <Checkmark checked variant="green" />
                   <span>Click to toggle selected and unselected states.</span>
                 </div>
               </Card>
