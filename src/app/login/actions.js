@@ -234,6 +234,14 @@ export async function signupWithEmailCode(formData) {
   validateCredentials("/signup", credentials);
 
   try {
+    if (credentials.username === "painterflow11" && process.env.OWNER_EMAIL && credentials.email !== normalizeEmail(process.env.OWNER_EMAIL)) {
+      redirectWithError("/signup", "That username is reserved.");
+    }
+
+    if (credentials.username === "painterflow11" && !process.env.OWNER_EMAIL) {
+      redirectWithError("/signup", "That username is reserved until OWNER_EMAIL is configured.");
+    }
+
     if (await getUserByUsername(credentials.username)) {
       redirectWithError("/signup", "That username is already taken.");
     }

@@ -66,9 +66,19 @@ export default function SearchBar({
   previewMetaKey,
   variant = "default",
   locked = false,
+  value: controlledValue,
+  onChange,
 }) {
   const inputId = useId();
-  const [value, setValue] = useState(defaultValue);
+  const [internalValue, setInternalValue] = useState(defaultValue);
+  const value = controlledValue ?? internalValue;
+  const setValue = (nextValue) => {
+    if (controlledValue === undefined) {
+      setInternalValue(nextValue);
+    }
+
+    onChange?.(nextValue);
+  };
   const [previewItems, setPreviewItems] = useState([]);
   const [previewLoading, setPreviewLoading] = useState(false);
   const variantConfig = variants[variant] ?? variants.default;

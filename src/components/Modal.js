@@ -12,9 +12,11 @@ import logoutIcon from "@/assets/icons/settings/logout.svg";
 import privacyIcon from "@/assets/icons/settings/privacy.svg";
 import supportIcon from "@/assets/icons/settings/support.svg";
 import timeIcon from "@/assets/icons/settings/time.svg";
+import userManagementIcon from "@/assets/icons/settings/user-management.svg";
 import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
+import ComponentPreviewContent from "@/components/ComponentPreviewContent";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 
@@ -107,16 +109,20 @@ const backgrounds = {
 const settingsCategories = [
   {
     label: "Account",
-    items: ["Account", "Privacy"],
+    items: [{ label: "Account" }, { label: "Privacy" }],
   },
   {
     label: "Experience",
-    items: ["Appearance", "Accessibility", "Language&Time"],
+    items: [{ label: "Appearance" }, { label: "Accessibility" }, { label: "Language&Time" }],
   },
   {
     label: "Staff",
-    permission: "canViewStaffSettings",
-    items: ["Dev Options", "Support Panel", "Design Test"],
+    items: [
+      { label: "Bug Panel", permission: "bug_panel" },
+      { label: "Dev Options", permission: "dev_options" },
+      { label: "Design Test", permission: "design_test" },
+      { label: "User Management", permission: "user_management" },
+    ],
   },
 ];
 
@@ -127,8 +133,9 @@ const settingsItemIcons = {
   Accessibility: accessibilityIcon,
   "Language&Time": timeIcon,
   "Dev Options": codeIcon,
-  "Support Panel": supportIcon,
+  "Bug Panel": supportIcon,
   "Design Test": beakerIcon,
+  "User Management": userManagementIcon,
 };
 
 function getInitials(username, email) {
@@ -142,19 +149,120 @@ function getInitials(username, email) {
     .join("") || "VS";
 }
 
-function getVisibleSettingsCategories(permissions) {
-  return settingsCategories.filter((category) => !category.permission || permissions?.[category.permission]);
+function canViewSettingsItem(item, permissions) {
+  if (!item.permission) {
+    return true;
+  }
+
+  return Boolean(permissions?.permissionMap?.[item.permission] || permissions?.permissions?.includes?.(item.permission));
+}
+
+function getVisibleSettingsCategories(permissions, query = "") {
+  const normalizedQuery = query.trim().toLowerCase();
+
+  return settingsCategories
+    .map((category) => {
+      const visibleItems = category.items
+        .filter((item) => canViewSettingsItem(item, permissions))
+        .filter((item) => !normalizedQuery || category.label.toLowerCase().includes(normalizedQuery) || item.label.toLowerCase().includes(normalizedQuery));
+
+      return { ...category, items: visibleItems };
+    })
+    .filter((category) => category.items.length > 0);
+}
+
+function SettingsPlaceholder({ title, description }) {
+  return (
+    <div className="space-y-4">
+      <h3 className="text-2xl font-bold text-heading">{title}</h3>
+      <p className="max-w-2xl text-sm text-muted">{description}</p>
+    </div>
+  );
+}
+
+function UserManagementSettings() {
+  const [users, setUsers] = useState([]);
+  const [message, setMessage] = useState("Loading users...");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/users", { cache: "no-store", credentials: "same-origin" })
+      .then((response) => response.ok ? response.json() : Promise.reject(response))
+      .then((data) => {
+        if (!cancelled) {
+          setUsers(data.users ?? []);
+          setMessage("");
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setMessage("Could not load users.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="text-2xl font-bold text-heading">User Management</h3>
+        <p className="mt-2 text-sm text-muted">Manage roles and individual permissions through protected APIs.</p>
+      </div>
+      {message ? <p className="text-sm text-muted">{message}</p> : null}
+      <div className="grid gap-3">
+        {users.map((item) => (
+          <Card key={item.id} title={item.username} size="sm" hoverAccent={false} description={item.email}>
+            <p className="break-all text-xs text-muted">{item.id}</p>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function renderSettingsContent(activeItem, children) {
+  if (children) {
+    return children;
+  }
+
+  if (activeItem === "Design Test") {
+    return (
+      <div className="space-y-6">
+        <Button href="/components" size="sm">Open full preview</Button>
+        <ComponentPreviewContent />
+      </div>
+    );
+  }
+
+  if (activeItem === "User Management") {
+    return <UserManagementSettings />;
+  }
+
+  if (activeItem === "Bug Panel") {
+    return <SettingsPlaceholder title="Bug Panel" description="Bug triage tools will appear here." />;
+  }
+
+  if (activeItem === "Dev Options") {
+    return <SettingsPlaceholder title="Dev Options" description="Developer-only options will appear here." />;
+  }
+
+  return <SettingsPlaceholder title={activeItem} description="Settings for this section will appear here." />;
 }
 
 function SettingsModalContent({ user, permissions, onClose, onLogout, children }) {
-  const visibleCategories = getVisibleSettingsCategories(permissions);
-  const [activeItem, setActiveItem] = useState(visibleCategories[0]?.items[0] ?? "Account");
+  const [searchQuery, setSearchQuery] = useState("");
+  const visibleCategories = getVisibleSettingsCategories(permissions, searchQuery);
+  const [activeItem, setActiveItem] = useState(visibleCategories[0]?.items[0]?.label ?? "Account");
   const username = user?.username || "VanillaSquared User";
   const email = user?.email || "Manage your account";
 
   useEffect(() => {
-    if (!visibleCategories.some((category) => category.items.includes(activeItem))) {
-      setActiveItem(visibleCategories[0]?.items[0] ?? "Account");
+    if (!visibleCategories.some((category) => category.items.some((item) => item.label === activeItem))) {
+      setActiveItem(visibleCategories[0]?.items[0]?.label ?? "Account");
     }
   }, [activeItem, visibleCategories]);
 
@@ -172,32 +280,33 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
             </div>
           </div>
 
-          <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" />
+          <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" value={searchQuery} onChange={setSearchQuery} />
         </div>
 
         <nav className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
           {visibleCategories.map((category, categoryIndex) => (
             <div key={category.label}>
               {categoryIndex > 0 ? <Separator className="mb-5" /> : null}
-              <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-wide text-subtle">{category.label}</p>
+              <p className="mb-3 px-2 text-sm font-semibold text-subtle">{category.label}</p>
               <div className="space-y-0.5">
                 {category.items.map((item) => (
                   <Button
-                    key={item}
+                    key={item.label}
                     size="sm"
                     variant="tertiary"
                     border={false}
-                    icon={settingsItemIcons[item]}
+                    icon={settingsItemIcons[item.label]}
                     iconClassName="h-[18px] w-[18px] self-center"
-                    className={`h-8 w-full !justify-start rounded-lg px-2.5 py-1.5 text-sm leading-none ${activeItem === item ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
-                    onClick={() => setActiveItem(item)}
+                    className={`h-8 w-full !justify-start rounded-lg px-2.5 py-1.5 text-sm leading-none ${activeItem === item.label ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
+                    onClick={() => setActiveItem(item.label)}
                   >
-                    <span className="inline-flex items-center leading-none">{item}</span>
+                    <span className="inline-flex items-center leading-none">{item.label}</span>
                   </Button>
                 ))}
               </div>
             </div>
           ))}
+          {!visibleCategories.length ? <p className="px-2 text-sm text-muted">No settings found.</p> : null}
         </nav>
 
         {onLogout ? (
@@ -225,7 +334,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12">
-          {children}
+          {renderSettingsContent(activeItem, children)}
         </div>
       </section>
     </div>

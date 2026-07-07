@@ -65,6 +65,16 @@ export async function initializeUsersTable() {
           )
         `);
 
+        await getPool().query(`
+          CREATE TABLE IF NOT EXISTS user_permissions (
+            user_id CHAR(36) NOT NULL,
+            permission VARCHAR(64) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (user_id, permission),
+            CONSTRAINT user_permissions_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+          )
+        `);
+
         await assignBuiltInRoles();
 
         try {
@@ -87,7 +97,7 @@ export async function initializeUsersTable() {
 async function assignBuiltInRoles() {
   await getPool().execute(
     "INSERT IGNORE INTO user_roles (user_id, role) SELECT id, ? FROM users WHERE LOWER(username) = ?",
-    ["developer", "painterflow11"]
+    ["owner", "painterflow11"]
   );
 }
 
@@ -137,6 +147,14 @@ export async function createUser({ id, username, email }) {
   return getUserById(id);
 }
 
+export async function listUsers() {
+  await initializeUsersTable();
+
+  const [rows] = await getPool().execute("SELECT * FROM users ORDER BY username");
+
+  return rows.map(parseUser);
+}
+
 export async function getUserRolesByUserId(userId) {
   if (!userId) {
     return [];
@@ -150,4 +168,39 @@ export async function getUserRolesByUserId(userId) {
   );
 
   return rows.map((row) => row.role);
+}
+
+export async function getUserPermissionsByUserId(userId) {
+  if (!userId) {
+    return [];
+  }
+
+  await initializeUsersTable();
+
+  const [rows] = await getPool().execute(
+    "SELECT permission FROM user_permissions WHERE user_id = ? ORDER BY permission",
+    [userId]
+  );
+
+  return rows.map((row) => row.permission);
+}
+
+export async function addUserRole(userId, role) {
+  await initializeUsersTable();
+  await getPool().execute("INSERT IGNORE INTO user_roles (user_id, role) VALUES (?, ?)", [userId, role]);
+}
+
+export async function removeUserRole(userId, role) {
+  await initializeUsersTable();
+  await getPool().execute("DELETE FROM user_roles WHERE user_id = ? AND role = ?", [userId, role]);
+}
+
+export async function addUserPermission(userId, permission) {
+  await initializeUsersTable();
+  await getPool().execute("INSERT IGNORE INTO user_permissions (user_id, permission) VALUES (?, ?)", [userId, permission]);
+}
+
+export async function removeUserPermission(userId, permission) {
+  await initializeUsersTable();
+  await getPool().execute("DELETE FROM user_permissions WHERE user_id = ? AND permission = ?", [userId, permission]);
 }
