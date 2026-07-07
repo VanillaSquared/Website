@@ -46,7 +46,7 @@ export default async function BugsPage({ searchParams }) {
     defaultValue: filters.q,
     hiddenFields: searchHiddenFields,
     placeholder: "Search bug reports",
-    previewEndpoint: "/api/bugs",
+    previewEndpoint: "/api/bugs/get",
     previewResultsKey: "bugs",
     previewTitleKey: "title",
     previewDescriptionKey: "description",

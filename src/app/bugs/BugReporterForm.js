@@ -24,7 +24,7 @@ export default function BugReporterForm({ categories, versions, authenticated })
     }
 
     try {
-      const response = await fetch("/api/bugs", {
+      const response = await fetch("/api/bugs/create", {
         method: "POST",
         body: formData,
         credentials: "same-origin",
