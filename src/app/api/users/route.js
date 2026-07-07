@@ -1,35 +1,47 @@
 import { NextResponse } from "next/server";
 
-import { getAuthSubject } from "@/app/auth";
-import { PERMISSIONS, getAuthorizationForUser, hasPermission } from "@/auth/permissions";
+import { getAuthorizationForUser, PERMISSIONS } from "@/auth/permissions";
 import { listUsers } from "@/auth/openSQL";
+import { isProtectedUser, jsonError, requireApiPermission } from "@/auth/userManagement";
+import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
 
-async function requireUserManagement() {
-  const subject = await getAuthSubject({ updateTokens: false });
-  const user = subject ? subject.properties : null;
-
-  if (!user) {
-    return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  }
-
-  if (!await hasPermission(user, PERMISSIONS.USER_MANAGEMENT)) {
-    return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-
-  return { user };
+function viewerActions(authorization) {
+  return {
+    canManageRoles: Boolean(authorization.permissionMap?.[PERMISSIONS.MANAGE_ROLES]),
+    canManageUser: Boolean(authorization.permissionMap?.[PERMISSIONS.MANAGE_USER]),
+    canDeleteUser: Boolean(authorization.permissionMap?.[PERMISSIONS.DELETE_USER]),
+  };
 }
 
 export async function GET() {
-  const auth = await requireUserManagement();
+  const auth = await requireApiPermission(PERMISSIONS.USER_MANAGEMENT);
   if (auth.error) return auth.error;
 
+  const viewerAuthorization = await getAuthorizationForUser(auth.user);
+  const actions = viewerActions(viewerAuthorization);
   const users = await listUsers();
   const usersWithAuthorization = await Promise.all(users.map(async (user) => ({
     ...user,
+    isProtected: isProtectedUser(user),
     authorization: await getAuthorizationForUser(user),
+    actions,
   })));
 
-  return NextResponse.json({ users: usersWithAuthorization }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ users: usersWithAuthorization, viewer: { authorization: viewerAuthorization, actions } }, { headers: { "Cache-Control": "no-store" } });
+}
+
+export async function PATCH(request) {
+  const blocked = guardSameOriginRequest(request);
+  if (blocked) return blocked;
+
+  return jsonError("Use /api/users/[userId] to update a user.", 404);
+}
+
+export async function DELETE(request) {
+  const blocked = guardSameOriginRequest(request);
+  if (blocked) return blocked;
+
+  return jsonError("Use /api/users/[userId] to delete a user.", 404);
 }

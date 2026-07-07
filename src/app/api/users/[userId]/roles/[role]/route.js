@@ -1,25 +1,22 @@
 import { NextResponse } from "next/server";
 
-import { getAuthSubject } from "@/app/auth";
-import { getUserById, removeUserRole } from "@/auth/openSQL";
-import { PERMISSIONS, hasPermission, isValidRole } from "@/auth/permissions";
+import { removeUserRole } from "@/auth/openSQL";
+import { PERMISSIONS, isValidRole } from "@/auth/permissions";
+import { getMutableTargetUser, requireApiPermission } from "@/auth/userManagement";
+import { guardSameOriginRequest } from "@/security/requestGuards";
 
-async function requireUserManagement() {
-  const subject = await getAuthSubject({ updateTokens: false });
-  const user = subject ? subject.properties : null;
-  if (!user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  if (!await hasPermission(user, PERMISSIONS.USER_MANAGEMENT)) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  return { user };
-}
+export async function DELETE(request, { params }) {
+  const blocked = guardSameOriginRequest(request);
+  if (blocked) return blocked;
 
-export async function DELETE(_request, { params }) {
-  const auth = await requireUserManagement();
+  const auth = await requireApiPermission(PERMISSIONS.MANAGE_ROLES);
   if (auth.error) return auth.error;
 
   const { userId, role } = await params;
+  const target = await getMutableTargetUser(userId);
+  if (target.error) return target.error;
 
-  if (!isValidRole(role)) return NextResponse.json({ error: "Invalid role" }, { status: 400 });
-  if (!await getUserById(userId)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!await isValidRole(role)) return NextResponse.json({ error: "Invalid role" }, { status: 400 });
 
   await removeUserRole(userId, role);
   return NextResponse.json({ ok: true });

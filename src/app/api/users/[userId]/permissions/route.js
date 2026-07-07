@@ -1,26 +1,23 @@
 import { NextResponse } from "next/server";
 
-import { getAuthSubject } from "@/app/auth";
-import { addUserPermission, getUserById } from "@/auth/openSQL";
-import { PERMISSIONS, hasPermission, isValidPermission } from "@/auth/permissions";
-
-async function requireUserManagement() {
-  const subject = await getAuthSubject({ updateTokens: false });
-  const user = subject ? subject.properties : null;
-  if (!user) return { error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
-  if (!await hasPermission(user, PERMISSIONS.USER_MANAGEMENT)) return { error: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  return { user };
-}
+import { addUserPermission } from "@/auth/openSQL";
+import { PERMISSIONS, isValidPermission } from "@/auth/permissions";
+import { getMutableTargetUser, requireApiPermission } from "@/auth/userManagement";
+import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export async function POST(request, { params }) {
-  const auth = await requireUserManagement();
+  const blocked = guardSameOriginRequest(request);
+  if (blocked) return blocked;
+
+  const auth = await requireApiPermission(PERMISSIONS.MANAGE_ROLES);
   if (auth.error) return auth.error;
 
   const { userId } = await params;
-  const { permission } = await request.json().catch(() => ({}));
+  const target = await getMutableTargetUser(userId);
+  if (target.error) return target.error;
 
+  const { permission } = await request.json().catch(() => ({}));
   if (!isValidPermission(permission)) return NextResponse.json({ error: "Invalid permission" }, { status: 400 });
-  if (!await getUserById(userId)) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await addUserPermission(userId, permission);
   return NextResponse.json({ ok: true });

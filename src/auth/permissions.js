@@ -1,8 +1,10 @@
 import "server-only";
 
 import {
+  getPermissionsForRolesFromDb,
   getUserPermissionsByUserId,
   getUserRolesByUserId,
+  listRoles,
 } from "@/auth/openSQL";
 
 export const PERMISSIONS = Object.freeze({
@@ -10,28 +12,28 @@ export const PERMISSIONS = Object.freeze({
   DESIGN_TEST: "design_test",
   DEV_OPTIONS: "dev_options",
   USER_MANAGEMENT: "user_management",
+  MANAGE_ROLES: "manage_roles",
+  DELETE_USER: "delete_user",
+  MANAGE_USER: "manage_user",
 });
 
-export const ROLE_PERMISSIONS = Object.freeze({
-  default: [],
-  support: [PERMISSIONS.BUG_PANEL],
-  developer: [PERMISSIONS.DESIGN_TEST, PERMISSIONS.DEV_OPTIONS],
-  owner: Object.values(PERMISSIONS),
-});
-
-export const ROLES = Object.freeze(Object.keys(ROLE_PERMISSIONS));
 export const PERMISSION_VALUES = Object.freeze(Object.values(PERMISSIONS));
 
-export function isValidRole(role) {
-  return ROLES.includes(role);
+export function isValidRoleName(role) {
+  return typeof role === "string" && /^[a-z0-9_-]{1,64}$/i.test(role);
+}
+
+export async function isValidRole(role) {
+  if (!isValidRoleName(role)) return false;
+  return Boolean((await listRoles()).some((item) => item.name === role));
 }
 
 export function isValidPermission(permission) {
   return PERMISSION_VALUES.includes(permission);
 }
 
-export function getPermissionsForRoles(roles = []) {
-  return [...new Set(roles.flatMap((role) => ROLE_PERMISSIONS[role] ?? []))].sort();
+export async function getPermissionsForRoles(roles = []) {
+  return (await getPermissionsForRolesFromDb(roles.filter(isValidRoleName))).filter(isValidPermission).sort();
 }
 
 export function hasResolvedPermission(authorization, permission) {
@@ -54,9 +56,9 @@ export async function getAuthorizationForUser(user) {
     getUserRolesByUserId(user.id),
     getUserPermissionsByUserId(user.id),
   ]);
-  const validRoles = roles.filter(isValidRole);
+  const validRoles = roles.filter(isValidRoleName);
   const validIndividualPermissions = individualPermissions.filter(isValidPermission);
-  const rolePermissions = getPermissionsForRoles(validRoles);
+  const rolePermissions = await getPermissionsForRoles(validRoles);
   const permissions = [...new Set([...rolePermissions, ...validIndividualPermissions])].sort();
   const permissionMap = Object.fromEntries(PERMISSION_VALUES.map((permission) => [permission, permissions.includes(permission)]));
 
