@@ -169,7 +169,7 @@ export default function Preview({
             <div
               className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl [scrollbar-gutter:stable] ${menuMaxHeight} ${menuClassName}`}
             >
-              <div className="flex flex-col gap-0.5">
+              <div className="flex w-full flex-col gap-0.5">
                 {options.map((option) => {
                   const nextValue = optionValue(option);
                   const selected = selectedValues.includes(nextValue);
@@ -181,7 +181,7 @@ export default function Preview({
                       type="button"
                       disabled={disabled}
                       onClick={() => toggleOption(nextValue)}
-                      className="flex items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-sm text-heading transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-sm text-heading transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
                     >
                       <span>{optionLabel(option)}</span>
                       <Checkmark checked={selected} size="sm" />

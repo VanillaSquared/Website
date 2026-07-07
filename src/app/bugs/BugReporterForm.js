@@ -55,13 +55,10 @@ export default function BugReporterForm({ categories, versions, authenticated, c
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-2xl border border-divider bg-card p-6 shadow-sm">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input type="hidden" name="creatorUserId" value={creatorUser?.id ?? ""} />
-      <div className="mb-5 rounded-xl border border-divider bg-control/60 px-4 py-3 text-sm text-muted">
-        Submitting as <span className="font-semibold text-heading">{creatorUser?.username ?? "your account"}</span>.
-      </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         <Preview
           key={`category-${resetKey}`}
           label="Category"
@@ -71,54 +68,49 @@ export default function BugReporterForm({ categories, versions, authenticated, c
           options={categories.map((category) => ({ value: category.slug ?? category, label: category.label ?? category }))}
         />
 
-        <TextInput label="Title" name="title" sampleText="Short summary of the issue" required maxCharacters={160} />
+        <TextInput label="Title" name="title" sampleText="Short summary of the issue" required minCharacters={3} maxCharacters={120} />
       </div>
 
       <TextInput
         label="Description"
         name="description"
         sampleText="What happened? What did you expect? Include steps to reproduce the bug."
-        className="mt-5"
-        lines={8}
-        maxLines={14}
+        lines={5}
         required
+        minCharacters={3}
         maxCharacters={8000}
       />
 
       <Preview
         key={`versions-${resetKey}`}
-        className="mt-5"
         label="Affected versions"
         name="affectedVersions"
         options={versions}
         placeholder="Choose affected versions"
+        menuClassName="!w-64"
       />
-
-      <p className="mt-5 rounded-xl border border-divider bg-control/60 px-4 py-3 text-sm text-muted">
-        Priority, status, creator, and fixed version are assigned by the server during triage.
-      </p>
 
       <FileUpload
         key={`files-${resetKey}`}
-        className="mt-5"
         label="Attachments"
-        description="Drag and drop supporting logs or screenshots here, or browse."
+        description="Drop files here or click to upload."
         name="files"
         multiple
         accept=".log,.png,.txt,.json,.html"
         maxFiles={3}
         maxFileSize={10 * 1024 * 1024}
+        compact
+        showBrowseButton={false}
       />
 
       {status ? (
-        <p className={`mt-5 rounded-lg border px-4 py-3 text-sm ${status.type === "success" ? "border-divider text-heading" : "border-input-border-focus text-soft"}`}>
+        <p className={`rounded-lg border px-4 py-3 text-sm ${status.type === "success" ? "border-divider text-heading" : "border-input-border-focus text-soft"}`}>
           {status.message}
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3">
         <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit bug report"}</Button>
-        <Button href="https://github.com/VanillaSquared/Website/issues" variant="secondary" external>View existing reports</Button>
       </div>
     </form>
   );

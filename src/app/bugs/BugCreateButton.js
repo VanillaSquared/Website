@@ -29,16 +29,16 @@ export default function BugCreateButton({ categories, versions, authenticated, c
         title="Add bug report"
         onClick={() => setOpen(true)}
       />
-      <Modal open={open} onClose={() => setOpen(false)} variant="wide" className="max-h-[calc(100dvh-2rem)] overflow-hidden !p-0">
-        <div className="flex max-h-[calc(100dvh-2rem)] flex-col">
+      <Modal open={open} onClose={() => setOpen(false)} variant="wide" className="!p-0">
+        <div className="flex flex-col">
           <div className="flex items-start justify-between border-b border-divider px-6 py-4">
             <div>
               <h2 className="text-xl font-semibold text-heading">Create bug report</h2>
-              <p className="mt-1 text-sm text-muted">Report an issue for the Vanilla² team to triage.</p>
+              <p className="mt-1 text-sm text-muted">No Troll bug reports!</p>
             </div>
             <Button size="icon" variant="tertiary" icon={xIcon} aria-label="Close create bug report" onClick={() => setOpen(false)} />
           </div>
-          <div className="overflow-y-auto p-6">
+          <div className="p-6">
             <BugReporterForm
               categories={categories}
               versions={versions}

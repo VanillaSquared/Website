@@ -37,7 +37,9 @@ export const BUG_REPORT_MAX_FILE_SIZE = 10 * 1024 * 1024;
 export const BUG_REPORT_MAX_FILES = 3;
 export const BUG_REPORT_SERVER_CONTROLLED_FIELDS = ["priority", "status", "creator", "fixed", "fixedVersion"];
 
-const MAX_TITLE_LENGTH = 160;
+const MIN_TITLE_LENGTH = 3;
+const MAX_TITLE_LENGTH = 120;
+const MIN_DESCRIPTION_LENGTH = 3;
 const MAX_DESCRIPTION_LENGTH = 8000;
 const uploadsRoot = path.join(process.cwd(), ".data", "bug-reports");
 let bugReporterInitialized;
@@ -409,12 +411,12 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId } = 
     return { error: "Choose a valid bug report category." };
   }
 
-  if (!title || title.length > MAX_TITLE_LENGTH) {
-    return { error: `Enter a title between 1 and ${MAX_TITLE_LENGTH} characters.` };
+  if (title.length < MIN_TITLE_LENGTH || title.length > MAX_TITLE_LENGTH) {
+    return { error: `Enter a title between ${MIN_TITLE_LENGTH} and ${MAX_TITLE_LENGTH} characters.` };
   }
 
-  if (!description || description.length > MAX_DESCRIPTION_LENGTH) {
-    return { error: `Enter a description between 1 and ${MAX_DESCRIPTION_LENGTH} characters.` };
+  if (description.length < MIN_DESCRIPTION_LENGTH || description.length > MAX_DESCRIPTION_LENGTH) {
+    return { error: `Enter a description between ${MIN_DESCRIPTION_LENGTH} and ${MAX_DESCRIPTION_LENGTH} characters.` };
   }
 
   if (affectedVersions.some((version) => !BUG_REPORT_VERSIONS.includes(version))) {

@@ -69,6 +69,8 @@ export default function FileUpload({
   id,
   onChange,
   className = "",
+  compact = false,
+  showBrowseButton = true,
   locked = false,
 }) {
   const generatedId = useId();
@@ -156,6 +158,21 @@ export default function FileUpload({
     }
   }
 
+  function openFilePicker() {
+    if (!locked && !showBrowseButton) {
+      inputRef.current?.click();
+    }
+  }
+
+  function handleUploadAreaKeyDown(event) {
+    if (showBrowseButton || locked || !["Enter", " "].includes(event.key)) {
+      return;
+    }
+
+    event.preventDefault();
+    inputRef.current?.click();
+  }
+
   return (
     <div className={`flex flex-col gap-2 text-sm font-semibold text-soft ${className}`}>
       <span>{label}</span>
@@ -167,15 +184,19 @@ export default function FileUpload({
         onDragOver={(event) => event.preventDefault()}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        className={`flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed px-5 py-8 text-center transition-colors ${
+        onClick={openFilePicker}
+        onKeyDown={handleUploadAreaKeyDown}
+        role={!showBrowseButton ? "button" : undefined}
+        tabIndex={!showBrowseButton && !locked ? 0 : undefined}
+        className={`flex flex-col items-center justify-center rounded-xl border border-dashed px-5 text-center transition-colors ${compact ? "gap-2 py-4" : "gap-3 py-8"} ${
           locked
             ? "border-locked-input-border bg-locked-input"
             : isDragging
               ? "border-control-accent bg-control-accent-soft"
-              : "border-control-border bg-control hover:border-control-border-hover hover:bg-control-hover"
+              : `border-control-border bg-control hover:border-control-border-hover hover:bg-control-hover ${!showBrowseButton ? "cursor-pointer" : ""}`
         }`}
       >
-        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-control-panel text-2xl text-control-accent">
+        <span className={`flex items-center justify-center rounded-full bg-control-panel text-control-accent ${compact ? "h-8 w-8 text-xl" : "h-12 w-12 text-2xl"}`}>
           ↑
         </span>
         <span className="text-heading">{description}</span>
@@ -184,12 +205,14 @@ export default function FileUpload({
           <span>Max size: {fileSizeLimitText}</span>
           <span>Limit: {fileLimitText}</span>
         </div>
-        <label
-          htmlFor={locked ? undefined : inputId}
-          className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${locked ? "cursor-not-allowed border-locked-border bg-locked text-locked-text" : "cursor-pointer border-control-border bg-control-panel text-soft hover:border-control-border-hover hover:bg-control-hover hover:text-heading"}`}
-        >
-          Browse files
-        </label>
+        {showBrowseButton ? (
+          <label
+            htmlFor={locked ? undefined : inputId}
+            className={`rounded-lg border px-3 py-1.5 text-xs transition-colors ${locked ? "cursor-not-allowed border-locked-border bg-locked text-locked-text" : "cursor-pointer border-control-border bg-control-panel text-soft hover:border-control-border-hover hover:bg-control-hover hover:text-heading"}`}
+          >
+            Browse files
+          </label>
+        ) : null}
         <input
           ref={inputRef}
           id={inputId}
@@ -211,7 +234,7 @@ export default function FileUpload({
         ) : null}
 
         {files.length ? (
-          <div className="flex w-full flex-col gap-2 rounded-xl border border-control-border bg-control-panel p-3 text-left">
+          <div className="flex w-full flex-col gap-2 rounded-xl border border-control-border bg-control-panel p-3 text-left" onClick={(event) => event.stopPropagation()}>
             <span className="text-xs uppercase tracking-wide text-muted">Selected files</span>
             {files.map((file, index) => (
               <div
