@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const BUG_REPORT_CREATED_EVENT = "bug-report-created";
@@ -7,15 +8,15 @@ const BUG_REPORT_CREATED_EVENT = "bug-report-created";
 export { BUG_REPORT_CREATED_EVENT };
 
 export default function BugReportSuccessNotice() {
-  const [visible, setVisible] = useState(false);
+  const [bugId, setBugId] = useState(null);
 
   useEffect(() => {
     let timeoutId;
 
-    function showNotice() {
-      setVisible(true);
+    function showNotice(event) {
+      setBugId(event.detail?.bugId ?? null);
       window.clearTimeout(timeoutId);
-      timeoutId = window.setTimeout(() => setVisible(false), 5000);
+      timeoutId = window.setTimeout(() => setBugId(null), 5000);
     }
 
     window.addEventListener(BUG_REPORT_CREATED_EVENT, showNotice);
@@ -26,13 +27,15 @@ export default function BugReportSuccessNotice() {
     };
   }, []);
 
-  if (!visible) {
+  if (!bugId) {
     return null;
   }
 
   return (
-    <p role="status" className="mb-2 text-center text-sm font-medium text-success">
-      Bug reported successfully.
+    <p role="status" className="mb-2 text-center text-sm font-medium">
+      <Link href={`/bugs/${encodeURIComponent(bugId)}`} className="text-success hover:underline">
+        Bug reported successfully.
+      </Link>
     </p>
   );
 }

@@ -15,9 +15,11 @@ export default function BugCreateButton({ categories, versions, authenticated, c
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  function handleCreated() {
+  function handleCreated(result) {
     setOpen(false);
-    window.dispatchEvent(new Event(BUG_REPORT_CREATED_EVENT));
+    window.dispatchEvent(new CustomEvent(BUG_REPORT_CREATED_EVENT, {
+      detail: { bugId: result?.publicId ?? result?.id },
+    }));
     router.refresh();
   }
 
