@@ -16,11 +16,10 @@ import userManagementIcon from "@/assets/icons/settings/user-management.svg";
 import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
-import ComponentPreviewContent from "@/components/ComponentPreviewContent";
 import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
-import UserManagementBrowser from "@/components/UserManagementBrowser";
+import SettingsContent from "@/components/settings/SettingsContent";
 
 const MODAL_ANIMATIONS = {
   none: {
@@ -162,40 +161,6 @@ function getVisibleSettingsCategories(permissions, query = "") {
     .filter((category) => category.items.length > 0);
 }
 
-function SettingsPlaceholder() {
-  return null;
-}
-
-
-function renderSettingsContent(activeItem, children) {
-  if (children) {
-    return children;
-  }
-
-  if (activeItem === "Design Test") {
-    return (
-      <div className="space-y-6">
-        <Button href="/components" size="sm">Open full preview</Button>
-        <ComponentPreviewContent embedded />
-      </div>
-    );
-  }
-
-  if (activeItem === "User Management") {
-    return <UserManagementBrowser />;
-  }
-
-  if (activeItem === "Bug Panel") {
-    return <SettingsPlaceholder title="Bug Panel" description="Bug triage tools will appear here." />;
-  }
-
-  if (activeItem === "Dev Options") {
-    return <SettingsPlaceholder title="Dev Options" description="Developer-only options will appear here." />;
-  }
-
-  return <SettingsPlaceholder title={activeItem} description="Settings for this section will appear here." />;
-}
-
 function SettingsModalContent({ user, permissions, onClose, onLogout, children }) {
   const [searchQuery, setSearchQuery] = useState("");
   const visibleCategories = getVisibleSettingsCategories(permissions, searchQuery);
@@ -279,7 +244,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
         </header>
 
         <div className={activeItem === "User Management" ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
-          {renderSettingsContent(activeItem, children)}
+          <SettingsContent activeItem={activeItem}>{children}</SettingsContent>
         </div>
       </section>
     </div>

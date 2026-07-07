@@ -47,7 +47,7 @@ function formatPermission(permission) {
     .join(" ");
 }
 
-export default function UserManagementBrowser() {
+export default function UserManagementSettings() {
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("Loading users...");
