@@ -15,6 +15,8 @@ export const PERMISSIONS = Object.freeze({
   MANAGE_ROLES: "manage_roles",
   DELETE_USER: "delete_user",
   MANAGE_USER: "manage_user",
+  CREATE_BUGS: "create_bugs",
+  VIEW_BUGS: "view_bugs",
 });
 
 export const PERMISSION_VALUES = Object.freeze(Object.values(PERMISSIONS));

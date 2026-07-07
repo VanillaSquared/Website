@@ -104,6 +104,14 @@
   --vsq-button-blurple-hover: #4953c3;
   --vsq-button-blurple-outline: #6976ff;
   --vsq-button-blurple-outline-hover: #5763e1;
+  --vsq-button-red: #4a2626;
+  --vsq-button-red-hover: #553030;
+  --vsq-button-red-outline: #653333;
+  --vsq-button-red-outline-hover: #754040;
+  --vsq-button-green: #263f34;
+  --vsq-button-green-hover: #2f4a3d;
+  --vsq-button-green-outline: #365846;
+  --vsq-button-green-outline-hover: #416b55;
 }
 
 @theme inline {
@@ -179,6 +187,14 @@
   --color-button-blurple-hover: var(--vsq-button-blurple-hover);
   --color-button-blurple-outline: var(--vsq-button-blurple-outline);
   --color-button-blurple-outline-hover: var(--vsq-button-blurple-outline-hover);
+  --color-button-red: var(--vsq-button-red);
+  --color-button-red-hover: var(--vsq-button-red-hover);
+  --color-button-red-outline: var(--vsq-button-red-outline);
+  --color-button-red-outline-hover: var(--vsq-button-red-outline-hover);
+  --color-button-green: var(--vsq-button-green);
+  --color-button-green-hover: var(--vsq-button-green-hover);
+  --color-button-green-outline: var(--vsq-button-green-outline);
+  --color-button-green-outline-hover: var(--vsq-button-green-outline-hover);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

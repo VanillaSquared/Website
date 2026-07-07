@@ -6,6 +6,9 @@ const variants = {
   blue: "border-button-blue-outline bg-button-blue text-button-text hover:border-button-blue-outline-hover hover:bg-button-blue-hover",
   purple: "border-button-purple-outline bg-button-purple text-button-text hover:border-button-purple-outline-hover hover:bg-button-purple-hover",
   blurple: "border-button-blurple-outline bg-button-blurple text-button-text hover:border-button-blurple-outline-hover hover:bg-button-blurple-hover",
+  red: "border-button-red-outline bg-button-red text-button-text hover:border-button-red-outline-hover hover:bg-button-red-hover",
+  danger: "border-button-red-outline bg-button-red text-button-text hover:border-button-red-outline-hover hover:bg-button-red-hover",
+  green: "border-button-green-outline bg-button-green text-button-text hover:border-button-green-outline-hover hover:bg-button-green-hover",
   locked: "border-locked-border bg-locked text-locked-text cursor-not-allowed"
 };
 

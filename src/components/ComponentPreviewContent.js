@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import settingsIcon from "@/assets/icons/settings.svg";
 import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
@@ -11,10 +13,11 @@ import MultiSelect from "@/components/MultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
+import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
 import Toggle from "@/components/Toggle";
 
-const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple"];
+const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple", "green", "red"];
 const buttonSizes = ["sm", "md", "icon", "iconButton"];
 const cardSizes = ["sm", "md", "lg", "popup"];
 const checkmarkCycleStates = [
@@ -48,6 +51,8 @@ const selectOptions = [
 ];
 
 export default function ComponentPreviewContent({ embedded = false } = {}) {
+  const [designTab, setDesignTab] = useState("buttons");
+
   return (
     <>
       <section className={embedded ? "bg-transparent p-0" : "bg-background px-6 py-16"}>
@@ -61,6 +66,31 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
               </p>
             </div>
           ) : null}
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Tabbed design samples</h2>
+            <Tabs
+              tabs={[
+                { label: "Buttons", value: "buttons" },
+                { label: "Inputs", value: "inputs" },
+                { label: "Controls", value: "controls" },
+              ]}
+              value={designTab}
+              onChange={setDesignTab}
+              line="full"
+            />
+            <Card title={designTab === "buttons" ? "Button palette" : designTab === "inputs" ? "Input states" : "Control states"} size="md" className="overflow-visible">
+              {designTab === "buttons" ? (
+                <div className="flex flex-wrap gap-3"><Button>Primary</Button><Button variant="green">Save</Button><Button variant="red">Delete</Button><Button variant="locked">Locked</Button></div>
+              ) : null}
+              {designTab === "inputs" ? (
+                <div className="grid gap-3 md:grid-cols-2"><TextInput label="Editable" sampleText="Type here" /><TextInput locked label="Locked" defaultValue="Unavailable" /></div>
+              ) : null}
+              {designTab === "controls" ? (
+                <div className="grid gap-3 md:grid-cols-2"><Toggle label="Enabled" defaultChecked /><MultiSelect label="Multi select" options={selectOptions} defaultValue={["vanilla"]} /></div>
+              ) : null}
+            </Card>
+          </section>
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Buttons</h2>

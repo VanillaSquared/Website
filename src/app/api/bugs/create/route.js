@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAuthSubject } from "@/app/auth";
+import { PERMISSIONS, hasPermission } from "@/auth/permissions";
 import { createBugReport } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
@@ -15,10 +16,15 @@ export async function POST(request) {
   }
 
   const subject = await getAuthSubject();
-  const creatorUserId = subject?.properties?.id;
+  const user = subject?.properties;
+  const creatorUserId = user?.id;
 
   if (!creatorUserId) {
     return NextResponse.json({ error: "You must be logged in to submit a bug report." }, { status: 401 });
+  }
+
+  if (!await hasPermission(user, PERMISSIONS.CREATE_BUGS)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   let formData;
