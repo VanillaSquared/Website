@@ -4,6 +4,8 @@ import {
   BUG_REPORT_STATUSES,
   listBugReports,
 } from "@/bugs/reporter";
+import plusIcon from "@/assets/icons/plus.svg";
+import Button from "@/components/Button";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugFilterSidebar from "./BugFilterSidebar";
@@ -56,6 +58,16 @@ export default async function BugsPage({ searchParams }) {
   return (
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { ...bugSearch, placeholder: "Search bugs" } }}
+      leadingActions={(
+        <Button
+          variant="iconButton"
+          size="iconButton"
+          icon={plusIcon}
+          iconClassName="h-5 w-5"
+          aria-label="Add bug report"
+          title="Add bug report"
+        />
+      )}
       actions={(
         <BugFilterSidebar
           categories={BUG_REPORT_CATEGORY_CONFIGS}
