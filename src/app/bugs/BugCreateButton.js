@@ -10,7 +10,7 @@ import Modal from "@/components/Modal";
 
 import BugReporterForm from "./BugReporterForm";
 
-export default function BugCreateButton({ categories, versions, authenticated }) {
+export default function BugCreateButton({ categories, versions, authenticated, creatorUser }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
@@ -43,6 +43,7 @@ export default function BugCreateButton({ categories, versions, authenticated })
               categories={categories}
               versions={versions}
               authenticated={authenticated}
+              creatorUser={creatorUser}
               onCreated={handleCreated}
             />
           </div>

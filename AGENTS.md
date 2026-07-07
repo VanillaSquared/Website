@@ -23,3 +23,7 @@
 - Do not leak secrets, credentials, or sensitive information.
 - Keep server-side code secure and avoid introducing unsafe behavior.
 - Make sure the client can't just tell the server whatever through the API routs and then the server accepts it, add verifications for those.
+
+## UI Design
+
+- Use `src/components/...` for the UI

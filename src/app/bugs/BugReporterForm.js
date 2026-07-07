@@ -3,11 +3,14 @@
 import { useState } from "react";
 
 import Button from "@/components/Button";
+import FileUpload from "@/components/FileUpload";
+import Preview from "@/components/Preview";
 import TextInput from "@/components/TextInput";
 
-export default function BugReporterForm({ categories, versions, authenticated, onCreated }) {
+export default function BugReporterForm({ categories, versions, authenticated, creatorUser, onCreated }) {
   const [status, setStatus] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -31,6 +34,7 @@ export default function BugReporterForm({ categories, versions, authenticated, o
       }
 
       form.reset();
+      setResetKey((current) => current + 1);
       setStatus({ type: "success", message: `Bug report submitted. ID: ${result.publicId ?? result.id}` });
       onCreated?.(result);
     } catch {
@@ -40,7 +44,7 @@ export default function BugReporterForm({ categories, versions, authenticated, o
     }
   }
 
-  if (!authenticated) {
+  if (!authenticated || !creatorUser?.id) {
     return (
       <div className="rounded-2xl border border-divider bg-card p-6 text-center">
         <h2 className="text-2xl font-bold text-heading">Log in to submit reports</h2>
@@ -52,20 +56,20 @@ export default function BugReporterForm({ categories, versions, authenticated, o
 
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl border border-divider bg-card p-6 shadow-sm">
+      <input type="hidden" name="creatorUserId" value={creatorUser?.id ?? ""} />
+      <div className="mb-5 rounded-xl border border-divider bg-control/60 px-4 py-3 text-sm text-muted">
+        Submitting as <span className="font-semibold text-heading">{creatorUser?.username ?? "your account"}</span>.
+      </div>
+
       <div className="grid gap-5 sm:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm font-semibold text-soft">
-          Category
-          <select
-            name="category"
-            required
-            className="rounded-lg border border-input-border bg-input px-3 py-2 text-heading outline-none transition-colors hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus"
-          >
-            <option value="">Choose a category</option>
-            {categories.map((category) => (
-              <option key={category.slug ?? category} value={category.slug ?? category}>{category.label ?? category}</option>
-            ))}
-          </select>
-        </label>
+        <Preview
+          key={`category-${resetKey}`}
+          label="Category"
+          name="category"
+          multiple={false}
+          placeholder="Choose a category"
+          options={categories.map((category) => ({ value: category.slug ?? category, label: category.label ?? category }))}
+        />
 
         <TextInput label="Title" name="title" sampleText="Short summary of the issue" required maxCharacters={160} />
       </div>
@@ -81,33 +85,30 @@ export default function BugReporterForm({ categories, versions, authenticated, o
         maxCharacters={8000}
       />
 
-      <fieldset className="mt-5 rounded-xl border border-divider p-4">
-        <legend className="px-2 text-sm font-semibold text-soft">Affected versions</legend>
-        <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-          {versions.map((version) => (
-            <label key={version} className="flex items-center gap-2 text-sm text-muted">
-              <input type="checkbox" name="affectedVersions" value={version} className="h-4 w-4" />
-              {version}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      <Preview
+        key={`versions-${resetKey}`}
+        className="mt-5"
+        label="Affected versions"
+        name="affectedVersions"
+        options={versions}
+        placeholder="Choose affected versions"
+      />
 
       <p className="mt-5 rounded-xl border border-divider bg-control/60 px-4 py-3 text-sm text-muted">
         Priority, status, creator, and fixed version are assigned by the server during triage.
       </p>
 
-      <label className="mt-5 flex flex-col gap-2 text-sm font-semibold text-soft">
-        Attachments
-        <input
-          name="files"
-          type="file"
-          multiple
-          accept=".log,.png,.txt,.json,.html"
-          className="rounded-lg border border-input-border bg-input px-3 py-2 text-heading file:mr-4 file:rounded-lg file:border-0 file:bg-button-secondary file:px-3 file:py-1 file:text-button-text"
-        />
-        <span className="text-xs font-normal text-muted">Up to 3 files, 10 MB each. Allowed: .log, .png, .txt, .json, .html.</span>
-      </label>
+      <FileUpload
+        key={`files-${resetKey}`}
+        className="mt-5"
+        label="Attachments"
+        description="Drag and drop supporting logs or screenshots here, or browse."
+        name="files"
+        multiple
+        accept=".log,.png,.txt,.json,.html"
+        maxFiles={3}
+        maxFileSize={10 * 1024 * 1024}
+      />
 
       {status ? (
         <p className={`mt-5 rounded-lg border px-4 py-3 text-sm ${status.type === "success" ? "border-divider text-heading" : "border-input-border-focus text-soft"}`}>

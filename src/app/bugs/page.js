@@ -42,6 +42,7 @@ export default async function BugsPage({ searchParams }) {
     listBugReports(filters),
     getAuthSubject({ updateTokens: false }),
   ]);
+  const creatorUser = subject?.properties ?? null;
   const searchHiddenFields = {
     category: filters.category,
     priority: filters.priority,
@@ -66,7 +67,8 @@ export default async function BugsPage({ searchParams }) {
         <BugCreateButton
           categories={BUG_REPORT_CATEGORY_CONFIGS}
           versions={BUG_REPORT_VERSIONS}
-          authenticated={Boolean(subject?.properties?.id)}
+          authenticated={Boolean(creatorUser?.id)}
+          creatorUser={creatorUser}
         />
       )}
       actions={(

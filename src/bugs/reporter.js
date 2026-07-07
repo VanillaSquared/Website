@@ -35,7 +35,7 @@ export const BUG_REPORT_VERSIONS = [
 export const BUG_REPORT_ALLOWED_EXTENSIONS = [".log", ".png", ".txt", ".json", ".html"];
 export const BUG_REPORT_MAX_FILE_SIZE = 10 * 1024 * 1024;
 export const BUG_REPORT_MAX_FILES = 3;
-export const BUG_REPORT_SERVER_CONTROLLED_FIELDS = ["priority", "status", "creator", "creatorUserId", "fixed", "fixedVersion"];
+export const BUG_REPORT_SERVER_CONTROLLED_FIELDS = ["priority", "status", "creator", "fixed", "fixedVersion"];
 
 const MAX_TITLE_LENGTH = 160;
 const MAX_DESCRIPTION_LENGTH = 8000;
@@ -383,7 +383,8 @@ function isFileLike(value) {
   return value && typeof value === "object" && typeof value.arrayBuffer === "function";
 }
 
-export function validateBugReportFormData(formData) {
+export function validateBugReportFormData(formData, { expectedCreatorUserId } = {}) {
+  const submittedCreatorUserId = getString(formData, "creatorUserId");
   const category = getString(formData, "category");
   const title = getString(formData, "title");
   const description = getString(formData, "description");
@@ -398,6 +399,10 @@ export function validateBugReportFormData(formData) {
 
   if (serverControlledFieldError) {
     return { error: serverControlledFieldError };
+  }
+
+  if (!submittedCreatorUserId || submittedCreatorUserId !== expectedCreatorUserId) {
+    return { error: "The submitted creator does not match your authenticated account." };
   }
 
   if (!BUG_REPORT_CATEGORIES.includes(category)) {
@@ -481,7 +486,7 @@ async function saveBugReportFiles(reportId, files) {
 }
 
 export async function createBugReport({ creatorUserId, formData }) {
-  const validated = validateBugReportFormData(formData);
+  const validated = validateBugReportFormData(formData, { expectedCreatorUserId: creatorUserId });
 
   if (validated.error) {
     return { error: validated.error };
