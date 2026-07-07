@@ -228,10 +228,10 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
   }
 
   return (
-    <Modal open={open} onClose={onClose} variant="wide">
+    <Modal open={open} onClose={onClose} variant="default">
       <div className="text-soft">
         <ModalHeader title="Create role" onClose={onClose} />
-        <div className="space-y-5 p-6">
+        <div className="space-y-4 p-5">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
           <label className="block text-sm">Role name<input className={lockedInputClass(!canCreate || busy)} disabled={!canCreate || busy} value={name} onChange={(event) => setName(event.target.value)} placeholder="moderator" /></label>
           <MultiSelect label="Initial permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canCreate || busy} placeholder="Select permissions" />
