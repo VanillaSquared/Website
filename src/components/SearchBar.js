@@ -64,6 +64,7 @@ export default function SearchBar({
   previewTitleKey = "title",
   previewDescriptionKey = "description",
   previewMetaKey,
+  showPreview = true,
   variant = "default",
   locked = false,
   value: controlledValue,
@@ -84,7 +85,7 @@ export default function SearchBar({
   const variantConfig = variants[variant] ?? variants.default;
 
   useEffect(() => {
-    if (locked || !previewEndpoint || !value.trim()) {
+    if (!showPreview || locked || !previewEndpoint || !value.trim()) {
       setPreviewItems([]);
       setPreviewLoading(false);
       return undefined;
@@ -119,7 +120,7 @@ export default function SearchBar({
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [hiddenFields, name, previewEndpoint, previewResultsKey, value]);
+  }, [hiddenFields, name, previewEndpoint, previewResultsKey, showPreview, value]);
 
   function getSearchHref(nextValue) {
     const params = new URLSearchParams();
@@ -195,10 +196,12 @@ export default function SearchBar({
               name={name}
               value={value}
               disabled={locked}
-              onFocus={() => !locked && setOpen(true)}
+              onFocus={() => !locked && showPreview && setOpen(true)}
               onChange={(event) => {
                 setValue(event.target.value);
-                setOpen(true);
+                if (showPreview) {
+                  setOpen(true);
+                }
               }}
               placeholder={placeholder}
               className={`${locked ? "cursor-not-allowed bg-locked-input text-locked-text placeholder:text-locked-text" : `${value ? variantConfig.filled : variantConfig.empty} ${variantConfig.hover} text-heading placeholder:text-search-placeholder`} ${variantConfig.input} relative w-full pr-9 pl-9 outline-none backdrop-blur-md transition-colors`}
@@ -225,7 +228,7 @@ export default function SearchBar({
       )}
     >
       {({ close }) => {
-        if (!value) {
+        if (!showPreview || !value) {
           return null;
         }
 

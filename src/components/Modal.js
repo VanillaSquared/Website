@@ -280,7 +280,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
             </div>
           </div>
 
-          <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" value={searchQuery} onChange={setSearchQuery} />
+          <SearchBar variant="settings" placeholder="Search settings" className="mt-5 shrink-0" value={searchQuery} onChange={setSearchQuery} showPreview={false} />
         </div>
 
         <nav className="mt-4 min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
