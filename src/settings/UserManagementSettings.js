@@ -104,10 +104,6 @@ export default function UserManagementSettings() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="shrink-0 space-y-4">
-        <div>
-          <h3 className="text-2xl font-bold text-heading">User Management</h3>
-        </div>
-
         <SearchBar
           variant="settings"
           placeholder="Search users"
