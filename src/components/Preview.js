@@ -123,7 +123,7 @@ export default function Preview({
         {renderTrigger(previewControls)}
         {open && content ? (
           <div
-            className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl ${menuMaxHeight} ${menuClassName}`}
+            className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${menuMaxHeight} ${menuClassName}`}
           >
             {content}
           </div>
@@ -167,7 +167,7 @@ export default function Preview({
           </button>
           {open ? (
             <div
-              className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl ${menuMaxHeight} ${menuClassName}`}
+              className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${menuMaxHeight} ${menuClassName}`}
             >
               <div className="flex w-full flex-col gap-0.5">
                 {options.map((option) => {
