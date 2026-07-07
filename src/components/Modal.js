@@ -19,7 +19,7 @@ import Card from "@/components/Card";
 import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
-import SettingsContent from "@/components/settings/SettingsContent";
+import SettingsContent from "@/settings/SettingsContent";
 
 const MODAL_ANIMATIONS = {
   none: {

@@ -1,4 +1,4 @@
-import PlaceholderSettings from "@/components/settings/PlaceholderSettings";
+import PlaceholderSettings from "@/settings/PlaceholderSettings";
 
 export default function LanguageTimeSettings() {
   return <PlaceholderSettings />;

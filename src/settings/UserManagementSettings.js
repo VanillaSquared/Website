@@ -21,6 +21,22 @@ function getJoinedDate(user) {
   return `Joined ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 }
 
+const rolePriority = ["owner", "developer", "dev", "support", "default"];
+
+function getHighestRole(user) {
+  const roles = user.authorization?.roles ?? [];
+
+  return rolePriority.find((role) => roles.includes(role)) ?? "default";
+}
+
+function formatRole(role) {
+  if (role === "developer") {
+    return "dev";
+  }
+
+  return role;
+}
+
 function userMatchesQuery(user, query) {
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -28,23 +44,9 @@ function userMatchesQuery(user, query) {
     return true;
   }
 
-  return [
-    user.username,
-    user.email,
-    user.id,
-    ...(user.authorization?.roles ?? []),
-    ...(user.authorization?.permissions ?? []),
-  ]
+  return [user.username, user.email, user.id, getHighestRole(user), formatRole(getHighestRole(user))]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalizedQuery));
-}
-
-function formatPermission(permission) {
-  return String(permission)
-    .split("_")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
 }
 
 export default function UserManagementSettings() {
@@ -146,14 +148,9 @@ export default function UserManagementSettings() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          {(user.authorization?.permissions?.length ? user.authorization.permissions : ["No permissions"]).map((permission) => (
-                            <Tag key={permission} variant={permission === "No permissions" ? "subtle" : "accent"}>
-                              {formatPermission(permission)}
-                            </Tag>
-                          ))}
-                          {user.authorization?.roles?.map((role) => (
-                            <Tag key={role} variant="subtle">{role}</Tag>
-                          ))}
+                          <Tag variant={getHighestRole(user) === "default" ? "subtle" : "accent"}>
+                            {formatRole(getHighestRole(user))}
+                          </Tag>
                         </div>
                         <div className="min-w-0">
                           <h2 className="text-base font-semibold text-heading">{user.username || "Unnamed user"}</h2>
