@@ -8,6 +8,7 @@ import Checkmark from "@/components/Checkmark";
 import FileUpload from "@/components/FileUpload";
 import ModalShowcase from "@/components/ModalShowcase";
 import MultiSelect from "@/components/MultiSelect";
+import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
@@ -99,6 +100,19 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
           </section>
 
           <ModalShowcase />
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Profile pictures</h2>
+            <div className="flex flex-wrap items-center gap-4">
+              <ProfilePicture username="PainterFlow11" email="painterflow11@example.com" />
+              <ProfilePicture size="sm" username="Vanilla User" email="user@example.com" />
+              <ProfilePicture
+                username="Image User"
+                src="https://github.com/vercel.png"
+                alt="Example profile picture"
+              />
+            </div>
+          </section>
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Cards</h2>

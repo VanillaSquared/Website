@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAuthSubject } from "@/app/auth";
-import { PERMISSIONS, hasPermission } from "@/auth/permissions";
+import { PERMISSIONS, getAuthorizationForUser, hasPermission } from "@/auth/permissions";
 import { listUsers } from "@/auth/openSQL";
 
 export const dynamic = "force-dynamic";
@@ -25,5 +25,11 @@ export async function GET() {
   const auth = await requireUserManagement();
   if (auth.error) return auth.error;
 
-  return NextResponse.json({ users: await listUsers() }, { headers: { "Cache-Control": "no-store" } });
+  const users = await listUsers();
+  const usersWithAuthorization = await Promise.all(users.map(async (user) => ({
+    ...user,
+    authorization: await getAuthorizationForUser(user),
+  })));
+
+  return NextResponse.json({ users: usersWithAuthorization }, { headers: { "Cache-Control": "no-store" } });
 }

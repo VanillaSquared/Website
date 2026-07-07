@@ -17,6 +17,7 @@ import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import ComponentPreviewContent from "@/components/ComponentPreviewContent";
+import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import UserManagementBrowser from "@/components/UserManagementBrowser";
@@ -139,17 +140,6 @@ const settingsItemIcons = {
   "User Management": userManagementIcon,
 };
 
-function getInitials(username, email) {
-  const displayName = username || email || "VS";
-
-  return displayName
-    .split(/[\s._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("") || "VS";
-}
-
 function canViewSettingsItem(item, permissions) {
   if (!item.permission) {
     return true;
@@ -224,9 +214,11 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
       <aside className="flex min-h-0 shrink-0 flex-col overflow-hidden border-b border-divider bg-card/50 p-5 md:w-72 md:border-b-0 md:border-r">
         <div className="shrink-0 bg-card/50 pb-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-accent/50 bg-accent/20 text-lg font-bold text-heading">
-              {getInitials(username, email)}
-            </div>
+            <ProfilePicture
+              src={user?.profilePicture ?? user?.avatarUrl ?? user?.image}
+              username={username}
+              email={email}
+            />
             <div className="min-w-0">
               <p className="truncate font-semibold text-heading">{username}</p>
               <p className="truncate text-sm text-muted">{email}</p>
@@ -286,7 +278,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
           <Button size="icon" variant="tertiary" icon={closeIcon} aria-label="Close settings" onClick={onClose} />
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12">
+        <div className={activeItem === "User Management" ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
           {renderSettingsContent(activeItem, children)}
         </div>
       </section>

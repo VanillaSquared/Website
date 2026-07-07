@@ -2,20 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import Tag from "@/components/Tag";
-
-function getInitials(username, email) {
-  const displayName = username || email || "VS";
-
-  return displayName
-    .split(/[\s._-]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("") || "VS";
-}
 
 function getJoinedDate(user) {
   if (!user.createdAt) {
@@ -38,9 +28,23 @@ function userMatchesQuery(user, query) {
     return true;
   }
 
-  return [user.username, user.email, user.id]
+  return [
+    user.username,
+    user.email,
+    user.id,
+    ...(user.authorization?.roles ?? []),
+    ...(user.authorization?.permissions ?? []),
+  ]
     .filter(Boolean)
     .some((value) => String(value).toLowerCase().includes(normalizedQuery));
+}
+
+function formatPermission(permission) {
+  return String(permission)
+    .split("_")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 export default function UserManagementBrowser() {
@@ -100,7 +104,6 @@ export default function UserManagementBrowser() {
       <div className="shrink-0 space-y-4">
         <div>
           <h3 className="text-2xl font-bold text-heading">User Management</h3>
-          <p className="mt-2 text-sm text-muted">Browse all Vanilla² users. User details and editing are not available yet.</p>
         </div>
 
         <SearchBar
@@ -133,14 +136,24 @@ export default function UserManagementBrowser() {
                 {index > 0 ? <Separator /> : null}
                 <article className="px-4 py-3">
                   <div className="flex gap-3">
-                    <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-accent/40 bg-accent/15 text-sm font-bold text-heading">
-                      {getInitials(user.username, user.email)}
-                    </div>
+                    <ProfilePicture
+                      className="mt-0.5 border-accent/40 bg-accent/15"
+                      size="sm"
+                      src={user.profilePicture ?? user.avatarUrl ?? user.image}
+                      username={user.username}
+                      email={user.email}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-col gap-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <Tag variant="accent">User</Tag>
-                          <span className="font-mono text-xs text-subtle">{user.id}</span>
+                          {(user.authorization?.permissions?.length ? user.authorization.permissions : ["No permissions"]).map((permission) => (
+                            <Tag key={permission} variant={permission === "No permissions" ? "subtle" : "accent"}>
+                              {formatPermission(permission)}
+                            </Tag>
+                          ))}
+                          {user.authorization?.roles?.map((role) => (
+                            <Tag key={role} variant="subtle">{role}</Tag>
+                          ))}
                         </div>
                         <div className="min-w-0">
                           <h2 className="text-base font-semibold text-heading">{user.username || "Unnamed user"}</h2>
