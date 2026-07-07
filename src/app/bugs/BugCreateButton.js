@@ -8,6 +8,7 @@ import xIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 
+import { BUG_REPORT_CREATED_EVENT } from "./BugReportSuccessNotice";
 import BugReporterForm from "./BugReporterForm";
 
 export default function BugCreateButton({ categories, versions, authenticated, creatorUser }) {
@@ -16,6 +17,7 @@ export default function BugCreateButton({ categories, versions, authenticated, c
 
   function handleCreated() {
     setOpen(false);
+    window.dispatchEvent(new Event(BUG_REPORT_CREATED_EVENT));
     router.refresh();
   }
 

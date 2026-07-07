@@ -9,6 +9,7 @@ import { getAuthSubject } from "@/app/auth";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugCreateButton from "./BugCreateButton";
+import BugReportSuccessNotice from "./BugReportSuccessNotice";
 import BugFilterSidebar from "./BugFilterSidebar";
 import BugList from "./BugList";
 
@@ -63,6 +64,7 @@ export default async function BugsPage({ searchParams }) {
   return (
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { ...bugSearch, placeholder: "Search bugs" } }}
+      notice={<BugReportSuccessNotice />}
       leadingActions={(
         <BugCreateButton
           categories={BUG_REPORT_CATEGORY_CONFIGS}

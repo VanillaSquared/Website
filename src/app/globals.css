@@ -73,6 +73,7 @@
   --vsq-control-accent-text: #ffffff;
   --vsq-control-knob: #ffffff;
   --vsq-error: #fca5a5;
+  --vsq-success: #34d399;
   --vsq-modal-backdrop: rgb(0 0 0 / 0.45);
   --vsq-scrollbar-track: transparent;
   --vsq-scrollbar-thumb: #6f717c;
@@ -150,6 +151,7 @@
   --color-control-accent-text: var(--vsq-control-accent-text);
   --color-control-knob: var(--vsq-control-knob);
   --color-error: var(--vsq-error);
+  --color-success: var(--vsq-success);
   --color-modal-backdrop: var(--vsq-modal-backdrop);
   --color-button-text: var(--vsq-text-inverse);
   --color-button-primary: var(--vsq-button-primary);
