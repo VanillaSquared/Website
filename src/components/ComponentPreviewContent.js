@@ -46,18 +46,20 @@ const selectOptions = [
   { label: "Rift", value: "rift" },
 ];
 
-export default function ComponentPreviewContent() {
+export default function ComponentPreviewContent({ embedded = false } = {}) {
   return (
     <>
-      <section className="bg-background px-6 py-16">
-        <div className="mx-auto flex max-w-5xl flex-col gap-12">
-          <div>
-            <Tag>Dev</Tag>
-            <h1 className="mt-4 text-4xl font-bold text-heading">Component Preview</h1>
-            <p className="mt-3 max-w-2xl text-muted">
-              A DefaultTemplate-derived page showcasing reusable components and their variants.
-            </p>
-          </div>
+      <section className={embedded ? "bg-transparent p-0" : "bg-background px-6 py-16"}>
+        <div className={`${embedded ? "" : "mx-auto"} flex max-w-5xl flex-col gap-12`}>
+          {!embedded ? (
+            <div>
+              <Tag>Dev</Tag>
+              <h1 className="mt-4 text-4xl font-bold text-heading">Component Preview</h1>
+              <p className="mt-3 max-w-2xl text-muted">
+                A DefaultTemplate-derived page showcasing reusable components and their variants.
+              </p>
+            </div>
+          ) : null}
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Buttons</h2>

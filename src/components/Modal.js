@@ -19,6 +19,7 @@ import Card from "@/components/Card";
 import ComponentPreviewContent from "@/components/ComponentPreviewContent";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
+import UserManagementBrowser from "@/components/UserManagementBrowser";
 
 const MODAL_ANIMATIONS = {
   none: {
@@ -171,58 +172,10 @@ function getVisibleSettingsCategories(permissions, query = "") {
     .filter((category) => category.items.length > 0);
 }
 
-function SettingsPlaceholder({ title, description }) {
-  return (
-    <div className="space-y-4">
-      <h3 className="text-2xl font-bold text-heading">{title}</h3>
-      <p className="max-w-2xl text-sm text-muted">{description}</p>
-    </div>
-  );
+function SettingsPlaceholder() {
+  return null;
 }
 
-function UserManagementSettings() {
-  const [users, setUsers] = useState([]);
-  const [message, setMessage] = useState("Loading users...");
-
-  useEffect(() => {
-    let cancelled = false;
-
-    fetch("/api/users", { cache: "no-store", credentials: "same-origin" })
-      .then((response) => response.ok ? response.json() : Promise.reject(response))
-      .then((data) => {
-        if (!cancelled) {
-          setUsers(data.users ?? []);
-          setMessage("");
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setMessage("Could not load users.");
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-2xl font-bold text-heading">User Management</h3>
-        <p className="mt-2 text-sm text-muted">Manage roles and individual permissions through protected APIs.</p>
-      </div>
-      {message ? <p className="text-sm text-muted">{message}</p> : null}
-      <div className="grid gap-3">
-        {users.map((item) => (
-          <Card key={item.id} title={item.username} size="sm" hoverAccent={false} description={item.email}>
-            <p className="break-all text-xs text-muted">{item.id}</p>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 function renderSettingsContent(activeItem, children) {
   if (children) {
@@ -233,13 +186,13 @@ function renderSettingsContent(activeItem, children) {
     return (
       <div className="space-y-6">
         <Button href="/components" size="sm">Open full preview</Button>
-        <ComponentPreviewContent />
+        <ComponentPreviewContent embedded />
       </div>
     );
   }
 
   if (activeItem === "User Management") {
-    return <UserManagementSettings />;
+    return <UserManagementBrowser />;
   }
 
   if (activeItem === "Bug Panel") {
