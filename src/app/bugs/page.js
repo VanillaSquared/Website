@@ -2,12 +2,13 @@ import {
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_REPORT_PRIORITIES,
   BUG_REPORT_STATUSES,
+  BUG_REPORT_VERSIONS,
   listBugReports,
 } from "@/bugs/reporter";
-import plusIcon from "@/assets/icons/plus.svg";
-import Button from "@/components/Button";
+import { getAuthSubject } from "@/app/auth";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
+import BugCreateButton from "./BugCreateButton";
 import BugFilterSidebar from "./BugFilterSidebar";
 import BugList from "./BugList";
 
@@ -37,7 +38,10 @@ export default async function BugsPage({ searchParams }) {
     priority: getSearchParamValues(params, "priority"),
     status: getSearchParamValues(params, "status"),
   };
-  const bugs = await listBugReports(filters);
+  const [bugs, subject] = await Promise.all([
+    listBugReports(filters),
+    getAuthSubject({ updateTokens: false }),
+  ]);
   const searchHiddenFields = {
     category: filters.category,
     priority: filters.priority,
@@ -59,13 +63,10 @@ export default async function BugsPage({ searchParams }) {
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { ...bugSearch, placeholder: "Search bugs" } }}
       leadingActions={(
-        <Button
-          variant="iconButton"
-          size="iconButton"
-          icon={plusIcon}
-          iconClassName="h-5 w-5"
-          aria-label="Add bug report"
-          title="Add bug report"
+        <BugCreateButton
+          categories={BUG_REPORT_CATEGORY_CONFIGS}
+          versions={BUG_REPORT_VERSIONS}
+          authenticated={Boolean(subject?.properties?.id)}
         />
       )}
       actions={(

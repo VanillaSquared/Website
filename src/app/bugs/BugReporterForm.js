@@ -5,8 +5,7 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import TextInput from "@/components/TextInput";
 
-export default function BugReporterForm({ categories, versions, authenticated }) {
-  const [fixed, setFixed] = useState(false);
+export default function BugReporterForm({ categories, versions, authenticated, onCreated }) {
   const [status, setStatus] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -17,11 +16,6 @@ export default function BugReporterForm({ categories, versions, authenticated })
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    formData.set("fixed", fixed ? "true" : "false");
-
-    if (!fixed) {
-      formData.delete("fixedVersion");
-    }
 
     try {
       const response = await fetch("/api/bugs/create", {
@@ -37,8 +31,8 @@ export default function BugReporterForm({ categories, versions, authenticated })
       }
 
       form.reset();
-      setFixed(false);
-      setStatus({ type: "success", message: `Bug report submitted. ID: ${result.id}` });
+      setStatus({ type: "success", message: `Bug report submitted. ID: ${result.publicId ?? result.id}` });
+      onCreated?.(result);
     } catch {
       setStatus({ type: "error", message: "Failed to submit bug report." });
     } finally {
@@ -68,7 +62,7 @@ export default function BugReporterForm({ categories, versions, authenticated })
           >
             <option value="">Choose a category</option>
             {categories.map((category) => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category.slug ?? category} value={category.slug ?? category}>{category.label ?? category}</option>
             ))}
           </select>
         </label>
@@ -99,33 +93,9 @@ export default function BugReporterForm({ categories, versions, authenticated })
         </div>
       </fieldset>
 
-      <div className="mt-5 grid gap-5 sm:grid-cols-2">
-        <label className="flex items-center gap-2 text-sm font-semibold text-soft">
-          <input
-            type="checkbox"
-            checked={fixed}
-            onChange={(event) => setFixed(event.target.checked)}
-            className="h-4 w-4"
-          />
-          Already fixed
-        </label>
-
-        {fixed ? (
-          <label className="flex flex-col gap-2 text-sm font-semibold text-soft">
-            Fixed version
-            <select
-              name="fixedVersion"
-              required={fixed}
-              className="rounded-lg border border-input-border bg-input px-3 py-2 text-heading outline-none transition-colors hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus"
-            >
-              <option value="">Choose fixed version</option>
-              {versions.map((version) => (
-                <option key={version} value={version}>{version}</option>
-              ))}
-            </select>
-          </label>
-        ) : null}
-      </div>
+      <p className="mt-5 rounded-xl border border-divider bg-control/60 px-4 py-3 text-sm text-muted">
+        Priority, status, creator, and fixed version are assigned by the server during triage.
+      </p>
 
       <label className="mt-5 flex flex-col gap-2 text-sm font-semibold text-soft">
         Attachments

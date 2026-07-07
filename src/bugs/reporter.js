@@ -35,7 +35,7 @@ export const BUG_REPORT_VERSIONS = [
 export const BUG_REPORT_ALLOWED_EXTENSIONS = [".log", ".png", ".txt", ".json", ".html"];
 export const BUG_REPORT_MAX_FILE_SIZE = 10 * 1024 * 1024;
 export const BUG_REPORT_MAX_FILES = 3;
-export const BUG_REPORT_SERVER_CONTROLLED_FIELDS = ["priority", "status"];
+export const BUG_REPORT_SERVER_CONTROLLED_FIELDS = ["priority", "status", "creator", "creatorUserId", "fixed", "fixedVersion"];
 
 const MAX_TITLE_LENGTH = 160;
 const MAX_DESCRIPTION_LENGTH = 8000;
@@ -389,9 +389,9 @@ export function validateBugReportFormData(formData) {
   const description = getString(formData, "description");
   const priority = "unset";
   const status = "Unconfirmed";
-  const fixed = getString(formData, "fixed") === "true";
+  const fixed = false;
   const affectedVersions = [...new Set(getAllStrings(formData, "affectedVersions"))];
-  const fixedVersion = fixed ? getString(formData, "fixedVersion") : null;
+  const fixedVersion = null;
   const files = formData.getAll("files").filter((file) => isFileLike(file) && file.size > 0);
 
   const serverControlledFieldError = validateNoClientControlledFields(formData, BUG_REPORT_SERVER_CONTROLLED_FIELDS, "bug report field");
