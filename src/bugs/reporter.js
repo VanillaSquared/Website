@@ -387,13 +387,15 @@ function isFileLike(value) {
 
 export function validateBugReportFormData(formData, { expectedCreatorUserId } = {}) {
   const submittedCreatorUserId = getString(formData, "creatorUserId");
-  const category = getString(formData, "category");
+  const categoryValues = getAllStrings(formData, "category");
+  const category = categoryValues[0] ?? "";
   const title = getString(formData, "title");
   const description = getString(formData, "description");
   const priority = "unset";
   const status = "Unconfirmed";
   const fixed = false;
-  const affectedVersions = [...new Set(getAllStrings(formData, "affectedVersions"))];
+  const submittedAffectedVersions = getAllStrings(formData, "affectedVersions");
+  const affectedVersions = [...new Set(submittedAffectedVersions)];
   const fixedVersion = null;
   const files = formData.getAll("files").filter((file) => isFileLike(file) && file.size > 0);
 
@@ -403,8 +405,12 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId } = 
     return { error: serverControlledFieldError };
   }
 
-  if (!submittedCreatorUserId || submittedCreatorUserId !== expectedCreatorUserId) {
+  if (submittedCreatorUserId && submittedCreatorUserId !== expectedCreatorUserId) {
     return { error: "The submitted creator does not match your authenticated account." };
+  }
+
+  if (categoryValues.length !== 1) {
+    return { error: "Choose one bug report category." };
   }
 
   if (!BUG_REPORT_CATEGORIES.includes(category)) {
@@ -419,7 +425,7 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId } = 
     return { error: `Enter a description between ${MIN_DESCRIPTION_LENGTH} and ${MAX_DESCRIPTION_LENGTH} characters.` };
   }
 
-  if (affectedVersions.some((version) => !BUG_REPORT_VERSIONS.includes(version))) {
+  if (submittedAffectedVersions.length !== affectedVersions.length || affectedVersions.length > BUG_REPORT_VERSIONS.length || affectedVersions.some((version) => !BUG_REPORT_VERSIONS.includes(version))) {
     return { error: "Choose valid affected versions." };
   }
 
@@ -640,6 +646,35 @@ export async function listBugReports({ q, category, priority, status, seed = tru
   );
 
   return rows.map(mapBugReportRow);
+}
+
+export async function checkBugReportOwnership(publicId, creatorUserId, { seed = true } = {}) {
+  const normalizedPublicId = String(publicId ?? "").trim();
+  const normalizedCreatorUserId = String(creatorUserId ?? "").trim();
+
+  if (!normalizedPublicId || !normalizedCreatorUserId) {
+    return null;
+  }
+
+  if (seed) {
+    await seedDemoBugReports();
+  } else {
+    await initializeBugReporterTables();
+  }
+
+  const [rows] = await getPool().execute(
+    `SELECT creator_user_id
+     FROM bug_reports
+     WHERE LOWER(public_id) = LOWER(?)
+     LIMIT 1`,
+    [normalizedPublicId]
+  );
+
+  if (!rows.length) {
+    return null;
+  }
+
+  return rows[0].creator_user_id === normalizedCreatorUserId;
 }
 
 export async function getBugReportByPublicId(publicId, { seed = true } = {}) {

@@ -15,6 +15,7 @@ export default function BugCreateButton({ categories, versions, authenticated, c
   const [open, setOpen] = useState(false);
 
   function handleCreated() {
+    setOpen(false);
     router.refresh();
   }
 

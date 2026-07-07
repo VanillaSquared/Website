@@ -56,8 +56,6 @@ export default function BugReporterForm({ categories, versions, authenticated, c
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <input type="hidden" name="creatorUserId" value={creatorUser?.id ?? ""} />
-
       <div className="grid gap-4 sm:grid-cols-2">
         <Preview
           key={`category-${resetKey}`}
