@@ -14,6 +14,7 @@ import Separator from "@/components/Separator";
 import Tabs from "@/components/Tabs";
 import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
+import useRetainedModalValue from "@/settings/useRetainedModalValue";
 
 const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"];
 const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "default"]);
@@ -108,24 +109,27 @@ async function syncUserPermissions(userId, before, after) {
 }
 
 function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
-  const [form, setForm] = useState({ username: user?.username ?? "", email: user?.email ?? "" });
-  const [selectedRoles, setSelectedRoles] = useState(user?.authorization?.roles ?? []);
-  const [selectedPermissions, setSelectedPermissions] = useState(user?.authorization?.individualPermissions ?? []);
+  const displayedUser = useRetainedModalValue(user);
+  const [form, setForm] = useState({ username: displayedUser?.username ?? "", email: displayedUser?.email ?? "" });
+  const [selectedRoles, setSelectedRoles] = useState(displayedUser?.authorization?.roles ?? []);
+  const [selectedPermissions, setSelectedPermissions] = useState(displayedUser?.authorization?.individualPermissions ?? []);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const authorization = user?.authorization ?? {};
-  const protectedUser = user?.isProtected;
+  const authorization = displayedUser?.authorization ?? {};
+  const protectedUser = displayedUser?.isProtected;
   const canManageRoles = Boolean(actions.canManageRoles && !protectedUser);
   const canManageUser = Boolean(actions.canManageUser && !protectedUser);
   const canDeleteUser = Boolean(actions.canDeleteUser && !protectedUser);
 
   useEffect(() => {
-    setForm({ username: user?.username ?? "", email: user?.email ?? "" });
-    setSelectedRoles(user?.authorization?.roles ?? []);
-    setSelectedPermissions(user?.authorization?.individualPermissions ?? []);
+    if (!user) return;
+
+    setForm({ username: user.username ?? "", email: user.email ?? "" });
+    setSelectedRoles(user.authorization?.roles ?? []);
+    setSelectedPermissions(user.authorization?.individualPermissions ?? []);
   }, [user]);
 
-  if (!user) return null;
+  if (!displayedUser) return null;
 
   async function mutate(work) {
     setBusy(true);
@@ -143,7 +147,7 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
   return (
     <Modal open={Boolean(user)} onClose={onClose} variant="wide">
       <div className="text-soft">
-        <ModalHeader title={user.username} subtitle={user.id} onClose={onClose} />
+        <ModalHeader title={displayedUser.username} subtitle={displayedUser.id} onClose={onClose} />
         <div className="space-y-5 p-6">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
           {protectedUser ? <p className="text-sm text-muted">This account is protected and cannot be changed.</p> : null}
@@ -151,17 +155,17 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
             <TextInput label="Username" inputClassName="w-full" locked={!canManageUser || busy} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
             <TextInput label="Email" type="email" inputClassName="w-full" locked={!canManageUser || busy} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
-          <Button size="sm" variant={canManageUser ? "green" : "locked"} disabled={busy} locked={!canManageUser} onClick={() => mutate(() => api(`/api/users/${user.id}`, { method: "PATCH", body: JSON.stringify(form) }))}>Save user</Button>
+          <Button size="sm" variant={canManageUser ? "green" : "locked"} disabled={busy} locked={!canManageUser} onClick={() => mutate(() => api(`/api/users/${displayedUser.id}`, { method: "PATCH", body: JSON.stringify(form) }))}>Save user</Button>
           <ModalSeparator bleed />
           <MultiSelect label="Roles" options={sortRolesByHierarchy(roles).map((role) => ({ label: formatRole(role.name), value: role.name }))} value={selectedRoles} onChange={setSelectedRoles} locked={!canManageRoles || busy} placeholder="Select roles" />
           <MultiSelect label="Individual permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={selectedPermissions} onChange={setSelectedPermissions} locked={!canManageRoles || busy} placeholder="Select permissions" />
           <Button size="sm" variant={canManageRoles ? "green" : "locked"} disabled={busy} locked={!canManageRoles} onClick={() => mutate(async () => {
-            await syncUserRoles(user.id, authorization.roles ?? [], selectedRoles);
-            await syncUserPermissions(user.id, authorization.individualPermissions ?? [], selectedPermissions);
+            await syncUserRoles(displayedUser.id, authorization.roles ?? [], selectedRoles);
+            await syncUserPermissions(displayedUser.id, authorization.individualPermissions ?? [], selectedPermissions);
           })}>Save authorization</Button>
           <div><h3 className="font-semibold text-heading">Resolved permissions</h3><p className="mt-2 text-sm text-muted">{(authorization.permissions ?? []).join(", ") || "None"}</p></div>
           <ModalSeparator bleed />
-          <Button size="sm" variant={canDeleteUser ? "red" : "locked"} disabled={busy} locked={!canDeleteUser} onClick={() => mutate(async () => { await api(`/api/users/${user.id}`, { method: "DELETE" }); onClose(); })}>Delete user</Button>
+          <Button size="sm" variant={canDeleteUser ? "red" : "locked"} disabled={busy} locked={!canDeleteUser} onClick={() => mutate(async () => { await api(`/api/users/${displayedUser.id}`, { method: "DELETE" }); onClose(); })}>Delete user</Button>
         </div>
       </div>
     </Modal>
@@ -169,19 +173,22 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
 }
 
 function RoleDetailsModal({ role, actions, onClose, onChanged }) {
-  const [name, setName] = useState(role?.name ?? "");
-  const [permissions, setPermissions] = useState(role?.permissions ?? []);
+  const displayedRole = useRetainedModalValue(role);
+  const [name, setName] = useState(displayedRole?.name ?? "");
+  const [permissions, setPermissions] = useState(displayedRole?.permissions ?? []);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const canEdit = Boolean(actions.canManageRoles);
-  const canDelete = Boolean(canEdit && !PROTECTED_ROLE_NAMES.has(role?.name));
+  const canDelete = Boolean(canEdit && !PROTECTED_ROLE_NAMES.has(displayedRole?.name));
 
   useEffect(() => {
-    setName(role?.name ?? "");
-    setPermissions(role?.permissions ?? []);
+    if (!role) return;
+
+    setName(role.name ?? "");
+    setPermissions(role.permissions ?? []);
   }, [role]);
 
-  if (!role) return null;
+  if (!displayedRole) return null;
 
   async function mutate(work) {
     setBusy(true);
@@ -199,18 +206,18 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
   return (
     <Modal open={Boolean(role)} onClose={onClose} variant="wide">
       <div className="text-soft">
-        <ModalHeader title={`Role: ${role.name}`} onClose={onClose} />
+        <ModalHeader title={`Role: ${displayedRole.name}`} onClose={onClose} />
         <div className="space-y-5 p-6">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
-          {PROTECTED_ROLE_NAMES.has(role.name) ? <p className="text-sm text-muted">This built-in role cannot be deleted.</p> : null}
+          {PROTECTED_ROLE_NAMES.has(displayedRole.name) ? <p className="text-sm text-muted">This built-in role cannot be deleted.</p> : null}
           <TextInput label="Role name" locked={!canEdit || busy} value={name} onChange={(e) => setName(e.target.value)} />
           <MultiSelect label="Permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canEdit || busy} placeholder="Select permissions" />
           <div className="flex gap-2">
             <Button size="sm" variant={canEdit ? "green" : "locked"} disabled={busy} locked={!canEdit} onClick={() => mutate(async () => {
-              const target = name !== role.name ? (await api(`/api/roles/${encodeURIComponent(role.name)}`, { method: "PATCH", body: JSON.stringify({ name }) })).role.name : role.name;
+              const target = name !== displayedRole.name ? (await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "PATCH", body: JSON.stringify({ name }) })).role.name : displayedRole.name;
               await api(`/api/roles/${encodeURIComponent(target)}/permissions`, { method: "PUT", body: JSON.stringify({ permissions }) });
             })}>Save role</Button>
-            <Button size="sm" variant={canDelete ? "red" : "locked"} disabled={busy} locked={!canDelete} onClick={() => mutate(async () => { await api(`/api/roles/${encodeURIComponent(role.name)}`, { method: "DELETE" }); onClose(); })}>Delete role</Button>
+            <Button size="sm" variant={canDelete ? "red" : "locked"} disabled={busy} locked={!canDelete} onClick={() => mutate(async () => { await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "DELETE" }); onClose(); })}>Delete role</Button>
           </div>
         </div>
       </div>

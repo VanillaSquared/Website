@@ -12,6 +12,7 @@ import SaveConfirmation from "@/components/SaveConfirmation";
 import Separator from "@/components/Separator";
 import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
+import useRetainedModalValue from "@/settings/useRetainedModalValue";
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -37,22 +38,25 @@ function ErrorText({ children }) {
 }
 
 function EditPunishmentModal({ punishment, onClose, onChanged }) {
+  const displayedPunishment = useRetainedModalValue(punishment);
   const [duration, setDuration] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (!punishment) return;
+
     setDuration("");
     setError("");
   }, [punishment]);
 
-  if (!punishment) return null;
+  if (!displayedPunishment) return null;
 
   async function save() {
     setBusy(true);
     setError("");
     try {
-      await api(`/api/bug-panel/punishments/${punishment.userId}`, { method: "PATCH", body: JSON.stringify({ duration }) });
+      await api(`/api/bug-panel/punishments/${displayedPunishment.userId}`, { method: "PATCH", body: JSON.stringify({ duration }) });
       await onChanged();
       onClose();
     } catch (err) {
@@ -68,7 +72,7 @@ function EditPunishmentModal({ punishment, onClose, onChanged }) {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-semibold text-heading">Edit punishment</h2>
-            <p className="mt-0.5 truncate text-sm text-muted">{punishment.username || punishment.email || punishment.userId}</p>
+            <p className="mt-0.5 truncate text-sm text-muted">{displayedPunishment.username || displayedPunishment.email || displayedPunishment.userId}</p>
           </div>
           <Button size="sm" variant="tertiary" icon={closeIcon} aria-label="Close" onClick={onClose} />
         </div>
