@@ -196,7 +196,22 @@ export async function getUserByUsernameAndEmail(username, email) {
 
 export async function createUser({ id, username, email }) {
   await initializeUsersTable();
-  await getPool().execute("INSERT INTO users (id, username, email) VALUES (?, ?, ?)", [id, username, email]);
+  const connection = await getPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    const [countRows] = await connection.execute("SELECT COUNT(*) AS user_count FROM users FOR UPDATE");
+    const isFirstUser = Number(countRows[0]?.user_count ?? 0) === 0;
+    await connection.execute("INSERT INTO users (id, username, email) VALUES (?, ?, ?)", [id, username, email]);
+    if (isFirstUser) {
+      await connection.execute("INSERT IGNORE INTO user_roles (user_id, role) VALUES (?, ?)", [id, "owner"]);
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
   await assignBuiltInRoles();
   return getUserById(id);
 }
