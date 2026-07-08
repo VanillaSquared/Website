@@ -28,9 +28,9 @@ function getJoinedDate(user) {
   return `Joined ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 }
 
-function getHighestRole(user) {
+function getHighestRole(user, roleRanks = new Map()) {
   const roles = user.authorization?.roles ?? [];
-  return rolePriority.find((role) => roles.includes(role)) ?? roles[0] ?? "default";
+  return [...roles].sort((a, b) => getRoleRank(a, roleRanks) - getRoleRank(b, roleRanks) || a.localeCompare(b))[0] ?? "default";
 }
 
 function formatRole(role) {
@@ -39,13 +39,21 @@ function formatRole(role) {
   return role;
 }
 
-function getRoleRank(role) {
+function getRoleRank(role, roleRanks = new Map()) {
+  if (roleRanks.has(role)) return roleRanks.get(role);
   const index = rolePriority.indexOf(role);
   return index === -1 ? rolePriority.length : index;
 }
 
 function sortRolesByHierarchy(roles) {
-  return [...roles].sort((a, b) => getRoleRank(a.name) - getRoleRank(b.name) || a.name.localeCompare(b.name));
+  return [...roles].sort((a, b) => Number(a.hierarchyOrder ?? getRoleRank(a.name)) - Number(b.hierarchyOrder ?? getRoleRank(b.name)) || a.name.localeCompare(b.name));
+}
+
+function moveItem(items, fromIndex, toIndex) {
+  const next = [...items];
+  const [item] = next.splice(fromIndex, 1);
+  next.splice(toIndex, 0, item);
+  return next;
 }
 
 function matchesQuery(values, query) {
@@ -253,8 +261,32 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
   );
 }
 
-function UserRow({ user, onClick }) {
-  return <article className="cursor-pointer px-4 py-3 hover:bg-card/50" onClick={onClick}><div className="flex gap-3"><ProfilePicture className="mt-0.5 border-accent/40 bg-accent/15" size="sm" username={user.username} email={user.email} /><div className="min-w-0 flex-1"><Tag variant={getHighestRole(user) === "default" ? "subtle" : "accent"}>{formatRole(getHighestRole(user))}</Tag><h2 className="mt-2 text-base font-semibold text-heading">{user.username || "Unnamed user"}</h2><p className="truncate text-sm text-muted">{user.email || "No email"}</p><p className="mt-2 truncate text-xs text-subtle">{getJoinedDate(user)}</p></div></div></article>;
+function UserRow({ user, roleRanks, onClick }) {
+  const highestRole = getHighestRole(user, roleRanks);
+  return <article className="cursor-pointer px-4 py-3 hover:bg-card/50" onClick={onClick}><div className="flex gap-3"><ProfilePicture className="mt-0.5 border-accent/40 bg-accent/15" size="sm" username={user.username} email={user.email} /><div className="min-w-0 flex-1"><Tag variant={highestRole === "default" ? "subtle" : "accent"}>{formatRole(highestRole)}</Tag><h2 className="mt-2 text-base font-semibold text-heading">{user.username || "Unnamed user"}</h2><p className="truncate text-sm text-muted">{user.email || "No email"}</p><p className="mt-2 truncate text-xs text-subtle">{getJoinedDate(user)}</p></div></div></article>;
+}
+
+function RoleRow({ role, canDrag, dragging, onClick, onDragStart, onDragEnter, onDragEnd }) {
+  return (
+    <article
+      className={`px-4 py-3 transition ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} ${dragging ? "bg-card/70 opacity-70" : "hover:bg-card/50"}`}
+      draggable={canDrag}
+      onClick={onClick}
+      onDragStart={onDragStart}
+      onDragEnter={onDragEnter}
+      onDragOver={canDrag ? (event) => event.preventDefault() : undefined}
+      onDragEnd={onDragEnd}
+      title={canDrag ? "Drag to change role hierarchy" : undefined}
+    >
+      <div className="flex items-center gap-3">
+        {canDrag ? <span className="select-none text-lg leading-none text-muted" aria-hidden="true">⋮⋮</span> : null}
+        <div className="min-w-0">
+          <h2 className="font-semibold text-heading">{formatRole(role.name)}</h2>
+          <p className="mt-1 text-sm text-muted">{(role.permissions ?? []).length} permissions</p>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 export default function UserManagementSettings() {
@@ -267,7 +299,12 @@ export default function UserManagementSettings() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedRoleName, setSelectedRoleName] = useState(null);
   const [creatingRole, setCreatingRole] = useState(false);
+  const [draggingRoleName, setDraggingRoleName] = useState(null);
   const scrollTimeoutRef = useRef(null);
+  const draggedRoleNameRef = useRef(null);
+  const currentRoleOrderRef = useRef([]);
+  const roleOrderChangedRef = useRef(false);
+  const suppressRoleClickRef = useRef(false);
   const [isScrolling, setIsScrolling] = useState(false);
 
   const load = useCallback(async () => {
@@ -281,10 +318,64 @@ export default function UserManagementSettings() {
   useEffect(() => { load().catch(() => setStatus("Could not load user management.")); }, [load]);
   useEffect(() => () => scrollTimeoutRef.current && clearTimeout(scrollTimeoutRef.current), []);
   const handleScroll = () => { setIsScrolling(true); if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current); scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 700); };
-  const visibleUsers = useMemo(() => users.filter((u) => matchesQuery([u.username, u.email, u.id, getHighestRole(u)], query)), [users, query]);
-  const visibleRoles = useMemo(() => sortRolesByHierarchy(roles.filter((r) => matchesQuery([r.name, formatRole(r.name), ...(r.permissions ?? [])], query))), [roles, query]);
+  const sortedRoles = useMemo(() => sortRolesByHierarchy(roles), [roles]);
+  const roleRanks = useMemo(() => new Map(sortedRoles.map((role, index) => [role.name, index])), [sortedRoles]);
+  const visibleUsers = useMemo(() => users.filter((u) => matchesQuery([u.username, u.email, u.id, getHighestRole(u, roleRanks)], query)), [users, roleRanks, query]);
+  const visibleRoles = useMemo(() => sortedRoles.filter((r) => matchesQuery([r.name, formatRole(r.name), ...(r.permissions ?? [])], query)), [sortedRoles, query]);
   const selectedUser = users.find((user) => user.id === selectedUserId);
   const selectedRole = roles.find((role) => role.name === selectedRoleName);
+  currentRoleOrderRef.current = sortedRoles.map((role) => role.name);
+
+  function handleRoleDragStart(roleName, event) {
+    if (!actions.canManageRoles) return;
+    draggedRoleNameRef.current = roleName;
+    roleOrderChangedRef.current = false;
+    suppressRoleClickRef.current = false;
+    setDraggingRoleName(roleName);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", roleName);
+  }
+
+  function handleRoleDragEnter(targetRoleName) {
+    const draggedRoleName = draggedRoleNameRef.current;
+    if (!actions.canManageRoles || !draggedRoleName || draggedRoleName === targetRoleName) return;
+    setRoles((currentRoles) => {
+      const ordered = sortRolesByHierarchy(currentRoles);
+      const fromIndex = ordered.findIndex((role) => role.name === draggedRoleName);
+      const toIndex = ordered.findIndex((role) => role.name === targetRoleName);
+      if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return currentRoles;
+      roleOrderChangedRef.current = true;
+      suppressRoleClickRef.current = true;
+      const nextRoles = moveItem(ordered, fromIndex, toIndex).map((role, index) => ({ ...role, hierarchyOrder: index }));
+      currentRoleOrderRef.current = nextRoles.map((role) => role.name);
+      return nextRoles;
+    });
+  }
+
+  async function handleRoleDragEnd() {
+    const changed = roleOrderChangedRef.current;
+    draggedRoleNameRef.current = null;
+    roleOrderChangedRef.current = false;
+    setDraggingRoleName(null);
+    if (!changed) return;
+
+    const roleNames = currentRoleOrderRef.current;
+    try {
+      const data = await api("/api/roles", { method: "PUT", body: JSON.stringify({ roles: roleNames }) });
+      setRoles(Array.isArray(data.roles) ? data.roles : []);
+    } catch (err) {
+      setStatus(err.message || "Could not update role hierarchy.");
+      load().catch(() => {});
+    }
+  }
+
+  function handleRoleClick(roleName) {
+    if (suppressRoleClickRef.current) {
+      suppressRoleClickRef.current = false;
+      return;
+    }
+    setSelectedRoleName(roleName);
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
@@ -294,7 +385,7 @@ export default function UserManagementSettings() {
       </div>
       <SearchBar variant="settings" placeholder={`Search ${page}`} label={`Search ${page}`} value={query} onChange={setQuery} showPreview={false} />
       {status ? <p className="text-sm text-muted">{status}</p> : null}
-      {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<article className="cursor-pointer px-4 py-3 hover:bg-card/50" onClick={() => setSelectedRoleName(role.name)}><h2 className="font-semibold text-heading">{formatRole(role.name)}</h2><p className="mt-1 text-sm text-muted">{(role.permissions ?? []).length} permissions</p></article></div>)}</div></div> : null}
+      {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} roleRanks={roleRanks} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<RoleRow role={role} canDrag={Boolean(actions.canManageRoles)} dragging={draggingRoleName === role.name} onClick={() => handleRoleClick(role.name)} onDragStart={(event) => handleRoleDragStart(role.name, event)} onDragEnter={() => handleRoleDragEnter(role.name)} onDragEnd={handleRoleDragEnd} /></div>)}</div></div> : null}
       {!status && ((page === "users" && !visibleUsers.length) || (page === "roles" && !visibleRoles.length)) ? <p className="text-center text-sm text-muted">No {page} found.</p> : null}
       <UserDetailsModal user={selectedUser} roles={roles} actions={actions} onClose={() => setSelectedUserId(null)} onChanged={load} />
       <RoleDetailsModal role={selectedRole} actions={actions} onClose={() => setSelectedRoleName(null)} onChanged={load} />

@@ -66,6 +66,7 @@ export async function initializeUsersTable() {
         await getPool().query(`
           CREATE TABLE IF NOT EXISTS roles (
             name VARCHAR(64) PRIMARY KEY,
+            hierarchy_order INT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
           )
@@ -101,6 +102,12 @@ export async function initializeUsersTable() {
           )
         `);
 
+        try {
+          await getPool().query("ALTER TABLE roles ADD COLUMN hierarchy_order INT NULL");
+        } catch {
+          // Older installs that already have this column do not need migration.
+        }
+
         await seedBuiltInRoles();
         await assignBuiltInRoles();
 
@@ -122,11 +129,18 @@ export async function initializeUsersTable() {
 }
 
 async function seedBuiltInRoles() {
-  for (const [role, permissions] of Object.entries(BUILT_IN_ROLE_PERMISSIONS)) {
-    await getPool().execute("INSERT IGNORE INTO roles (name) VALUES (?)", [role]);
+  const roleNames = Object.keys(BUILT_IN_ROLE_PERMISSIONS);
+  for (const [index, role] of roleNames.entries()) {
+    const permissions = BUILT_IN_ROLE_PERMISSIONS[role];
+    await getPool().execute("INSERT IGNORE INTO roles (name, hierarchy_order) VALUES (?, ?)", [role, index]);
+    await getPool().execute("UPDATE roles SET hierarchy_order = ? WHERE name = ? AND hierarchy_order IS NULL", [index, role]);
     for (const permission of permissions) {
       await getPool().execute("INSERT IGNORE INTO role_permissions (role, permission) VALUES (?, ?)", [role, permission]);
     }
+  }
+  const [unrankedRoles] = await getPool().execute("SELECT name FROM roles WHERE hierarchy_order IS NULL ORDER BY name");
+  for (const [offset, row] of unrankedRoles.entries()) {
+    await getPool().execute("UPDATE roles SET hierarchy_order = ? WHERE name = ?", [roleNames.length + offset, row.name]);
   }
 }
 
@@ -152,6 +166,7 @@ function parseRole(row) {
   if (!row) return null;
   return {
     name: row.name,
+    hierarchyOrder: Number(row.hierarchy_order ?? 0),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -241,7 +256,7 @@ export async function removeUserPermission(userId, permission) {
 export async function listRoles() {
   await initializeUsersTable();
   await seedBuiltInRoles();
-  const [rows] = await getPool().execute("SELECT * FROM roles ORDER BY name");
+  const [rows] = await getPool().execute("SELECT * FROM roles ORDER BY hierarchy_order, name");
   return rows.map(parseRole);
 }
 
@@ -254,7 +269,8 @@ export async function getRole(name) {
 
 export async function createRole(name, permissions = []) {
   await initializeUsersTable();
-  await getPool().execute("INSERT INTO roles (name) VALUES (?)", [name]);
+  const [rows] = await getPool().execute("SELECT COALESCE(MAX(hierarchy_order), -1) + 1 AS next_order FROM roles");
+  await getPool().execute("INSERT INTO roles (name, hierarchy_order) VALUES (?, ?)", [name, Number(rows[0]?.next_order ?? 0)]);
   await setRolePermissions(name, permissions);
   return getRole(name);
 }
@@ -280,6 +296,31 @@ export async function deleteRole(role) {
   await initializeUsersTable();
   await getPool().execute("DELETE FROM user_roles WHERE role = ?", [role]);
   await getPool().execute("DELETE FROM roles WHERE name = ?", [role]);
+}
+
+export async function reorderRoles(roleNames = []) {
+  await initializeUsersTable();
+  const existingRoles = await listRoles();
+  const existingNames = existingRoles.map((role) => role.name);
+  if (roleNames.length !== existingNames.length || new Set(roleNames).size !== roleNames.length || !roleNames.every((role) => existingNames.includes(role))) {
+    const error = new Error("Role hierarchy must include every role exactly once.");
+    error.status = 400;
+    throw error;
+  }
+
+  const connection = await getPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    for (const [index, role] of roleNames.entries()) {
+      await connection.execute("UPDATE roles SET hierarchy_order = ? WHERE name = ?", [index, role]);
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 }
 
 export async function getRolePermissions(role) {

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { createRole, getRole, getRolePermissions, listRoles } from "@/auth/openSQL";
+import { createRole, getRole, getRolePermissions, listRoles, reorderRoles } from "@/auth/openSQL";
 import { PERMISSIONS, isValidPermission, isValidRoleName } from "@/auth/permissions";
 import { jsonError, normalizePermissionList, normalizeRoleName, requireApiPermission } from "@/auth/userManagement";
 import { guardSameOriginRequest } from "@/security/requestGuards";
@@ -33,4 +33,24 @@ export async function POST(request) {
 
   const role = await createRole(name, normalizePermissionList(body.permissions, isValidPermission));
   return NextResponse.json({ role: { ...role, permissions: await getRolePermissions(name) } }, { status: 201, headers: { "Cache-Control": "no-store" } });
+}
+
+export async function PUT(request) {
+  const blocked = guardSameOriginRequest(request);
+  if (blocked) return blocked;
+
+  const auth = await requireApiPermission(PERMISSIONS.MANAGE_ROLES);
+  if (auth.error) return auth.error;
+
+  const body = await request.json().catch(() => ({}));
+  const roles = Array.isArray(body.roles) ? body.roles.map(normalizeRoleName) : [];
+  if (!roles.length || !roles.every(isValidRoleName)) return jsonError("Invalid role hierarchy.", 400);
+
+  try {
+    await reorderRoles(roles);
+  } catch (error) {
+    return jsonError(error.message || "Could not update role hierarchy.", error.status || 400);
+  }
+
+  return NextResponse.json({ roles: await rolesWithPermissions() }, { headers: { "Cache-Control": "no-store" } });
 }
