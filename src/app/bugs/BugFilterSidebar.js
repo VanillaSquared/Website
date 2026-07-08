@@ -94,7 +94,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
         iconClassName="h-5 w-5"
         aria-label="Filters"
         title="Filters"
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen((current) => !current)}
       />
       <FilterSidebar
         open={open}

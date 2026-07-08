@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import FilterSidebar from "@/components/FilterSidebar";
 import MultiSelect from "@/components/MultiSelect";
 import SearchBar from "@/components/SearchBar";
+import Separator from "@/components/Separator";
 import UserMultiSelect from "@/components/UserMultiSelect";
 import Tabs from "@/components/Tabs";
 
@@ -42,28 +43,26 @@ function LogRow({ log, expanded, onToggle }) {
   }
 
   return (
-    <article className="rounded-xl border border-divider bg-card/60">
-      <button type="button" className="grid w-full gap-2 p-3 text-left hover:bg-control-hover/40 sm:grid-cols-[10rem_1fr_auto]" onClick={onToggle}>
-        <div className="text-xs text-muted">{formatDate(log.createdAt)}</div>
+    <article>
+      <button type="button" className="grid w-full items-center gap-2 px-4 py-2 text-left transition-colors hover:bg-card/50 sm:grid-cols-[9rem_8rem_1fr_auto]" onClick={onToggle}>
+        <div className="truncate text-xs text-muted">{formatDate(log.createdAt)}</div>
+        <div className="truncate text-xs font-semibold text-accent">{TYPE_LABELS[log.type] ?? log.type}</div>
         <div className="min-w-0">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-control px-2 py-0.5 text-xs font-semibold text-accent">{TYPE_LABELS[log.type] ?? log.type}</span>
-            <span className="text-xs text-subtle">{log.action}</span>
-          </div>
-          <p className="mt-1 truncate text-sm text-heading">{log.summary}</p>
+          <p className="truncate text-sm font-medium text-heading">{log.summary}</p>
+          <p className="truncate text-xs text-subtle">{log.action} · {log.actor?.username ?? "System"}{log.target?.username ? ` → ${log.target.username}` : ""}</p>
         </div>
         <div className="text-xs text-muted">{expanded ? "Hide" : "Details"}</div>
       </button>
       {expanded ? (
-        <div className="space-y-4 border-t border-divider p-4">
-          <div className="grid gap-3 text-sm sm:grid-cols-2">
+        <div className="space-y-3 border-t border-divider/70 px-4 py-3">
+          <div className="grid gap-2 text-xs sm:grid-cols-2">
             <p><span className="text-subtle">Actor:</span> <span className="text-heading">{log.actor?.username ?? log.actorUserId ?? "System"}</span></p>
             <p><span className="text-subtle">Target:</span> <span className="text-heading">{log.target?.username ?? log.targetUserId ?? "None"}</span></p>
             <p><span className="text-subtle">Type/action:</span> {log.type} / {log.action}</p>
             <p><span className="text-subtle">Timestamp:</span> {formatDate(log.createdAt)}</p>
           </div>
           <p className="text-sm text-soft">{log.summary}</p>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-3 lg:grid-cols-2">
             <JsonBlock title="Before" value={log.beforeData} />
             <JsonBlock title="After" value={log.afterData} />
           </div>
@@ -141,15 +140,22 @@ export default function AuditLogSettings() {
   return (
     <div className="flex h-full min-h-0 flex-col text-soft">
       <Tabs tabs={TABS} value={tab} onChange={setTab} inset="none" className="shrink-0" tabClassName="text-sm" />
-      <div className="flex shrink-0 flex-col gap-3 py-4 sm:flex-row">
-        <SearchBar className="flex-1" placeholder="Search audit logs" value={search} onChange={setSearch} showPreview={false} />
-        <Button variant="tertiary" icon={filterIcon} onClick={() => setFiltersOpen(true)}>Filters</Button>
+      <div className="flex shrink-0 flex-col gap-3 py-4 sm:flex-row sm:items-center">
+        <SearchBar variant="settings" className="flex-1" placeholder="Search audit logs" value={search} onChange={setSearch} showPreview={false} />
+        <Button size="icon" variant="tertiary" className="h-11 w-11 shrink-0 rounded-xl" icon={filterIcon} aria-label="Filters" title="Filters" onClick={() => setFiltersOpen((open) => !open)} />
       </div>
       {error ? <p className="mb-3 rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 pb-6">
-        {logs.map((log) => <LogRow key={log.id} log={log} expanded={expandedId === log.id} onToggle={() => setExpandedId(expandedId === log.id ? null : log.id)} />)}
-        {!logs.length && !loading ? <p className="py-10 text-center text-sm text-muted">No audit logs found.</p> : null}
-        {hasMore ? <Button className="mx-auto mt-4" variant="tertiary" disabled={loading} onClick={() => loadLogs({ append: true, cursor: nextCursor })}>{loading ? "Loading..." : "Load more"}</Button> : null}
+      <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
+        <div className="h-full overflow-y-auto pb-6">
+          {logs.map((log, index) => (
+            <div key={log.id}>
+              {index > 0 ? <Separator /> : null}
+              <LogRow log={log} expanded={expandedId === log.id} onToggle={() => setExpandedId(expandedId === log.id ? null : log.id)} />
+            </div>
+          ))}
+          {!logs.length && !loading ? <p className="py-10 text-center text-sm text-muted">No audit logs found.</p> : null}
+          {hasMore ? <Button className="mx-auto mt-4 flex" variant="tertiary" disabled={loading} onClick={() => loadLogs({ append: true, cursor: nextCursor })}>{loading ? "Loading..." : "Load more"}</Button> : null}
+        </div>
       </div>
 
       <FilterSidebar
