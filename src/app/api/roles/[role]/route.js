@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
 import { deleteRole, getRole, getRolePermissions, renameRole } from "@/auth/openSQL";
-import { PERMISSIONS, isValidRoleName } from "@/auth/permissions";
+import { DEFAULT_ROLE, PERMISSIONS, isValidRoleName } from "@/auth/permissions";
 import { jsonError, normalizeRoleName, requireApiPermission } from "@/auth/userManagement";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
-const PROTECTED_ROLES = new Set(["default", "support", "developer", "owner"]);
+const PROTECTED_ROLES = new Set([DEFAULT_ROLE, "support", "developer", "owner"]);
 
 export async function PATCH(request, { params }) {
   const blocked = guardSameOriginRequest(request);

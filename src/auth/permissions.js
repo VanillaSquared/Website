@@ -20,6 +20,7 @@ export const PERMISSIONS = Object.freeze({
 });
 
 export const PERMISSION_VALUES = Object.freeze(Object.values(PERMISSIONS));
+export const DEFAULT_ROLE = "default";
 
 export function isValidRoleName(role) {
   return typeof role === "string" && /^[a-z0-9_-]{1,64}$/i.test(role);
@@ -43,29 +44,22 @@ export function hasResolvedPermission(authorization, permission) {
 }
 
 export async function getAuthorizationForUser(user) {
-  if (!user?.id) {
-    return {
-      roles: [],
-      rolePermissions: [],
-      individualPermissions: [],
-      permissions: [],
-      permissionMap: Object.fromEntries(PERMISSION_VALUES.map((permission) => [permission, false])),
-      canViewStaffSettings: false,
-    };
-  }
+  const [roles, individualPermissions] = user?.id
+    ? await Promise.all([
+      getUserRolesByUserId(user.id),
+      getUserPermissionsByUserId(user.id),
+    ])
+    : [[DEFAULT_ROLE], []];
 
-  const [roles, individualPermissions] = await Promise.all([
-    getUserRolesByUserId(user.id),
-    getUserPermissionsByUserId(user.id),
-  ]);
   const validRoles = roles.filter(isValidRoleName);
+  const resolvedRoles = validRoles.length ? validRoles : [DEFAULT_ROLE];
   const validIndividualPermissions = individualPermissions.filter(isValidPermission);
-  const rolePermissions = await getPermissionsForRoles(validRoles);
+  const rolePermissions = await getPermissionsForRoles(resolvedRoles);
   const permissions = [...new Set([...rolePermissions, ...validIndividualPermissions])].sort();
   const permissionMap = Object.fromEntries(PERMISSION_VALUES.map((permission) => [permission, permissions.includes(permission)]));
 
   return {
-    roles: validRoles,
+    roles: resolvedRoles,
     rolePermissions,
     individualPermissions: validIndividualPermissions,
     permissions,
