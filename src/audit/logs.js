@@ -94,11 +94,15 @@ export async function listAuditLogs({ search = "", users = [], types = [], tabTy
   const cleanLimit = Math.min(Math.max(Number(limit) || 30, 1), 100);
   const cleanUsers = [...new Set((Array.isArray(users) ? users : []).map(String).filter(Boolean))].slice(0, 10);
   const cleanTypes = [...new Set((Array.isArray(types) ? types : []).filter((type) => AUDIT_LOG_TYPES.includes(type)))];
-  const activeTypes = tabType && tabType !== "all" && AUDIT_LOG_TYPES.includes(tabType) ? [tabType] : cleanTypes;
+  const tabTypes = tabType && tabType !== "all" && AUDIT_LOG_TYPES.includes(tabType) ? [tabType] : [];
+  const activeTypes = tabTypes.length && cleanTypes.length ? cleanTypes.filter((type) => tabTypes.includes(type)) : (tabTypes.length ? tabTypes : cleanTypes);
+  const impossibleTypeFilter = tabTypes.length && cleanTypes.length && activeTypes.length === 0;
   const where = [];
   const params = [];
 
-  if (activeTypes.length) {
+  if (impossibleTypeFilter) {
+    where.push("1 = 0");
+  } else if (activeTypes.length) {
     where.push(`l.type IN (${activeTypes.map(() => "?").join(", ")})`);
     params.push(...activeTypes);
   }

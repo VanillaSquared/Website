@@ -5,9 +5,7 @@ import { useMemo } from "react";
 import MultiSelect from "@/components/MultiSelect";
 
 function userLabel(user) {
-  const name = user?.username || "Unnamed user";
-  const detail = user?.email || user?.id || "Unknown id";
-  return `${name} (${detail})`;
+  return user?.username || user?.id || "Unnamed user";
 }
 
 export default function UserMultiSelect({
