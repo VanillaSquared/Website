@@ -301,7 +301,9 @@ export async function checkBugCreationAllowed(userId, { bypassLimits = false } =
       allowed: false,
       reason: "limit",
       blockedUntil: new Date(oldestTime + duration.milliseconds),
-      error: `You can create ${config.amount} bug report${config.amount === 1 ? "" : "s"} per ${config.duration}.`,
+      limitAmount: config.amount,
+      limitDuration: config.duration,
+      error: `You can only create ${config.amount} bug per ${config.duration}.`,
     };
   }
 

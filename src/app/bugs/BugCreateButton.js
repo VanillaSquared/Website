@@ -31,6 +31,11 @@ function formatRemainingTime(target) {
 
 function getLockedDescription(creationAvailability, remainingTime) {
   if (!creationAvailability || creationAvailability.allowed) return "";
+  if (creationAvailability.reason === "limit") {
+    const amount = creationAvailability.limitAmount ?? "x";
+    const duration = creationAvailability.limitDuration ?? "x";
+    return `You can only create ${amount} bug per ${duration}.\n${remainingTime}`;
+  }
   if (creationAvailability.permanent) return "You are permanently banned\nfrom creating bugs.";
   if (remainingTime) return `You are banned from\ncreating bugs until:\n${remainingTime}`;
   return creationAvailability.error || "Bug creation is currently locked.";
