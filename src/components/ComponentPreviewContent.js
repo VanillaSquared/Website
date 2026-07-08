@@ -17,6 +17,7 @@ import Tag from "@/components/Tag";
 import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
 import Toggle from "@/components/Toggle";
+import UserMultiSelect from "@/components/UserMultiSelect";
 
 const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple", "green", "red"];
 const buttonSizes = ["sm", "md", "icon", "iconButton"];
@@ -32,6 +33,13 @@ const customCheckmarkCycleStates = [
   { checked: true, variant: "green", icon: "check" },
   { checked: false, variant: "red", icon: "x" },
   { checked: true, variant: "default", icon: "check" },
+];
+
+const previewUsers = [
+  { id: "00000000-0000-4000-8000-000000000001", username: "PainterFlow11", email: "painterflow11@example.com" },
+  { id: "00000000-0000-4000-8000-000000000002", username: "VanillaUser", email: "vanilla@example.com" },
+  { id: "00000000-0000-4000-8000-000000000003", username: "SupportFox", email: "support@example.com" },
+  { id: "00000000-0000-4000-8000-000000000004", username: "BugHunter", email: "bugs@example.com" },
 ];
 
 const selectOptions = [
@@ -250,6 +258,9 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
               </Card>
               <Card title="Limited multi select" size="md" className="overflow-visible">
                 <MultiSelect label="Server software" options={selectOptions} defaultValue={["paper"]} max={2} />
+              </Card>
+              <Card title="User multi select" size="md" className="overflow-visible">
+                <UserMultiSelect users={previewUsers} defaultValue={[previewUsers[0].id, previewUsers[2].id]} max={3} placeholder="Select users" />
               </Card>
               <Card title="Locked multi select" size="md" className="overflow-visible">
                 <MultiSelect locked label="Locked targets" options={selectOptions} defaultValue={["vanilla", "fabric"]} />

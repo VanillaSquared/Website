@@ -163,12 +163,12 @@ export default function AuditLogSettings() {
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
         title="Audit filters"
-        subtitle="Filter by users and log types."
+        subtitle="Filter by users and categories."
         footer={<Button className="w-full" variant="tertiary" onClick={() => { setSelectedUsers([]); setSelectedTypes([]); }}>Clear filters</Button>}
       >
         <div className="space-y-4">
           <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} max={10} placeholder="Select up to 10 users" emptyText="No users available." />
-          <MultiSelect label="Types" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select log types" />
+          <MultiSelect label="Category" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select categories" />
         </div>
       </FilterSidebar>
     </div>

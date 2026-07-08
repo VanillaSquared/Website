@@ -38,6 +38,7 @@ export default function Preview({
   menuClassName = "",
   menuMaxHeight = "max-h-64",
   emptyText = "No options found.",
+  showLimitText = true,
   locked = false,
 }) {
   const [open, setOpen] = useState(false);
@@ -144,7 +145,7 @@ export default function Preview({
         {label ? (
           <span className="flex items-center justify-between gap-3">
             <span>{label}</span>
-            {limitText ? <span className="text-xs font-normal text-muted">{limitText}</span> : null}
+            {showLimitText && limitText ? <span className="text-xs font-normal text-muted">{limitText}</span> : null}
           </span>
         ) : null}
         <div className="relative">
