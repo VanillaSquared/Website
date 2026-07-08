@@ -1,6 +1,7 @@
 import { createClient } from "@openauthjs/openauth/client";
 import { cookies as getCookies, headers as getHeaders } from "next/headers";
 
+import { authIssuer } from "@/auth/issuer";
 import { subjects } from "@/auth/subjects";
 
 const ACCESS_TOKEN_COOKIE = "access_token";
@@ -16,10 +17,17 @@ export async function getOrigin() {
   return `${protocol}://${host}`;
 }
 
+async function fetchOpenAuthInternally(input, init) {
+  const request = input instanceof Request ? input : new Request(input, init);
+
+  return authIssuer.fetch(request);
+}
+
 export function getAuthClient(origin) {
   return createClient({
     clientID: "vanillasquaredwebsite",
     issuer: process.env.OPENAUTH_ISSUER ?? origin,
+    fetch: fetchOpenAuthInternally,
   });
 }
 
