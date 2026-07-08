@@ -11,6 +11,7 @@ import FileUpload from "@/components/FileUpload";
 import ModalShowcase from "@/components/ModalShowcase";
 import MultiSelect from "@/components/MultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
+import SaveConfirmation from "@/components/SaveConfirmation";
 import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
 import Tabs from "@/components/Tabs";
@@ -116,6 +117,11 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
                 </Button>
               ))}
             </div>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Save confirmation</h2>
+            <SaveConfirmation onReset={() => {}} onSave={() => {}} />
           </section>
 
           <section className="space-y-4">

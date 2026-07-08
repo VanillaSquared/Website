@@ -280,6 +280,18 @@ body {
     sans-serif;
 }
 
+@keyframes save-confirmation-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @keyframes modal-popup-in {
   from {
     opacity: 0;
@@ -342,6 +354,11 @@ body {
   to {
     transform: translateX(100%);
   }
+}
+
+.save-confirmation-enter {
+  animation: save-confirmation-in 140ms ease-out both;
+  transform-origin: top center;
 }
 
 .modal-popup-enter {

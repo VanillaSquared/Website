@@ -9,6 +9,7 @@ import Modal from "@/components/Modal";
 import MultiSelect from "@/components/MultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
+import SaveConfirmation from "@/components/SaveConfirmation";
 import Separator from "@/components/Separator";
 import Tabs from "@/components/Tabs";
 import Tag from "@/components/Tag";
@@ -300,6 +301,9 @@ export default function UserManagementSettings() {
   const [selectedRoleName, setSelectedRoleName] = useState(null);
   const [creatingRole, setCreatingRole] = useState(false);
   const [draggingRoleName, setDraggingRoleName] = useState(null);
+  const [roleHierarchyDirty, setRoleHierarchyDirty] = useState(false);
+  const [roleHierarchySaving, setRoleHierarchySaving] = useState(false);
+  const [roleHierarchyError, setRoleHierarchyError] = useState("");
   const scrollTimeoutRef = useRef(null);
   const draggedRoleNameRef = useRef(null);
   const currentRoleOrderRef = useRef([]);
@@ -312,6 +316,8 @@ export default function UserManagementSettings() {
     setUsers(Array.isArray(userData.users) ? userData.users : []);
     setRoles(Array.isArray(roleData.roles) ? roleData.roles : []);
     setActions(userData.viewer?.actions ?? {});
+    setRoleHierarchyDirty(false);
+    setRoleHierarchyError("");
     setStatus("");
   }, []);
 
@@ -352,20 +358,37 @@ export default function UserManagementSettings() {
     });
   }
 
-  async function handleRoleDragEnd() {
+  function handleRoleDragEnd() {
     const changed = roleOrderChangedRef.current;
     draggedRoleNameRef.current = null;
     roleOrderChangedRef.current = false;
     setDraggingRoleName(null);
-    if (!changed) return;
+    if (changed) {
+      setRoleHierarchyDirty(true);
+      setRoleHierarchyError("");
+    }
+  }
 
-    const roleNames = currentRoleOrderRef.current;
+  async function saveRoleHierarchy() {
+    setRoleHierarchySaving(true);
+    setRoleHierarchyError("");
     try {
-      const data = await api("/api/roles", { method: "PUT", body: JSON.stringify({ roles: roleNames }) });
+      const data = await api("/api/roles", { method: "PUT", body: JSON.stringify({ roles: currentRoleOrderRef.current }) });
       setRoles(Array.isArray(data.roles) ? data.roles : []);
+      setRoleHierarchyDirty(false);
     } catch (err) {
-      setStatus(err.message || "Could not update role hierarchy.");
-      load().catch(() => {});
+      setRoleHierarchyError(err.message || "Could not update role hierarchy.");
+    } finally {
+      setRoleHierarchySaving(false);
+    }
+  }
+
+  async function resetRoleHierarchy() {
+    setRoleHierarchySaving(true);
+    try {
+      await load();
+    } finally {
+      setRoleHierarchySaving(false);
     }
   }
 
@@ -384,6 +407,8 @@ export default function UserManagementSettings() {
         {page === "roles" ? <Button size="icon" variant={actions.canManageRoles ? "green" : "locked"} locked={!actions.canManageRoles} icon={plusIcon} aria-label="Create role" onClick={() => setCreatingRole(true)} /> : null}
       </div>
       <SearchBar variant="settings" placeholder={`Search ${page}`} label={`Search ${page}`} value={query} onChange={setQuery} showPreview={false} />
+      {page === "roles" ? <SaveConfirmation show={roleHierarchyDirty} busy={roleHierarchySaving} onReset={resetRoleHierarchy} onSave={saveRoleHierarchy} /> : null}
+      {roleHierarchyError ? <p className="text-sm text-red-300">{roleHierarchyError}</p> : null}
       {status ? <p className="text-sm text-muted">{status}</p> : null}
       {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} roleRanks={roleRanks} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<RoleRow role={role} canDrag={Boolean(actions.canManageRoles)} dragging={draggingRoleName === role.name} onClick={() => handleRoleClick(role.name)} onDragStart={(event) => handleRoleDragStart(role.name, event)} onDragEnter={() => handleRoleDragEnter(role.name)} onDragEnd={handleRoleDragEnd} /></div>)}</div></div> : null}
       {!status && ((page === "users" && !visibleUsers.length) || (page === "roles" && !visibleRoles.length)) ? <p className="text-center text-sm text-muted">No {page} found.</p> : null}
