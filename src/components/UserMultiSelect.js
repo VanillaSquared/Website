@@ -15,6 +15,7 @@ export default function UserMultiSelect({
   value = [],
   placeholder = "Select users",
   label = "Users",
+  emptyText = "No users found.",
   ...props
 }) {
   const options = useMemo(() => {
@@ -31,6 +32,7 @@ export default function UserMultiSelect({
       options={options}
       value={value}
       placeholder={placeholder}
+      emptyText={emptyText}
       {...props}
     />
   );

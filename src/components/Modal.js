@@ -79,6 +79,7 @@ const variants = {
     root: "top-16 right-0 bottom-0 left-0",
     overlay: "items-stretch justify-end overflow-hidden",
     card: "h-full w-full max-w-sm rounded-none !border-y-0 !border-r-0",
+    content: "h-full min-h-0",
     openAnimation: "slide-right",
     closeAnimation: "slide-right",
   },

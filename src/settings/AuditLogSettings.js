@@ -93,6 +93,13 @@ export default function AuditLogSettings() {
 
   const typeOptions = useMemo(() => (types.length ? types : TABS.slice(1).map((item) => item.value)).map((type) => ({ value: type, label: TYPE_LABELS[type] ?? type })), [types]);
 
+  const loadUsers = useCallback(async () => {
+    const response = await fetch("/api/audit-log/users", { cache: "no-store", credentials: "same-origin" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Could not load users.");
+    setUsers(Array.isArray(data.users) ? data.users : []);
+  }, []);
+
   const loadLogs = useCallback(async ({ append = false, cursor = null } = {}) => {
     setLoading(true);
     setError("");
@@ -106,8 +113,8 @@ export default function AuditLogSettings() {
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || "Could not load audit logs.");
       setLogs((current) => append ? [...current, ...(data.logs ?? [])] : (data.logs ?? []));
-      setUsers(data.users ?? []);
-      setTypes(data.types ?? []);
+      if (Array.isArray(data.users)) setUsers(data.users);
+      if (Array.isArray(data.types)) setTypes(data.types);
       setNextCursor(data.nextCursor ?? null);
       setHasMore(Boolean(data.hasMore));
     } catch (err) {
@@ -121,6 +128,16 @@ export default function AuditLogSettings() {
     const timeout = window.setTimeout(() => loadLogs(), 200);
     return () => window.clearTimeout(timeout);
   }, [loadLogs]);
+
+  useEffect(() => {
+    loadUsers().catch((err) => setError(err.message || "Could not load users."));
+  }, [loadUsers]);
+
+  useEffect(() => {
+    if (!filtersOpen || users.length) return;
+
+    loadUsers().catch((err) => setError(err.message || "Could not load users."));
+  }, [filtersOpen, loadUsers, users.length]);
 
   return (
     <div className="flex h-full min-h-0 flex-col text-soft">
@@ -144,9 +161,9 @@ export default function AuditLogSettings() {
         footer={<Button className="w-full" variant="tertiary" onClick={() => { setSelectedUsers([]); setSelectedTypes([]); }}>Clear filters</Button>}
       >
         <div className="space-y-4">
-          <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} max={10} placeholder="Select up to 10 users" menuClassName="!relative !z-auto" />
+          <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} max={10} placeholder="Select up to 10 users" emptyText="No users available." />
           <Separator />
-          <MultiSelect label="Types" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select log types" menuClassName="!relative !z-auto" />
+          <MultiSelect label="Types" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select log types" />
         </div>
       </FilterSidebar>
     </div>

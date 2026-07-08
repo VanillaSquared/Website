@@ -37,6 +37,7 @@ export default function Preview({
   buttonClassName = "",
   menuClassName = "",
   menuMaxHeight = "max-h-64",
+  emptyText = "No options found.",
   locked = false,
 }) {
   const [open, setOpen] = useState(false);
@@ -170,6 +171,7 @@ export default function Preview({
               className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${menuMaxHeight} ${menuClassName}`}
             >
               <div className="flex w-full flex-col gap-0.5">
+                {!options.length ? <p className="px-3 py-2 text-sm font-normal text-muted">{emptyText}</p> : null}
                 {options.map((option) => {
                   const nextValue = optionValue(option);
                   const selected = selectedValues.includes(nextValue);
