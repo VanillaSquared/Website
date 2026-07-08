@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { removeUserRole } from "@/auth/openSQL";
+import { createAuditLog } from "@/audit/logs";
+import { getUserRolesByUserId, removeUserRole } from "@/auth/openSQL";
 import { PERMISSIONS, isValidRole } from "@/auth/permissions";
 import { getMutableTargetUser, requireApiPermission } from "@/auth/userManagement";
 import { guardSameOriginRequest } from "@/security/requestGuards";
@@ -18,6 +19,18 @@ export async function DELETE(request, { params }) {
 
   if (!await isValidRole(role)) return NextResponse.json({ error: "Invalid role" }, { status: 400 });
 
+  const beforeRoles = await getUserRolesByUserId(userId);
   await removeUserRole(userId, role);
+  const afterRoles = await getUserRolesByUserId(userId);
+  await createAuditLog({
+    type: "user_management",
+    action: "user_role.removed",
+    actorUserId: auth.user.id,
+    targetUserId: userId,
+    summary: `${auth.user.username} removed role ${role} from ${target.user.username}.`,
+    beforeData: { roles: beforeRoles },
+    afterData: { roles: afterRoles },
+    metadata: { role },
+  });
   return NextResponse.json({ ok: true });
 }

@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import accountIcon from "@/assets/icons/settings/account.svg";
 import accessibilityIcon from "@/assets/icons/settings/accessibility.svg";
 import appearanceIcon from "@/assets/icons/settings/appearance.svg";
+import auditLogIcon from "@/assets/icons/settings/audit-log.svg";
 import beakerIcon from "@/assets/icons/settings/beaker.svg";
 import codeIcon from "@/assets/icons/settings/code.svg";
 import logoutIcon from "@/assets/icons/settings/logout.svg";
@@ -123,6 +124,7 @@ const settingsCategories = [
       { label: "Dev Options", permission: "dev_options" },
       { label: "Design Test", permission: "design_test" },
       { label: "User Management", permission: "user_management" },
+      { label: "Audit Log", permission: "audit_log" },
     ],
   },
 ];
@@ -137,6 +139,7 @@ const settingsItemIcons = {
   "Bug Panel": supportIcon,
   "Design Test": beakerIcon,
   "User Management": userManagementIcon,
+  "Audit Log": auditLogIcon,
 };
 
 function canViewSettingsItem(item, permissions) {
@@ -243,7 +246,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
           <Button size="icon" variant="tertiary" icon={closeIcon} aria-label="Close settings" onClick={onClose} />
         </header>
 
-        <div className={activeItem === "User Management" ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
+        <div className={["User Management", "Audit Log"].includes(activeItem) ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
           <SettingsContent activeItem={activeItem}>{children}</SettingsContent>
         </div>
       </section>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAuthSubject } from "@/app/auth";
+import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { createBugReport } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
@@ -47,6 +48,15 @@ export async function POST(request) {
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
+
+    await createAuditLog({
+      type: "bug_reporter_action",
+      action: "bug_report.created",
+      actorUserId: creatorUserId,
+      targetUserId: creatorUserId,
+      summary: `${user.username} created bug report ${result.publicId}.`,
+      afterData: { id: result.id, publicId: result.publicId },
+    });
 
     return NextResponse.json({ id: result.id, publicId: result.publicId }, { status: 201 });
   } catch (error) {

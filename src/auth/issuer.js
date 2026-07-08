@@ -4,6 +4,8 @@ import { issuer } from "@openauthjs/openauth";
 import { CodeProvider } from "@openauthjs/openauth/provider/code";
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 
+import { createAuditLog } from "@/audit/logs";
+
 import { saveAdminEmailCode } from "./adminCodeBypass";
 import { PendingEmailCodeUI } from "./codeUI";
 import { InternalEmailProvider } from "./internalEmailProvider";
@@ -69,6 +71,15 @@ export const authIssuer = issuer({
       if (!user) {
         throw new Error("No user profile exists for this email address.");
       }
+
+      await createAuditLog({
+        type: "user_action",
+        action: isSignup ? "auth.signup" : "auth.login",
+        actorUserId: user.id,
+        targetUserId: user.id,
+        summary: `${user.username} ${isSignup ? "signed up" : "logged in"}.`,
+        afterData: { id: user.id, username: user.username, email: user.email },
+      });
 
       return ctx.subject("user", subjectFromUser(user), { subject: user.id });
     }

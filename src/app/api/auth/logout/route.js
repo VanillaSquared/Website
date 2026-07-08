@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { clearTokens, getAuthSubject } from "@/app/auth";
+import { createAuditLog } from "@/audit/logs";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
@@ -25,6 +26,13 @@ export async function POST(request) {
     });
   }
 
+  await createAuditLog({
+    type: "user_action",
+    action: "auth.logout",
+    actorUserId: subject.properties.id,
+    targetUserId: subject.properties.id,
+    summary: `${subject.properties.username} logged out.`,
+  });
   await clearTokens();
 
   return NextResponse.json({ authenticated: false }, {

@@ -1,0 +1,154 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import filterIcon from "@/assets/icons/filter.svg";
+import Button from "@/components/Button";
+import FilterSidebar from "@/components/FilterSidebar";
+import MultiSelect from "@/components/MultiSelect";
+import SearchBar from "@/components/SearchBar";
+import Separator from "@/components/Separator";
+import Tabs from "@/components/Tabs";
+
+const TABS = [
+  { label: "All", value: "all" },
+  { label: "User Management", value: "user_management" },
+  { label: "User Actions", value: "user_action" },
+  { label: "Bug Reporter", value: "bug_reporter_action" },
+  { label: "Bug Panel", value: "bug_panel_action" },
+];
+
+const TYPE_LABELS = Object.fromEntries(TABS.map((tab) => [tab.value, tab.label]));
+
+function formatDate(value) {
+  const date = value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "Unknown time";
+}
+
+function JsonBlock({ title, value }) {
+  if (value == null) return null;
+  return (
+    <div>
+      <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-subtle">{title}</h4>
+      <pre className="max-h-56 overflow-auto rounded-lg border border-divider bg-black/20 p-3 text-xs text-soft">{JSON.stringify(value, null, 2)}</pre>
+    </div>
+  );
+}
+
+function LogRow({ log, expanded, onToggle }) {
+  async function copyJson(event) {
+    event.stopPropagation();
+    await navigator.clipboard?.writeText(JSON.stringify(log, null, 2));
+  }
+
+  return (
+    <article className="rounded-xl border border-divider bg-card/60">
+      <button type="button" className="grid w-full gap-2 p-3 text-left hover:bg-control-hover/40 sm:grid-cols-[10rem_1fr_auto]" onClick={onToggle}>
+        <div className="text-xs text-muted">{formatDate(log.createdAt)}</div>
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-control px-2 py-0.5 text-xs font-semibold text-accent">{TYPE_LABELS[log.type] ?? log.type}</span>
+            <span className="text-xs text-subtle">{log.action}</span>
+          </div>
+          <p className="mt-1 truncate text-sm text-heading">{log.summary}</p>
+        </div>
+        <div className="text-xs text-muted">{expanded ? "Hide" : "Details"}</div>
+      </button>
+      {expanded ? (
+        <div className="space-y-4 border-t border-divider p-4">
+          <div className="grid gap-3 text-sm sm:grid-cols-2">
+            <p><span className="text-subtle">Actor:</span> <span className="text-heading">{log.actor?.username ?? log.actorUserId ?? "System"}</span></p>
+            <p><span className="text-subtle">Target:</span> <span className="text-heading">{log.target?.username ?? log.targetUserId ?? "None"}</span></p>
+            <p><span className="text-subtle">Type/action:</span> {log.type} / {log.action}</p>
+            <p><span className="text-subtle">Timestamp:</span> {formatDate(log.createdAt)}</p>
+          </div>
+          <p className="text-sm text-soft">{log.summary}</p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <JsonBlock title="Before" value={log.beforeData} />
+            <JsonBlock title="After" value={log.afterData} />
+          </div>
+          <JsonBlock title="Full audit log entry" value={log} />
+          <Button size="sm" variant="tertiary" onClick={copyJson}>Copy JSON</Button>
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
+export default function AuditLogSettings() {
+  const [tab, setTab] = useState("all");
+  const [search, setSearch] = useState("");
+  const [logs, setLogs] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [types, setTypes] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [expandedId, setExpandedId] = useState(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const userOptions = useMemo(() => users.map((user) => ({ value: user.id, label: `${user.username} (${user.email})` })), [users]);
+  const typeOptions = useMemo(() => (types.length ? types : TABS.slice(1).map((item) => item.value)).map((type) => ({ value: type, label: TYPE_LABELS[type] ?? type })), [types]);
+
+  const loadLogs = useCallback(async ({ append = false, cursor = null } = {}) => {
+    setLoading(true);
+    setError("");
+    try {
+      const params = new URLSearchParams({ tab, limit: "30" });
+      if (search.trim()) params.set("search", search.trim());
+      if (cursor) params.set("cursor", cursor);
+      selectedUsers.forEach((user) => params.append("user", user));
+      selectedTypes.forEach((type) => params.append("type", type));
+      const response = await fetch(`/api/audit-log?${params.toString()}`, { cache: "no-store", credentials: "same-origin" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Could not load audit logs.");
+      setLogs((current) => append ? [...current, ...(data.logs ?? [])] : (data.logs ?? []));
+      setUsers(data.users ?? []);
+      setTypes(data.types ?? []);
+      setNextCursor(data.nextCursor ?? null);
+      setHasMore(Boolean(data.hasMore));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, selectedTypes, selectedUsers, tab]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => loadLogs(), 200);
+    return () => window.clearTimeout(timeout);
+  }, [loadLogs]);
+
+  return (
+    <div className="flex h-full min-h-0 flex-col text-soft">
+      <Tabs tabs={TABS} value={tab} onChange={setTab} inset="none" className="shrink-0" tabClassName="text-sm" />
+      <div className="flex shrink-0 flex-col gap-3 py-4 sm:flex-row">
+        <SearchBar className="flex-1" placeholder="Search audit logs" value={search} onChange={setSearch} showPreview={false} />
+        <Button variant="tertiary" icon={filterIcon} onClick={() => setFiltersOpen(true)}>Filters</Button>
+      </div>
+      {error ? <p className="mb-3 rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
+      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1 pb-6">
+        {logs.map((log) => <LogRow key={log.id} log={log} expanded={expandedId === log.id} onToggle={() => setExpandedId(expandedId === log.id ? null : log.id)} />)}
+        {!logs.length && !loading ? <p className="py-10 text-center text-sm text-muted">No audit logs found.</p> : null}
+        {hasMore ? <Button className="mx-auto mt-4" variant="tertiary" disabled={loading} onClick={() => loadLogs({ append: true, cursor: nextCursor })}>{loading ? "Loading..." : "Load more"}</Button> : null}
+      </div>
+
+      <FilterSidebar
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        title="Audit filters"
+        subtitle="Filter by users or log types."
+        footer={<Button className="w-full" variant="tertiary" onClick={() => { setSelectedUsers([]); setSelectedTypes([]); }}>Clear filters</Button>}
+      >
+        <div className="space-y-4">
+          <MultiSelect label="Users" options={userOptions} value={selectedUsers} onChange={setSelectedUsers} max={10} placeholder="Select up to 10 users" />
+          <Separator />
+          <MultiSelect label="Types" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select log types" />
+        </div>
+      </FilterSidebar>
+    </div>
+  );
+}

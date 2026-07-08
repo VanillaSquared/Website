@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { createAuditLog } from "@/audit/logs";
 import { deleteUser, getUserByEmail, getUserByUsername, updateUser } from "@/auth/openSQL";
 import { getAuthorizationForUser, PERMISSIONS } from "@/auth/permissions";
 import { getMutableTargetUser, jsonError, requireApiPermission } from "@/auth/userManagement";
@@ -35,7 +36,17 @@ export async function PATCH(request, { params }) {
   const existingEmail = await getUserByEmail(input.email);
   if (existingEmail && existingEmail.id !== userId) return jsonError("Email is already in use.", 409);
 
+  const beforeData = { id: target.user.id, username: target.user.username, email: target.user.email };
   const user = await updateUser(userId, input);
+  await createAuditLog({
+    type: "user_management",
+    action: "user.updated",
+    actorUserId: auth.user.id,
+    targetUserId: userId,
+    summary: `${auth.user.username} updated ${user.username}'s account details.`,
+    beforeData,
+    afterData: { id: user.id, username: user.username, email: user.email },
+  });
   return NextResponse.json({ user, authorization: await getAuthorizationForUser(user) }, { headers: { "Cache-Control": "no-store" } });
 }
 
@@ -50,6 +61,14 @@ export async function DELETE(request, { params }) {
   const target = await getMutableTargetUser(userId);
   if (target.error) return target.error;
 
+  await createAuditLog({
+    type: "user_management",
+    action: "user.deleted",
+    actorUserId: auth.user.id,
+    targetUserId: userId,
+    summary: `${auth.user.username} deleted ${target.user.username}.`,
+    beforeData: { id: target.user.id, username: target.user.username, email: target.user.email },
+  });
   await deleteUser(userId);
   return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
 }

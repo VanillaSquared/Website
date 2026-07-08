@@ -4,10 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import filterIcon from "@/assets/icons/filter.svg";
-import xIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
-import Modal from "@/components/Modal";
+import FilterSidebar from "@/components/FilterSidebar";
 import Separator from "@/components/Separator";
 
 const filterTextColors = {
@@ -97,30 +96,13 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
         title="Filters"
         onClick={() => setOpen(true)}
       />
-      <Modal
+      <FilterSidebar
         open={open}
         onClose={() => setOpen(false)}
-        variant="filterSidebar"
-        background="none"
-        blurBackground={false}
-        closeOnOutsideClick={false}
+        title="Filters"
+        subtitle="Narrow the bug list."
+        footer={<Button className="w-full" variant="tertiary" onClick={clearFilters} disabled={isPending}>Clear filters</Button>}
       >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-divider pb-4">
-            <div>
-              <h2 className="text-xl font-semibold text-heading">Filters</h2>
-              <p className="mt-1 text-sm text-muted">Narrow the bug list.</p>
-            </div>
-            <Button
-              size="icon"
-              variant="tertiary"
-              icon={xIcon}
-              aria-label="Close filters"
-              onClick={() => setOpen(false)}
-            />
-          </div>
-
-          <div className="flex-1 overflow-y-auto py-4">
             <FilterGroup
               label="Category"
               name="category"
@@ -144,13 +126,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
               options={statuses.map((status) => ({ value: status, label: status }))}
               onChange={updateFilter}
             />
-          </div>
-
-          <div className="border-t border-divider pt-3">
-            <Button className="w-full" variant="tertiary" onClick={clearFilters} disabled={isPending}>Clear filters</Button>
-          </div>
-        </div>
-      </Modal>
+      </FilterSidebar>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import AccessibilitySettings from "@/settings/AccessibilitySettings";
 import AccountSettings from "@/settings/AccountSettings";
 import AppearanceSettings from "@/settings/AppearanceSettings";
+import AuditLogSettings from "@/settings/AuditLogSettings";
 import BugPanelSettings from "@/settings/BugPanelSettings";
 import DesignTestSettings from "@/settings/DesignTestSettings";
 import DevOptionsSettings from "@/settings/DevOptionsSettings";
@@ -18,6 +19,7 @@ const settingComponents = {
   "Dev Options": DevOptionsSettings,
   "Design Test": DesignTestSettings,
   "User Management": UserManagementSettings,
+  "Audit Log": AuditLogSettings,
 };
 
 export default function SettingsContent({ activeItem, children }) {

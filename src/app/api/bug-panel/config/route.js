@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS } from "@/auth/permissions";
 import { jsonError, requireApiPermission } from "@/auth/userManagement";
 import { getBugLimitConfig, updateBugLimitConfig } from "@/bugs/limits";
@@ -24,7 +25,17 @@ export async function PUT(request) {
 
   const body = await request.json().catch(() => ({}));
   try {
-    return NextResponse.json({ config: await updateBugLimitConfig(body) }, { headers: { "Cache-Control": "no-store" } });
+    const beforeConfig = await getBugLimitConfig();
+    const config = await updateBugLimitConfig(body);
+    await createAuditLog({
+      type: "bug_panel_action",
+      action: "bug_limit_config.updated",
+      actorUserId: auth.user.id,
+      summary: `${auth.user.username} updated bug report limits.`,
+      beforeData: beforeConfig,
+      afterData: config,
+    });
+    return NextResponse.json({ config }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     return jsonError(error.message || "Could not update bug limit config.", error.status || 400);
   }

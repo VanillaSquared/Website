@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { createAuditLog } from "@/audit/logs";
 import { deleteRole, getRole, getRolePermissions, renameRole } from "@/auth/openSQL";
 import { DEFAULT_ROLE, NOT_SIGNED_IN_ROLE, PERMISSIONS, isValidRoleName } from "@/auth/permissions";
 import { jsonError, normalizeRoleName, requireApiPermission } from "@/auth/userManagement";
@@ -23,8 +24,18 @@ export async function PATCH(request, { params }) {
   if (!isValidRoleName(name)) return jsonError("Invalid role name.", 400);
   if (name !== role && await getRole(name)) return jsonError("Role already exists.", 409);
 
+  const beforeRole = { ...await getRole(role), permissions: await getRolePermissions(role) };
   const updatedRole = name === role ? await getRole(role) : await renameRole(role, name);
-  return NextResponse.json({ role: { ...updatedRole, permissions: await getRolePermissions(name) } }, { headers: { "Cache-Control": "no-store" } });
+  const afterRole = { ...updatedRole, permissions: await getRolePermissions(name) };
+  await createAuditLog({
+    type: "user_management",
+    action: "role.renamed",
+    actorUserId: auth.user.id,
+    summary: `${auth.user.username} renamed role ${role} to ${name}.`,
+    beforeData: beforeRole,
+    afterData: afterRole,
+  });
+  return NextResponse.json({ role: afterRole }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function DELETE(request, { params }) {
@@ -38,6 +49,14 @@ export async function DELETE(request, { params }) {
   if (!isValidRoleName(role) || !await getRole(role)) return jsonError("Role not found.", 404);
   if (PROTECTED_ROLES.has(role)) return jsonError("Built-in roles cannot be deleted.", 403);
 
+  const beforeRole = { ...await getRole(role), permissions: await getRolePermissions(role) };
   await deleteRole(role);
+  await createAuditLog({
+    type: "user_management",
+    action: "role.deleted",
+    actorUserId: auth.user.id,
+    summary: `${auth.user.username} deleted role ${role}.`,
+    beforeData: beforeRole,
+  });
   return NextResponse.json({ ok: true }, { headers: { "Cache-Control": "no-store" } });
 }
