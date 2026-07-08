@@ -12,6 +12,7 @@ import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import Tabs from "@/components/Tabs";
 import Tag from "@/components/Tag";
+import TextInput from "@/components/TextInput";
 
 const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs"];
 const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
@@ -78,10 +79,6 @@ function ModalHeader({ title, subtitle, onClose }) {
   );
 }
 
-function lockedInputClass(locked) {
-  return `mt-1 w-full rounded-lg border px-3 py-2 outline-none ${locked ? "cursor-not-allowed border-locked-input-border bg-locked-input text-locked-text" : "border-divider bg-card text-heading"}`;
-}
-
 async function syncUserRoles(userId, before, after) {
   const previous = new Set(before);
   const next = new Set(after);
@@ -141,8 +138,8 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
           {protectedUser ? <p className="text-sm text-muted">This account is protected and cannot be changed.</p> : null}
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-sm">Username<input className={lockedInputClass(!canManageUser || busy)} disabled={!canManageUser || busy} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} /></label>
-            <label className="text-sm">Email<input className={lockedInputClass(!canManageUser || busy)} disabled={!canManageUser || busy} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></label>
+            <TextInput label="Username" inputClassName="w-full" locked={!canManageUser || busy} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+            <TextInput label="Email" type="email" inputClassName="w-full" locked={!canManageUser || busy} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           </div>
           <Button size="sm" variant={canManageUser ? "green" : "locked"} disabled={busy} locked={!canManageUser} onClick={() => mutate(() => api(`/api/users/${user.id}`, { method: "PATCH", body: JSON.stringify(form) }))}>Save user</Button>
           <ModalSeparator bleed />
@@ -194,7 +191,7 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
         <ModalHeader title={`Role: ${role.name}`} onClose={onClose} />
         <div className="space-y-5 p-6">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
-          <label className="block text-sm">Role name<input className={lockedInputClass(!canEdit || busy)} disabled={!canEdit || busy} value={name} onChange={(e) => setName(e.target.value)} /></label>
+          <TextInput label="Role name" locked={!canEdit || busy} value={name} onChange={(e) => setName(e.target.value)} />
           <MultiSelect label="Permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canEdit || busy} placeholder="Select permissions" />
           <div className="flex gap-2">
             <Button size="sm" variant={canEdit ? "green" : "locked"} disabled={busy} locked={!canEdit} onClick={() => mutate(async () => {
@@ -244,7 +241,7 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
         <ModalHeader title="Create role" onClose={onClose} />
         <div className="space-y-4 p-5">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
-          <label className="block text-sm">Role name<input className={lockedInputClass(!canCreate || busy)} disabled={!canCreate || busy} value={name} onChange={(event) => setName(event.target.value)} placeholder="moderator" /></label>
+          <TextInput label="Role name" sampleText="moderator" locked={!canCreate || busy} value={name} onChange={(event) => setName(event.target.value)} />
           <MultiSelect label="Initial permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canCreate || busy} placeholder="Select permissions" />
           <Button size="sm" variant={canCreate ? "green" : "locked"} disabled={busy} locked={!canCreate} onClick={submit}>Create role</Button>
         </div>
