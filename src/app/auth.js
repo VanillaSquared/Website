@@ -17,16 +17,28 @@ export async function getOrigin() {
   return `${protocol}://${host}`;
 }
 
+function getIssuerUrl(origin) {
+  const configuredIssuer = process.env.OPENAUTH_ISSUER?.trim();
+
+  if (configuredIssuer?.startsWith("http://") || configuredIssuer?.startsWith("https://")) {
+    return configuredIssuer.replace(/\/+$/, "");
+  }
+
+  return origin;
+}
+
 async function fetchOpenAuthInternally(input, init) {
   const request = input instanceof Request ? input : new Request(input, init);
+  const url = new URL(request.url);
+  url.pathname = url.pathname.replace(/^\/\/+/, "/");
 
-  return authIssuer.fetch(request);
+  return authIssuer.fetch(new Request(url, request));
 }
 
 export function getAuthClient(origin) {
   return createClient({
     clientID: "vanillasquaredwebsite",
-    issuer: process.env.OPENAUTH_ISSUER ?? origin,
+    issuer: getIssuerUrl(origin),
     fetch: fetchOpenAuthInternally,
   });
 }

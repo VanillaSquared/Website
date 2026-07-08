@@ -19,7 +19,6 @@ import { authIssuer } from "@/auth/issuer";
 import {
   getUserByEmail,
   getUserByUsername,
-  getUserByUsernameAndEmail,
 } from "@/auth/openSQL";
 import { getOrigin, sanitizeReturnTo, setTokens } from "@/app/auth";
 
@@ -40,12 +39,21 @@ function redirectDatabaseError(path, error) {
   throw error;
 }
 
-function getCredentials(formData) {
+function getSignupCredentials(formData) {
   const username = normalizeUsername(formData.get("username"));
   const email = normalizeEmail(formData.get("email"));
   const returnTo = sanitizeReturnTo(formData.get("returnTo"));
 
   return { username, email, returnTo };
+}
+
+function getLoginCredentials(formData) {
+  const identifier = String(formData.get("identifier") ?? "").trim();
+  const returnTo = sanitizeReturnTo(formData.get("returnTo"));
+  const email = normalizeEmail(identifier);
+  const username = normalizeUsername(identifier);
+
+  return { identifier, email, username, returnTo };
 }
 
 function validateCredentials(path, { username, email }) {
@@ -211,26 +219,35 @@ export async function resendEmailCode() {
 }
 
 export async function loginWithEmailCode(formData) {
-  const credentials = getCredentials(formData);
-  validateCredentials("/login", credentials);
+  const credentials = getLoginCredentials(formData);
+
+  if (!credentials.identifier) {
+    redirectWithError("/login", "Enter your username or email address.");
+  }
+
+  if (!validateEmail(credentials.email) && !validateUsername(credentials.username)) {
+    redirectWithError("/login", `Enter a valid email address or username with ${USERNAME_MIN_LENGTH}-${USERNAME_MAX_LENGTH} letters, numbers, or underscores.`);
+  }
 
   let user;
 
   try {
-    user = await getUserByUsernameAndEmail(credentials.username, credentials.email);
+    user = validateEmail(credentials.email)
+      ? await getUserByEmail(credentials.email)
+      : await getUserByUsername(credentials.username);
   } catch (error) {
     redirectDatabaseError("/login", error);
   }
 
   if (!user) {
-    redirectWithError("/login", "Username and email do not match an account.");
+    redirectWithError("/login", "No account exists for that username or email address.");
   }
 
   await startEmailCodeLogin(user.email, "", credentials.returnTo);
 }
 
 export async function signupWithEmailCode(formData) {
-  const credentials = getCredentials(formData);
+  const credentials = getSignupCredentials(formData);
   validateCredentials("/signup", credentials);
 
   try {

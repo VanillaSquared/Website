@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 
 import { sanitizeReturnTo } from "@/app/auth";
-import { USERNAME_MAX_LENGTH, USERNAME_MIN_LENGTH } from "@/auth/openAuth";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import TextInput from "@/components/TextInput";
@@ -21,7 +20,7 @@ export default async function LoginPage({ searchParams }) {
       <Card
         preset="auth"
         title="Login"
-        description="Enter the username and email for the same account. We’ll send you a login code next."
+        description="Enter your username or email address. We’ll send you a login code next."
         error={error}
         footer={(
           <>
@@ -32,23 +31,12 @@ export default async function LoginPage({ searchParams }) {
         <form action={loginWithEmailCode} className="flex flex-col gap-4">
           <input type="hidden" name="returnTo" value={returnTo} />
           <TextInput
-            label="Username"
-            name="username"
+            label="Username or email"
+            name="identifier"
             autoComplete="username"
             allowBrowserExtensions
             required
-            minLength={USERNAME_MIN_LENGTH}
-            maxLength={USERNAME_MAX_LENGTH}
-            sampleText="Your username"
-          />
-          <TextInput
-            label="Email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            allowBrowserExtensions
-            required
-            sampleText="you@example.com"
+            sampleText="Your username or you@example.com"
           />
           <Button type="submit" className="mt-2 w-full">Login</Button>
         </form>
