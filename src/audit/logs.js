@@ -131,8 +131,8 @@ export async function listAuditLogs({ search = "", users = [], types = [], tabTy
      LEFT JOIN users target ON target.id = l.target_user_id
      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
      ORDER BY l.id DESC
-     LIMIT ?`,
-    [...params, cleanLimit + 1]
+     LIMIT ${cleanLimit + 1}`,
+    params
   );
 
   const hasMore = rows.length > cleanLimit;
