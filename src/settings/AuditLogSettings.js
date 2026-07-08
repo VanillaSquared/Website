@@ -51,7 +51,10 @@ function LogRow({ log, expanded, onToggle }) {
           <p className="truncate text-sm font-medium text-heading">{log.summary}</p>
           <p className="truncate text-xs text-subtle">{log.action} · {log.actor?.username ?? "System"}{log.target?.username ? ` → ${log.target.username}` : ""}</p>
         </div>
-        <div className="text-xs text-muted">{expanded ? "Hide" : "Details"}</div>
+        <span
+          aria-hidden="true"
+          className={`h-2 w-2 justify-self-end border-r-2 border-b-2 border-muted transition-transform ${expanded ? "rotate-[225deg]" : "rotate-45"}`}
+        />
       </button>
       {expanded ? (
         <div className="space-y-3 border-t border-divider/70 px-4 py-3">
@@ -142,7 +145,7 @@ export default function AuditLogSettings() {
       <Tabs tabs={TABS} value={tab} onChange={setTab} inset="none" className="shrink-0" tabClassName="text-sm" />
       <div className="flex shrink-0 flex-col gap-3 py-4 sm:flex-row sm:items-center">
         <SearchBar variant="settings" className="flex-1" placeholder="Search audit logs" value={search} onChange={setSearch} showPreview={false} />
-        <Button size="icon" variant="tertiary" className="h-11 w-11 shrink-0 rounded-xl" icon={filterIcon} aria-label="Filters" title="Filters" onClick={() => setFiltersOpen((open) => !open)} />
+        <Button variant="iconButton" size="iconButton" icon={filterIcon} iconClassName="h-5 w-5" aria-label="Filters" title="Filters" onClick={() => setFiltersOpen((open) => !open)} />
       </div>
       {error ? <p className="mb-3 rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
       <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
