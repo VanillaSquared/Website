@@ -72,16 +72,16 @@ export default function BugCreateButton({ categories, versions, authenticated, c
         chatbox={creationLocked ? { description: getLockedDescription(creationAvailability, remainingTime), placement: "below" } : null}
         onClick={() => setOpen(true)}
       />
-      <Modal open={open} onClose={() => setOpen(false)} variant="wide" className="!p-0">
+      <Modal open={open} onClose={() => setOpen(false)} variant={authenticated && creatorUser?.id ? "wide" : "default"} className="!p-0">
         <div className="flex flex-col">
-          <div className="flex items-start justify-between border-b border-divider px-6 py-4">
+          <div className="flex items-start justify-between border-b border-divider px-5 py-3">
             <div>
-              <h2 className="text-xl font-semibold text-heading">Create bug report</h2>
-              <p className="mt-1 text-sm text-muted">No Troll bug reports!</p>
+              <h2 className="text-lg font-semibold text-heading">Create bug report</h2>
+              <p className="mt-0.5 text-sm text-muted">No Troll bug reports!</p>
             </div>
             <Button size="icon" variant="tertiary" icon={xIcon} aria-label="Close create bug report" onClick={() => setOpen(false)} />
           </div>
-          <div className="p-6">
+          <div className="p-4">
             <BugReporterForm
               categories={categories}
               versions={versions}

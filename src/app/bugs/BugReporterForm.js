@@ -46,10 +46,10 @@ export default function BugReporterForm({ categories, versions, authenticated, c
 
   if (!authenticated || !creatorUser?.id) {
     return (
-      <div className="rounded-2xl border border-divider bg-card p-6 text-center">
-        <h2 className="text-2xl font-bold text-heading">Log in to submit reports</h2>
-        <p className="mt-2 text-muted">Bug reports are linked to your Vanilla² account.</p>
-        <Button href="/login?returnTo=/bugs" className="mt-5">Log in</Button>
+      <div className="py-3 text-center">
+        <h2 className="text-xl font-bold text-heading">Log in to submit reports</h2>
+        <p className="mt-1 text-sm text-muted">Bug reports are linked to your Vanilla² account.</p>
+        <Button href="/login?returnTo=/bugs" className="mt-4">Log in</Button>
       </div>
     );
   }
