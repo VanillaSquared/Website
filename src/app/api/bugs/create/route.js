@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAuthSubject } from "@/app/auth";
-import { PERMISSIONS, hasPermission } from "@/auth/permissions";
+import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { createBugReport } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
@@ -23,7 +23,9 @@ export async function POST(request) {
     return NextResponse.json({ error: "You must be logged in to submit a bug report." }, { status: 401 });
   }
 
-  if (!await hasPermission(user, PERMISSIONS.CREATE_BUGS)) {
+  const authorization = await getAuthorizationForUser(user);
+
+  if (!hasResolvedPermission(authorization, PERMISSIONS.CREATE_BUGS)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -36,7 +38,11 @@ export async function POST(request) {
   }
 
   try {
-    const result = await createBugReport({ creatorUserId, formData });
+    const result = await createBugReport({
+      creatorUserId,
+      formData,
+      bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
+    });
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 });

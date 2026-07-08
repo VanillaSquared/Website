@@ -15,7 +15,7 @@ import Tabs from "@/components/Tabs";
 import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
 
-const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs"];
+const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"];
 const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "default"]);
 const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
 

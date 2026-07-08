@@ -6,9 +6,9 @@ const initializedGlobalKey = Symbol.for("vanillasquared.mysql.initialized");
 const BUILT_IN_ROLE_PERMISSIONS = Object.freeze({
   default: ["create_bugs", "view_bugs"],
   not_signed_in: ["view_bugs"],
-  support: ["bug_panel"],
-  developer: ["design_test", "dev_options"],
-  owner: ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs"],
+  support: ["bug_panel", "bypass_limits"],
+  developer: ["design_test", "dev_options", "bypass_limits"],
+  owner: ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"],
 });
 
 let pool = globalThis[poolGlobalKey];

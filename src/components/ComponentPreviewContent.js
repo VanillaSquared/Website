@@ -109,6 +109,9 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
               ))}
               <Button variant="locked">locked</Button>
               <Button locked>locked prop</Button>
+              <Button chatbox={{ title: "hehe", description: "Click to learn more" }}>Chatbox above</Button>
+              <Button chatbox={{ title: "hehe", description: "Displayed below", placement: "below" }}>Chatbox below</Button>
+              <Button locked chatbox={{ title: "Locked", description: "Try again in 5m" }}>Locked chatbox</Button>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {buttonSizes.map((size) => (

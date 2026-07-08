@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import plusIcon from "@/assets/icons/plus.svg";
@@ -11,9 +11,45 @@ import Modal from "@/components/Modal";
 import { BUG_REPORT_CREATED_EVENT } from "./BugReportSuccessNotice";
 import BugReporterForm from "./BugReporterForm";
 
-export default function BugCreateButton({ categories, versions, authenticated, creatorUser }) {
+function formatRemainingTime(target) {
+  if (!target) return "";
+
+  const remaining = new Date(target).getTime() - Date.now();
+  if (!Number.isFinite(remaining) || remaining <= 0) return "available soon";
+
+  const totalSeconds = Math.ceil(remaining / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
+}
+
+function getLockedDescription(creationAvailability, remainingTime) {
+  if (!creationAvailability || creationAvailability.allowed) return "";
+  if (creationAvailability.permanent) return "You are permanently banned from creating bugs.";
+  if (remainingTime) return `You are banned from creating bugs until: ${remainingTime}`;
+  return creationAvailability.error || "Bug creation is currently locked.";
+}
+
+export default function BugCreateButton({ categories, versions, authenticated, creatorUser, creationAvailability }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [remainingTime, setRemainingTime] = useState(formatRemainingTime(creationAvailability?.blockedUntil));
+  const creationLocked = Boolean(authenticated && creationAvailability && !creationAvailability.allowed);
+
+  useEffect(() => {
+    if (!creationAvailability?.blockedUntil || creationAvailability?.permanent) return undefined;
+
+    const update = () => setRemainingTime(formatRemainingTime(creationAvailability.blockedUntil));
+    update();
+    const interval = window.setInterval(update, 1000);
+    return () => window.clearInterval(interval);
+  }, [creationAvailability?.blockedUntil, creationAvailability?.permanent]);
 
   function handleCreated(result) {
     setOpen(false);
@@ -26,12 +62,14 @@ export default function BugCreateButton({ categories, versions, authenticated, c
   return (
     <>
       <Button
-        variant="iconButton"
+        variant={creationLocked ? "locked" : "iconButton"}
         size="iconButton"
         icon={plusIcon}
         iconClassName="h-5 w-5"
         aria-label="Add bug report"
-        title="Add bug report"
+        title={creationLocked ? undefined : "Add bug report"}
+        locked={creationLocked}
+        chatbox={creationLocked ? { title: "Bug reports locked", description: getLockedDescription(creationAvailability, remainingTime), placement: "below" } : null}
         onClick={() => setOpen(true)}
       />
       <Modal open={open} onClose={() => setOpen(false)} variant="wide" className="!p-0">

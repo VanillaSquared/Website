@@ -42,6 +42,20 @@ function getCharacterCount(value) {
   return String(value ?? "").length;
 }
 
+function filterInputValue(value, filter) {
+  const text = String(value ?? "");
+
+  if (filter === "integer") {
+    return text.replace(/\D/g, "");
+  }
+
+  if (filter === "timeLimit") {
+    return text.replace(/[^0-9a-zA-Z().\-\s]/g, "");
+  }
+
+  return text;
+}
+
 export default function TextInput({
   label,
   sampleText = "",
@@ -61,6 +75,7 @@ export default function TextInput({
   allowBrowserExtensions = false,
   useOnePassword,
   onInput,
+  filter,
   style,
   locked = false,
   disabled = false,
@@ -108,6 +123,11 @@ export default function TextInput({
   }, [value, defaultValue, visibleLines, maxVisibleLines]);
 
   function handleInput(event) {
+    const filteredValue = filterInputValue(event.currentTarget.value, filter);
+    if (filteredValue !== event.currentTarget.value) {
+      event.currentTarget.value = filteredValue;
+    }
+
     setUncontrolledCharacterCount(event.currentTarget.value.length);
     resizeTextarea(event.currentTarget);
     onInput?.(event);

@@ -58,6 +58,46 @@ function renderIcon(icon, iconAlt, iconClassName = "h-4 w-4") {
   return icon;
 }
 
+function normalizeChatbox(chatbox, chatboxTitle, chatboxDescription, chatboxIcon) {
+  if (!chatbox && !chatboxTitle && !chatboxDescription) return null;
+  if (typeof chatbox === "string") return { title: chatboxTitle, description: chatbox, icon: chatboxIcon };
+  return {
+    title: chatbox?.title ?? chatboxTitle,
+    description: chatbox?.description ?? chatboxDescription,
+    icon: chatbox?.icon ?? chatboxIcon,
+    placement: chatbox?.placement,
+  };
+}
+
+function ButtonChatbox({ chatbox, placement = "above" }) {
+  if (!chatbox) return null;
+
+  const icon = renderIcon(chatbox.icon, "", "h-4 w-4");
+  const below = placement === "below";
+  const positionClasses = below
+    ? "top-full mt-2 -translate-y-1 group-hover/button:translate-y-0 group-focus-within/button:translate-y-0"
+    : "bottom-full mb-2 translate-y-1 group-hover/button:translate-y-0 group-focus-within/button:translate-y-0";
+  const arrowClasses = below
+    ? "bottom-full -translate-x-1/2 translate-y-1/2 rotate-45 border-t border-l"
+    : "top-full -translate-x-1/2 -translate-y-1/2 rotate-45 border-r border-b";
+
+  return (
+    <span
+      className={`pointer-events-none absolute left-1/2 z-20 min-w-max max-w-64 -translate-x-1/2 scale-95 rounded-lg border border-divider bg-card px-3 py-2 text-left text-sm opacity-0 shadow-lg transition-all duration-150 ease-out group-hover/button:scale-100 group-hover/button:opacity-100 group-focus-within/button:scale-100 group-focus-within/button:opacity-100 ${positionClasses}`}
+      role="tooltip"
+    >
+      {chatbox.title ? (
+        <span className="flex items-center justify-center gap-2 whitespace-nowrap font-semibold text-heading">
+          {icon}
+          {chatbox.title}
+        </span>
+      ) : null}
+      {chatbox.description ? <span className={`${chatbox.title ? "mt-1" : ""} block whitespace-nowrap font-normal text-muted`}>{chatbox.description}</span> : null}
+      <span className={`absolute left-1/2 h-3 w-3 border-divider bg-card ${arrowClasses}`} aria-hidden="true" />
+    </span>
+  );
+}
+
 export default function Button({
   href,
   children,
@@ -73,6 +113,11 @@ export default function Button({
   type = "button",
   locked = false,
   disabled = false,
+  chatbox,
+  chatboxTitle,
+  chatboxDescription,
+  chatboxIcon,
+  chatboxPlacement = "above",
   ...props
 }) {
   const isLocked = locked || variant === "locked";
@@ -87,16 +132,13 @@ export default function Button({
     </>
   );
   const classes = `${sizes[size] ?? sizes.md} ${borderClass} inline-flex items-center justify-center gap-2 font-semibold transition-colors ${variants[isLocked ? "locked" : variant] ?? variants.primary} ${disabled && !isLocked ? "cursor-not-allowed opacity-60" : ""} ${className}`;
+  const normalizedChatbox = normalizeChatbox(chatbox, chatboxTitle, chatboxDescription, chatboxIcon);
 
-  if (!href || isLocked || disabled) {
-    return (
-      <button type={type} className={classes} disabled={disabled || isLocked} {...props}>
-        {content}
-      </button>
-    );
-  }
-
-  return (
+  const buttonElement = (!href || isLocked || disabled) ? (
+    <button type={type} className={classes} disabled={disabled || isLocked} {...props}>
+      {content}
+    </button>
+  ) : (
     <a
       href={href}
       target={external ? "_blank" : undefined}
@@ -106,5 +148,16 @@ export default function Button({
     >
       {content}
     </a>
+  );
+
+  if (!normalizedChatbox) {
+    return buttonElement;
+  }
+
+  return (
+    <span className="group/button relative inline-flex overflow-visible">
+      <ButtonChatbox chatbox={normalizedChatbox} placement={normalizedChatbox.placement ?? chatboxPlacement} />
+      {buttonElement}
+    </span>
   );
 }

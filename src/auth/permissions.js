@@ -17,6 +17,7 @@ export const PERMISSIONS = Object.freeze({
   MANAGE_USER: "manage_user",
   CREATE_BUGS: "create_bugs",
   VIEW_BUGS: "view_bugs",
+  BYPASS_LIMITS: "bypass_limits",
 });
 
 export const PERMISSION_VALUES = Object.freeze(Object.values(PERMISSIONS));

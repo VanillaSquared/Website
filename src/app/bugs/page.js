@@ -6,6 +6,8 @@ import {
   listBugReports,
 } from "@/bugs/reporter";
 import { getAuthSubject } from "@/app/auth";
+import { getAuthorizationForUser, hasResolvedPermission, PERMISSIONS } from "@/auth/permissions";
+import { checkBugCreationAllowed } from "@/bugs/limits";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugCreateButton from "./BugCreateButton";
@@ -44,6 +46,11 @@ export default async function BugsPage({ searchParams }) {
     getAuthSubject({ updateTokens: false }),
   ]);
   const creatorUser = subject?.properties ?? null;
+  const authorization = creatorUser?.id ? await getAuthorizationForUser(creatorUser) : null;
+  const canCreateBugs = authorization ? hasResolvedPermission(authorization, PERMISSIONS.CREATE_BUGS) : false;
+  const creationAvailability = creatorUser?.id && canCreateBugs
+    ? await checkBugCreationAllowed(creatorUser.id, { bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS) })
+    : { allowed: canCreateBugs, error: creatorUser?.id ? "You do not have permission to create bug reports." : "Log in to submit bug reports." };
   const searchHiddenFields = {
     category: filters.category,
     priority: filters.priority,
@@ -71,6 +78,7 @@ export default async function BugsPage({ searchParams }) {
           versions={BUG_REPORT_VERSIONS}
           authenticated={Boolean(creatorUser?.id)}
           creatorUser={creatorUser}
+          creationAvailability={creationAvailability}
         />
       )}
       actions={(

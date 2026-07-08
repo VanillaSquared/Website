@@ -3,6 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { getPool, initializeUsersTable } from "@/auth/openSQL";
+import { checkBugCreationAllowed } from "@/bugs/limits";
 import { validateNoClientControlledFields } from "@/security/serverFieldGuard";
 
 export const BUG_REPORT_CATEGORY_CONFIGS = [
@@ -493,7 +494,7 @@ async function saveBugReportFiles(reportId, files) {
   return savedFiles;
 }
 
-export async function createBugReport({ creatorUserId, formData }) {
+export async function createBugReport({ creatorUserId, formData, bypassLimits = false }) {
   const validated = validateBugReportFormData(formData, { expectedCreatorUserId: creatorUserId });
 
   if (validated.error) {
@@ -501,6 +502,11 @@ export async function createBugReport({ creatorUserId, formData }) {
   }
 
   await initializeBugReporterTables();
+
+  const allowed = await checkBugCreationAllowed(creatorUserId, { bypassLimits });
+  if (!allowed.allowed) {
+    return { error: allowed.error };
+  }
 
   const report = validated.data;
   const id = randomUUID();
