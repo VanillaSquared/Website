@@ -9,7 +9,6 @@ import MultiSelect from "@/components/MultiSelect";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import UserMultiSelect from "@/components/UserMultiSelect";
-import Tabs from "@/components/Tabs";
 
 const TABS = [
   { label: "All", value: "all" },
@@ -31,7 +30,7 @@ function JsonBlock({ title, value }) {
   return (
     <div>
       <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-subtle">{title}</h4>
-      <pre className="max-h-56 overflow-auto rounded-lg border border-divider bg-black/20 p-3 text-xs text-soft">{JSON.stringify(value, null, 2)}</pre>
+      <pre className="max-h-56 overflow-auto rounded-lg border border-divider bg-black/20 p-3 text-xs text-soft [scrollbar-gutter:stable]">{JSON.stringify(value, null, 2)}</pre>
     </div>
   );
 }
@@ -78,7 +77,7 @@ function LogRow({ log, expanded, onToggle }) {
 }
 
 export default function AuditLogSettings() {
-  const [tab, setTab] = useState("all");
+  const tab = "all";
   const [search, setSearch] = useState("");
   const [logs, setLogs] = useState([]);
   const [users, setUsers] = useState([]);
@@ -142,14 +141,13 @@ export default function AuditLogSettings() {
 
   return (
     <div className="flex h-full min-h-0 flex-col text-soft">
-      <Tabs tabs={TABS} value={tab} onChange={setTab} inset="none" className="shrink-0" tabClassName="text-sm" />
-      <div className="flex shrink-0 flex-col gap-3 py-4 sm:flex-row sm:items-center">
+      <div className="flex shrink-0 flex-col gap-3 pb-4 sm:flex-row sm:items-center">
         <SearchBar variant="settings" className="flex-1" placeholder="Search audit logs" value={search} onChange={setSearch} showPreview={false} />
         <Button variant="iconButton" size="iconButton" icon={filterIcon} iconClassName="h-5 w-5" aria-label="Filters" title="Filters" onClick={() => setFiltersOpen((open) => !open)} />
       </div>
       {error ? <p className="mb-3 rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
       <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
-        <div className="h-full overflow-y-auto pb-6">
+        <div className="h-full overflow-y-auto pb-6 [scrollbar-gutter:stable]">
           {logs.map((log, index) => (
             <div key={log.id}>
               {index > 0 ? <Separator /> : null}
