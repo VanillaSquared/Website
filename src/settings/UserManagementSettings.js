@@ -15,6 +15,7 @@ import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
 
 const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs"];
+const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "default"]);
 const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
 
 function ModalSeparator({ bleed = false, className = "" }) {
@@ -164,6 +165,7 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const canEdit = Boolean(actions.canManageRoles);
+  const canDelete = Boolean(canEdit && !PROTECTED_ROLE_NAMES.has(role?.name));
 
   useEffect(() => {
     setName(role?.name ?? "");
@@ -191,6 +193,7 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
         <ModalHeader title={`Role: ${role.name}`} onClose={onClose} />
         <div className="space-y-5 p-6">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
+          {PROTECTED_ROLE_NAMES.has(role.name) ? <p className="text-sm text-muted">This built-in role cannot be deleted.</p> : null}
           <TextInput label="Role name" locked={!canEdit || busy} value={name} onChange={(e) => setName(e.target.value)} />
           <MultiSelect label="Permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canEdit || busy} placeholder="Select permissions" />
           <div className="flex gap-2">
@@ -198,7 +201,7 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
               const target = name !== role.name ? (await api(`/api/roles/${encodeURIComponent(role.name)}`, { method: "PATCH", body: JSON.stringify({ name }) })).role.name : role.name;
               await api(`/api/roles/${encodeURIComponent(target)}/permissions`, { method: "PUT", body: JSON.stringify({ permissions }) });
             })}>Save role</Button>
-            <Button size="sm" variant={canEdit ? "red" : "locked"} disabled={busy} locked={!canEdit} onClick={() => mutate(async () => { await api(`/api/roles/${encodeURIComponent(role.name)}`, { method: "DELETE" }); onClose(); })}>Delete role</Button>
+            <Button size="sm" variant={canDelete ? "red" : "locked"} disabled={busy} locked={!canDelete} onClick={() => mutate(async () => { await api(`/api/roles/${encodeURIComponent(role.name)}`, { method: "DELETE" }); onClose(); })}>Delete role</Button>
           </div>
         </div>
       </div>
