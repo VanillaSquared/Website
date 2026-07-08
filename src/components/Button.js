@@ -83,7 +83,7 @@ function ButtonChatbox({ chatbox, placement = "above" }) {
 
   return (
     <span
-      className={`pointer-events-none absolute left-1/2 z-20 min-w-max max-w-64 -translate-x-1/2 scale-95 rounded-lg border border-divider bg-card px-3 py-2 text-left text-sm opacity-0 shadow-lg transition-all duration-150 ease-out group-hover/button:scale-100 group-hover/button:opacity-100 group-focus-within/button:scale-100 group-focus-within/button:opacity-100 ${positionClasses}`}
+      className={`pointer-events-none absolute left-1/2 z-20 min-w-max max-w-64 -translate-x-1/2 scale-95 rounded-lg border border-divider bg-card px-3 py-2 text-center text-sm opacity-0 shadow-lg transition-all duration-150 ease-out group-hover/button:scale-100 group-hover/button:opacity-100 group-focus-within/button:scale-100 group-focus-within/button:opacity-100 ${positionClasses}`}
       role="tooltip"
     >
       {chatbox.title ? (
@@ -92,7 +92,7 @@ function ButtonChatbox({ chatbox, placement = "above" }) {
           {chatbox.title}
         </span>
       ) : null}
-      {chatbox.description ? <span className={`${chatbox.title ? "mt-1" : ""} block whitespace-nowrap font-normal text-muted`}>{chatbox.description}</span> : null}
+      {chatbox.description ? <span className={`${chatbox.title ? "mt-1" : ""} block whitespace-pre-line font-normal text-muted`}>{chatbox.description}</span> : null}
       <span className={`absolute left-1/2 h-3 w-3 border-divider bg-card ${arrowClasses}`} aria-hidden="true" />
     </span>
   );

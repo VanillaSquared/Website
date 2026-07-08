@@ -31,8 +31,8 @@ function formatRemainingTime(target) {
 
 function getLockedDescription(creationAvailability, remainingTime) {
   if (!creationAvailability || creationAvailability.allowed) return "";
-  if (creationAvailability.permanent) return "You are permanently banned from creating bugs.";
-  if (remainingTime) return `You are banned from creating bugs until: ${remainingTime}`;
+  if (creationAvailability.permanent) return "You are permanently banned\nfrom creating bugs.";
+  if (remainingTime) return `You are banned from\ncreating bugs until:\n${remainingTime}`;
   return creationAvailability.error || "Bug creation is currently locked.";
 }
 
@@ -69,7 +69,7 @@ export default function BugCreateButton({ categories, versions, authenticated, c
         aria-label="Add bug report"
         title={creationLocked ? undefined : "Add bug report"}
         locked={creationLocked}
-        chatbox={creationLocked ? { title: "Bug reports locked", description: getLockedDescription(creationAvailability, remainingTime), placement: "below" } : null}
+        chatbox={creationLocked ? { description: getLockedDescription(creationAvailability, remainingTime), placement: "below" } : null}
         onClick={() => setOpen(true)}
       />
       <Modal open={open} onClose={() => setOpen(false)} variant="wide" className="!p-0">
