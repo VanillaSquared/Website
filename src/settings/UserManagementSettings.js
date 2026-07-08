@@ -14,7 +14,7 @@ import Tabs from "@/components/Tabs";
 import Tag from "@/components/Tag";
 
 const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs"];
-const rolePriority = ["owner", "developer", "dev", "support", "default"];
+const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
 
 function ModalSeparator({ bleed = false, className = "" }) {
   return <Separator className={`${bleed ? "-mx-6 w-[calc(100%+3rem)]" : "w-full"} ${className}`} />;
@@ -32,7 +32,18 @@ function getHighestRole(user) {
 }
 
 function formatRole(role) {
-  return role === "developer" ? "dev" : role;
+  if (role === "developer") return "dev";
+  if (role === "not_signed_in") return "Not Signed in";
+  return role;
+}
+
+function getRoleRank(role) {
+  const index = rolePriority.indexOf(role);
+  return index === -1 ? rolePriority.length : index;
+}
+
+function sortRolesByHierarchy(roles) {
+  return [...roles].sort((a, b) => getRoleRank(a.name) - getRoleRank(b.name) || a.name.localeCompare(b.name));
 }
 
 function matchesQuery(values, query) {
@@ -135,7 +146,7 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
           </div>
           <Button size="sm" variant={canManageUser ? "green" : "locked"} disabled={busy} locked={!canManageUser} onClick={() => mutate(() => api(`/api/users/${user.id}`, { method: "PATCH", body: JSON.stringify(form) }))}>Save user</Button>
           <ModalSeparator bleed />
-          <MultiSelect label="Roles" options={roles.map((role) => ({ label: role.name, value: role.name }))} value={selectedRoles} onChange={setSelectedRoles} locked={!canManageRoles || busy} placeholder="Select roles" />
+          <MultiSelect label="Roles" options={sortRolesByHierarchy(roles).map((role) => ({ label: formatRole(role.name), value: role.name }))} value={selectedRoles} onChange={setSelectedRoles} locked={!canManageRoles || busy} placeholder="Select roles" />
           <MultiSelect label="Individual permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={selectedPermissions} onChange={setSelectedPermissions} locked={!canManageRoles || busy} placeholder="Select permissions" />
           <Button size="sm" variant={canManageRoles ? "green" : "locked"} disabled={busy} locked={!canManageRoles} onClick={() => mutate(async () => {
             await syncUserRoles(user.id, authorization.roles ?? [], selectedRoles);
@@ -271,7 +282,7 @@ export default function UserManagementSettings() {
   useEffect(() => () => scrollTimeoutRef.current && clearTimeout(scrollTimeoutRef.current), []);
   const handleScroll = () => { setIsScrolling(true); if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current); scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 700); };
   const visibleUsers = useMemo(() => users.filter((u) => matchesQuery([u.username, u.email, u.id, getHighestRole(u)], query)), [users, query]);
-  const visibleRoles = useMemo(() => roles.filter((r) => matchesQuery([r.name, ...(r.permissions ?? [])], query)), [roles, query]);
+  const visibleRoles = useMemo(() => sortRolesByHierarchy(roles.filter((r) => matchesQuery([r.name, formatRole(r.name), ...(r.permissions ?? [])], query))), [roles, query]);
   const selectedUser = users.find((user) => user.id === selectedUserId);
   const selectedRole = roles.find((role) => role.name === selectedRoleName);
 
@@ -283,7 +294,7 @@ export default function UserManagementSettings() {
       </div>
       <SearchBar variant="settings" placeholder={`Search ${page}`} label={`Search ${page}`} value={query} onChange={setQuery} showPreview={false} />
       {status ? <p className="text-sm text-muted">{status}</p> : null}
-      {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<article className="cursor-pointer px-4 py-3 hover:bg-card/50" onClick={() => setSelectedRoleName(role.name)}><h2 className="font-semibold text-heading">{role.name}</h2><p className="mt-1 text-sm text-muted">{(role.permissions ?? []).length} permissions</p></article></div>)}</div></div> : null}
+      {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<article className="cursor-pointer px-4 py-3 hover:bg-card/50" onClick={() => setSelectedRoleName(role.name)}><h2 className="font-semibold text-heading">{formatRole(role.name)}</h2><p className="mt-1 text-sm text-muted">{(role.permissions ?? []).length} permissions</p></article></div>)}</div></div> : null}
       {!status && ((page === "users" && !visibleUsers.length) || (page === "roles" && !visibleRoles.length)) ? <p className="text-center text-sm text-muted">No {page} found.</p> : null}
       <UserDetailsModal user={selectedUser} roles={roles} actions={actions} onClose={() => setSelectedUserId(null)} onChanged={load} />
       <RoleDetailsModal role={selectedRole} actions={actions} onClose={() => setSelectedRoleName(null)} onChanged={load} />

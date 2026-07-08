@@ -13,12 +13,8 @@ export default async function ComponentPreviewPage() {
   const subject = await getAuthSubject({ updateTokens: false });
   const user = subject ? subject.properties : null;
 
-  if (!user) {
-    redirect("/login?returnTo=/components");
-  }
-
   if (!await hasPermission(user, PERMISSIONS.DESIGN_TEST)) {
-    redirect("/404");
+    redirect(user ? "/403" : "/403?signIn=1&returnTo=/components");
   }
 
   return (

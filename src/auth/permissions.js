@@ -21,6 +21,7 @@ export const PERMISSIONS = Object.freeze({
 
 export const PERMISSION_VALUES = Object.freeze(Object.values(PERMISSIONS));
 export const DEFAULT_ROLE = "default";
+export const NOT_SIGNED_IN_ROLE = "not_signed_in";
 
 export function isValidRoleName(role) {
   return typeof role === "string" && /^[a-z0-9_-]{1,64}$/i.test(role);
@@ -49,10 +50,10 @@ export async function getAuthorizationForUser(user) {
       getUserRolesByUserId(user.id),
       getUserPermissionsByUserId(user.id),
     ])
-    : [[DEFAULT_ROLE], []];
+    : [[NOT_SIGNED_IN_ROLE], []];
 
   const validRoles = roles.filter(isValidRoleName);
-  const resolvedRoles = validRoles.length ? validRoles : [DEFAULT_ROLE];
+  const resolvedRoles = user?.id && !validRoles.length ? [DEFAULT_ROLE] : validRoles;
   const validIndividualPermissions = individualPermissions.filter(isValidPermission);
   const rolePermissions = await getPermissionsForRoles(resolvedRoles);
   const permissions = [...new Set([...rolePermissions, ...validIndividualPermissions])].sort();

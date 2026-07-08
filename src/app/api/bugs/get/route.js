@@ -11,8 +11,9 @@ export async function GET(request) {
   const subject = await getAuthSubject({ updateTokens: false });
   const user = subject?.properties;
 
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (!await hasPermission(user, PERMISSIONS.VIEW_BUGS)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!await hasPermission(user, PERMISSIONS.VIEW_BUGS)) {
+    return NextResponse.json({ error: user ? "Forbidden" : "Sign in required" }, { status: user ? 403 : 401 });
+  }
 
   const { searchParams } = new URL(request.url);
 

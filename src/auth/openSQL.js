@@ -5,6 +5,7 @@ const initializedGlobalKey = Symbol.for("vanillasquared.mysql.initialized");
 
 const BUILT_IN_ROLE_PERMISSIONS = Object.freeze({
   default: ["create_bugs", "view_bugs"],
+  not_signed_in: ["view_bugs"],
   support: ["bug_panel"],
   developer: ["design_test", "dev_options"],
   owner: ["bug_panel", "design_test", "dev_options", "user_management", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs"],
@@ -239,12 +240,14 @@ export async function removeUserPermission(userId, permission) {
 
 export async function listRoles() {
   await initializeUsersTable();
+  await seedBuiltInRoles();
   const [rows] = await getPool().execute("SELECT * FROM roles ORDER BY name");
   return rows.map(parseRole);
 }
 
 export async function getRole(name) {
   await initializeUsersTable();
+  await seedBuiltInRoles();
   const [rows] = await getPool().execute("SELECT * FROM roles WHERE name = ? LIMIT 1", [name]);
   return parseRole(rows[0]);
 }
