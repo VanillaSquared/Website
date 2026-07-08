@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import editIcon from "@/assets/icons/edit.svg";
 import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import MultiSelect from "@/components/MultiSelect";
+import UserMultiSelect from "@/components/UserMultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
 import SaveConfirmation from "@/components/SaveConfirmation";
 import Separator from "@/components/Separator";
@@ -141,8 +141,6 @@ export default function BugPanelSettings() {
 
   const configDirty = config.amount !== savedConfig.amount || config.duration !== savedConfig.duration;
   const moderationDirty = selectedUsers.length > 0 || duration.trim().length > 0;
-  const userOptions = useMemo(() => users.map((user) => ({ label: `${user.username || "Unnamed user"} (${user.email || user.id})`, value: user.id })), [users]);
-
   async function saveConfig() {
     setBusy(true);
     setError("");
@@ -206,7 +204,7 @@ export default function BugPanelSettings() {
 
       {!status && tab === "moderation" ? (
         <div className="max-w-2xl space-y-5">
-          <MultiSelect label="Users" options={userOptions} value={selectedUsers} onChange={setSelectedUsers} placeholder="Select users to punish" />
+          <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} placeholder="Select users to punish" />
           <TextInput label="Punishment duration" sampleText="7d, 1(hours).30(minutes), or -1" filter="timeLimit" value={duration} onChange={(event) => setDuration(event.target.value)} />
           <p className="text-sm text-muted">Use -1 for permanent punishments.</p>
           <SaveConfirmation show={moderationDirty} busy={busy} onReset={() => { setSelectedUsers([]); setDuration(""); }} onSave={saveModeration} />

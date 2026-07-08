@@ -7,6 +7,7 @@ import Button from "@/components/Button";
 import FilterSidebar from "@/components/FilterSidebar";
 import MultiSelect from "@/components/MultiSelect";
 import SearchBar from "@/components/SearchBar";
+import UserMultiSelect from "@/components/UserMultiSelect";
 import Separator from "@/components/Separator";
 import Tabs from "@/components/Tabs";
 
@@ -90,7 +91,6 @@ export default function AuditLogSettings() {
   const [expandedId, setExpandedId] = useState(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const userOptions = useMemo(() => users.map((user) => ({ value: user.id, label: `${user.username} (${user.email})` })), [users]);
   const typeOptions = useMemo(() => (types.length ? types : TABS.slice(1).map((item) => item.value)).map((type) => ({ value: type, label: TYPE_LABELS[type] ?? type })), [types]);
 
   const loadLogs = useCallback(async ({ append = false, cursor = null } = {}) => {
@@ -144,9 +144,9 @@ export default function AuditLogSettings() {
         footer={<Button className="w-full" variant="tertiary" onClick={() => { setSelectedUsers([]); setSelectedTypes([]); }}>Clear filters</Button>}
       >
         <div className="space-y-4">
-          <MultiSelect label="Users" options={userOptions} value={selectedUsers} onChange={setSelectedUsers} max={10} placeholder="Select up to 10 users" />
+          <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} max={10} placeholder="Select up to 10 users" menuClassName="!relative !z-auto" />
           <Separator />
-          <MultiSelect label="Types" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select log types" />
+          <MultiSelect label="Types" options={typeOptions} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select log types" menuClassName="!relative !z-auto" />
         </div>
       </FilterSidebar>
     </div>
