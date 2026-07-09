@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import NotFoundPage from "@/components/NotFoundPage";
 
 export default function NotFound() {
-  redirect("/404");
+  return <NotFoundPage />;
 }
