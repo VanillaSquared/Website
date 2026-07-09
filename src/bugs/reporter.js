@@ -46,6 +46,10 @@ const uploadsRoot = path.join(process.cwd(), ".data", "bug-reports");
 let bugReporterInitialized;
 let bugReporterSeeded;
 
+function shouldSeedDemoBugReports() {
+  return process.env.environment === "development";
+}
+
 const LONG_SCROLL_TEST_LOREM = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer malesuada nunc non orci pulvinar, sed pretium mauris facilisis. Donec sit amet arcu non justo mollis lacinia.",
   "Praesent laoreet, mi vel commodo pulvinar, enim nisl facilisis massa, a gravida augue lectus at nibh. Suspendisse potenti. Maecenas dictum ligula nec neque blandit posuere.",
@@ -196,6 +200,10 @@ async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), c
 
 export async function seedDemoBugReports() {
   await initializeBugReporterTables();
+
+  if (!shouldSeedDemoBugReports()) {
+    return;
+  }
 
   if (!bugReporterSeeded) {
     bugReporterSeeded = (async () => {
