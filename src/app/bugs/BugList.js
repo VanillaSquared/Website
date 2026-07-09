@@ -53,7 +53,7 @@ export default function BugList({ bugs }) {
 
   if (!bugs.length) {
     return (
-      <div className="border-y border-divider px-4 py-8 text-center">
+      <div className="px-4 py-8 text-center">
         <p className="text-lg font-semibold text-heading">No bugs found</p>
         <p className="mt-2 text-sm text-muted">Try adjusting your search or filters.</p>
       </div>
