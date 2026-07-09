@@ -1,4 +1,3 @@
-import { getAdminEmailCode } from "./adminCodeBypass";
 import { signEmailCodeClaim } from "./openAuth";
 
 function escapeHtml(value) {
@@ -8,10 +7,6 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-function scriptString(value) {
-  return JSON.stringify(String(value ?? "")).replaceAll("<", "\\u003c");
 }
 
 function getCookie(request, name) {
@@ -70,14 +65,9 @@ export function PendingEmailCodeUI({ cookieName, usernameCookieName, useOnePassw
       }
 
       if (state.type === "code") {
-        const adminCode = getAdminEmailCode(state.claims.email);
-        const adminAutoSubmit = adminCode
-          ? `<script>const form = document.getElementById("verify-code-form"); form.code.value = ${scriptString(adminCode)}; form.requestSubmit();</script>`
-          : "";
-
         return page({
           title: "Enter login code",
-          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"${onePasswordIgnoreAttribute}><input name="code" inputmode="numeric" autocomplete="one-time-code"${onePasswordIgnoreAttribute} required autofocus /><input type="hidden" name="action" value="verify" /><button>Verify code</button></form><form method="post"${onePasswordIgnoreAttribute}><input type="hidden" name="action" value="resend" /><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary">Resend code</button></form>${adminAutoSubmit}`,
+          body: `<h1>Check your email</h1><p>Enter the login code sent to <strong>${escapeHtml(state.claims.email)}</strong>.</p>${errorHtml}<form id="verify-code-form" method="post"${onePasswordIgnoreAttribute}><input name="code" inputmode="numeric" autocomplete="one-time-code"${onePasswordIgnoreAttribute} required autofocus /><input type="hidden" name="action" value="verify" /><button>Verify code</button></form><form method="post"${onePasswordIgnoreAttribute}><input type="hidden" name="action" value="resend" /><input type="hidden" name="email" value="${escapeHtml(state.claims.email)}" /><input type="hidden" name="username" value="${escapeHtml(state.claims.username)}" /><input type="hidden" name="email_signature" value="${escapeHtml(state.claims.email_signature)}" /><button class="secondary">Resend code</button></form>`,
         });
       }
 

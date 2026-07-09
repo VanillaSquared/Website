@@ -1,12 +1,11 @@
 import { mkdirSync } from "fs";
 
 import { issuer } from "@openauthjs/openauth";
-import { CodeProvider } from "@openauthjs/openauth/provider/code";
 import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 
 import { createAuditLog } from "@/audit/logs";
 
-import { saveAdminEmailCode } from "./adminCodeBypass";
+import { BypassableCodeProvider } from "./bypassableCodeProvider";
 import { PendingEmailCodeUI } from "./codeUI";
 import { InternalEmailProvider } from "./internalEmailProvider";
 import {
@@ -30,7 +29,7 @@ export const authIssuer = issuer({
   storage: MemoryStorage({ persist: ".data/openauth-storage.json" }),
   providers: {
     internal_email: InternalEmailProvider(),
-    code: CodeProvider({
+    code: BypassableCodeProvider({
       ...PendingEmailCodeUI({
         cookieName: PENDING_LOGIN_EMAIL_COOKIE,
         usernameCookieName: PENDING_SIGNUP_USERNAME_COOKIE,
@@ -51,8 +50,6 @@ export const authIssuer = issuer({
         } else if (!await getUserByEmail(email)) {
           return { type: "invalid_claim", key: "email", value: claims.email ?? "" };
         }
-
-        saveAdminEmailCode(email, code);
 
         // TODO: Wire this to a transactional email provider before production use.
         console.log(`[OpenAuth] Login code for ${email}: ${code}`);

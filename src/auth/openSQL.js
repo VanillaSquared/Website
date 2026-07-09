@@ -109,7 +109,7 @@ export async function initializeUsersTable() {
         }
 
         await seedBuiltInRoles();
-        await assignBuiltInRoles();
+        await assignFirstUserOwnerRole();
 
         try {
           await getPool().query("ALTER TABLE users MODIFY password_hash JSON NULL");
@@ -144,11 +144,15 @@ async function seedBuiltInRoles() {
   }
 }
 
-async function assignBuiltInRoles() {
-  await getPool().execute(
-    "INSERT IGNORE INTO user_roles (user_id, role) SELECT id, ? FROM users WHERE LOWER(username) = ?",
-    ["owner", "painterflow11"]
-  );
+async function assignFirstUserOwnerRole() {
+  const [owners] = await getPool().execute("SELECT 1 FROM user_roles WHERE role = ? LIMIT 1", ["owner"]);
+  if (owners.length) return;
+
+  const [users] = await getPool().execute("SELECT id FROM users ORDER BY created_at ASC, id ASC LIMIT 1");
+  const firstUserId = users[0]?.id;
+  if (!firstUserId) return;
+
+  await getPool().execute("INSERT IGNORE INTO user_roles (user_id, role) VALUES (?, ?)", [firstUserId, "owner"]);
 }
 
 function parseUser(row) {
@@ -212,14 +216,14 @@ export async function createUser({ id, username, email }) {
   } finally {
     connection.release();
   }
-  await assignBuiltInRoles();
+  await assignFirstUserOwnerRole();
   return getUserById(id);
 }
 
 export async function updateUser(userId, { username, email }) {
   await initializeUsersTable();
   await getPool().execute("UPDATE users SET username = ?, email = ? WHERE id = ?", [username, email, userId]);
-  await assignBuiltInRoles();
+  await assignFirstUserOwnerRole();
   return getUserById(userId);
 }
 

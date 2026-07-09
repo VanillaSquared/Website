@@ -14,7 +14,7 @@ export default async function LoginCodePage({ searchParams }) {
       <Card
         preset="auth"
         title="Check your email"
-        description={`Enter the login code sent to ${email}. In development, type admin to skip the code.`}
+        description={`Enter the login code sent to ${email}.`}
         error={error}
       >
         {message ? <p className="text-sm text-soft">{message}</p> : null}

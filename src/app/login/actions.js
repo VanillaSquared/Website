@@ -13,7 +13,7 @@ import {
   validateEmail,
   validateUsername,
 } from "@/auth/openAuth";
-import { isAdminCodeBypassEnabled, saveAdminEmailCode } from "@/auth/adminCodeBypass";
+import { isEmailCodeBypass } from "@/auth/emailCodeBypass";
 import { createInternalAuthHeader, getInternalAuthSecret, INTERNAL_AUTH_HEADER } from "@/auth/internalAuthGuard";
 import { authIssuer } from "@/auth/issuer";
 import {
@@ -103,10 +103,6 @@ function safeCompare(value, expected) {
   return valueBuffer.length === expectedBuffer.length && timingSafeEqual(valueBuffer, expectedBuffer);
 }
 
-function isAdminCode(code) {
-  return isAdminCodeBypassEnabled() && String(code).trim().toLowerCase() === "admin";
-}
-
 async function savePendingEmailCode({ email, username = "", returnTo = "/" }) {
   const code = String(randomInt(100000, 1000000));
   const cookieStore = await cookies();
@@ -127,8 +123,6 @@ async function savePendingEmailCode({ email, username = "", returnTo = "/" }) {
     path: "/",
     maxAge: EMAIL_CODE_MAX_AGE,
   });
-
-  saveAdminEmailCode(email, code);
 
   // TODO: Wire this to a transactional email provider before production use.
   console.log(`[OpenAuth] Login code for ${email}: ${code}`);
@@ -195,8 +189,8 @@ export async function verifyEmailCode(formData) {
     redirectWithError("/login", "Your login session expired. Please try again.");
   }
 
-  if (!isAdminCode(code) && !safeCompare(hashCode(code), pending.codeHash)) {
-    redirectWithError(`/login/code?email=${encodeURIComponent(pending.email)}`, "The code is incorrect. In development, type admin to skip the code.");
+  if (!isEmailCodeBypass(code) && !safeCompare(hashCode(code), pending.codeHash)) {
+    redirectWithError(`/login/code?email=${encodeURIComponent(pending.email)}`, "The code is incorrect.");
   }
 
   await completeEmailLogin(pending);
@@ -251,14 +245,6 @@ export async function signupWithEmailCode(formData) {
   validateCredentials("/signup", credentials);
 
   try {
-    if (credentials.username === "painterflow11" && process.env.OWNER_EMAIL && credentials.email !== normalizeEmail(process.env.OWNER_EMAIL)) {
-      redirectWithError("/signup", "That username is reserved.");
-    }
-
-    if (credentials.username === "painterflow11" && !process.env.OWNER_EMAIL) {
-      redirectWithError("/signup", "That username is reserved until OWNER_EMAIL is configured.");
-    }
-
     if (await getUserByUsername(credentials.username)) {
       redirectWithError("/signup", "That username is already taken.");
     }

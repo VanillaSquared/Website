@@ -36,7 +36,7 @@ const customCheckmarkCycleStates = [
 ];
 
 const previewUsers = [
-  { id: "00000000-0000-4000-8000-000000000001", username: "PainterFlow11", email: "painterflow11@example.com" },
+  { id: "00000000-0000-4000-8000-000000000001", username: "Alex", email: "alex@example.com" },
   { id: "00000000-0000-4000-8000-000000000002", username: "VanillaUser", email: "vanilla@example.com" },
   { id: "00000000-0000-4000-8000-000000000003", username: "SupportFox", email: "support@example.com" },
   { id: "00000000-0000-4000-8000-000000000004", username: "BugHunter", email: "bugs@example.com" },
@@ -151,7 +151,7 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Profile pictures</h2>
             <div className="flex flex-wrap items-center gap-4">
-              <ProfilePicture username="PainterFlow11" email="painterflow11@example.com" />
+              <ProfilePicture username="Alex" email="alex@example.com" />
               <ProfilePicture size="sm" username="Vanilla User" email="user@example.com" />
               <ProfilePicture
                 username="Image User"

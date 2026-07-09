@@ -7,7 +7,7 @@ import { getUserById } from "@/auth/openSQL";
 import { hasPermission } from "@/auth/permissions";
 
 export function isProtectedUser(user) {
-  return user?.username?.toLowerCase() === "painterflow11";
+  return false;
 }
 
 export function jsonError(message, status) {

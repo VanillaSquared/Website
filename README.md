@@ -99,6 +99,7 @@ The application can connect through either `DATABASE_URL` or individual MySQL va
 | `OPENAUTH_APP_CLIENT_SECRET` | Fallback secret for email-code claim signing. | unset |
 | `EMAIL_CODE_CLAIM_SECRET` | Secret for email-code claim signatures. Required in production unless covered by app secret fallback. | development fallback outside production |
 | `INTERNAL_AUTH_SECRET` | Secret for internal auth token exchange. Required in production. | generated under `.data/` outside production |
+| `bypass` | Optional authentication-code bypass value accepted by login and signup verification. Leave unset to disable bypassing. | unset |
 
 Example `.env`:
 
@@ -110,6 +111,7 @@ MYSQL_PASSWORD=password
 MYSQL_DATABASE=vanillasquared
 INTERNAL_AUTH_SECRET=replace-with-a-long-random-secret
 EMAIL_CODE_CLAIM_SECRET=replace-with-a-long-random-secret
+bypass=replace-with-a-temporary-login-bypass-code
 ```
 
 ## Development
@@ -138,7 +140,8 @@ npm run start
 
 - Login and signup use email-code verification.
 - Codes are currently logged to the server console; wire `sendCode`/email delivery to a transactional email provider before production use.
-- In development, typing `admin` in the code field can bypass email verification when the admin-code bypass is enabled by the app code.
+- If the `bypass` environment variable is set, typing that exact value in the code field bypasses email-code verification.
+- The first account that signs up is automatically assigned the `owner` role.
 - Session tokens are stored in HTTP-only cookies named `access_token` and `refresh_token`.
 - Production requires `INTERNAL_AUTH_SECRET`, and should use strong secrets for email-code signing.
 
