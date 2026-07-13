@@ -11,12 +11,39 @@ function optionValue(option) {
   return typeof option === "string" ? option : option.value;
 }
 
+function isOptionGroup(option) {
+  return Boolean(option && typeof option === "object" && Array.isArray(option.options));
+}
+
+function flattenOptions(options) {
+  return options.flatMap((option) => isOptionGroup(option) ? option.options : [option]);
+}
+
 function normalizeValue(value, multiple) {
   if (multiple) {
     return Array.isArray(value) ? value : value ? [value] : [];
   }
 
   return value ? [value] : [];
+}
+
+export function PreviewCategory({
+  label,
+  children,
+  separated = false,
+  className = "",
+  labelClassName = "",
+}) {
+  return (
+    <section
+      role="group"
+      aria-label={typeof label === "string" ? label : undefined}
+      className={`${separated ? "mt-2 border-t border-control-border pt-2" : ""} ${className}`}
+    >
+      {label ? <p className={`px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted ${labelClassName}`}>{label}</p> : null}
+      {children}
+    </section>
+  );
 }
 
 export default function Preview({
@@ -52,7 +79,8 @@ export default function Preview({
     toggle: () => setOpen((current) => !current),
   };
   const selectedValues = isControlled ? normalizeValue(value, multiple) : internalValue;
-  const selectedLabels = options
+  const selectableOptions = flattenOptions(options);
+  const selectedLabels = selectableOptions
     .filter((option) => selectedValues.includes(optionValue(option)))
     .map((option) => optionLabel(option));
   const hasMax = Number.isFinite(max);
@@ -172,23 +200,41 @@ export default function Preview({
               className={`absolute z-20 mt-2 w-full overflow-y-auto overflow-x-hidden overscroll-contain rounded-xl border border-control-border bg-control-panel p-2 shadow-xl [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${menuMaxHeight} ${menuClassName}`}
             >
               <div className="flex w-full flex-col gap-0.5">
-                {!options.length ? <p className="px-3 py-2 text-sm font-normal text-muted">{emptyText}</p> : null}
-                {options.map((option) => {
-                  const nextValue = optionValue(option);
-                  const selected = selectedValues.includes(nextValue);
-                  const disabled = multiple && ((selected && selectedValues.length <= min) || (!selected && selectedValues.length >= max));
+                {!selectableOptions.length ? <p className="px-3 py-2 text-sm font-normal text-muted">{emptyText}</p> : null}
+                {options.map((option, index) => {
+                  const group = isOptionGroup(option) ? option : null;
+                  const groupOptions = group ? group.options : [option];
+                  const categoryContent = groupOptions.map((groupOption) => {
+                    const nextValue = optionValue(groupOption);
+                    const selected = selectedValues.includes(nextValue);
+                    const disabled = multiple && ((selected && selectedValues.length <= min) || (!selected && selectedValues.length >= max));
+
+                    return (
+                      <button
+                        key={nextValue}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => toggleOption(nextValue)}
+                        className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-sm text-heading transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                      >
+                        <span>{optionLabel(groupOption)}</span>
+                        <Checkmark checked={selected} size="sm" />
+                      </button>
+                    );
+                  });
+
+                  if (!group) return categoryContent;
 
                   return (
-                    <button
-                      key={nextValue}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => toggleOption(nextValue)}
-                      className="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-1.5 text-left text-sm text-heading transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent"
+                    <PreviewCategory
+                      key={group.value ?? group.label ?? index}
+                      label={group.label}
+                      separated={group.separated ?? index > 0}
+                      className={group.className}
+                      labelClassName={group.labelClassName}
                     >
-                      <span>{optionLabel(option)}</span>
-                      <Checkmark checked={selected} size="sm" />
-                    </button>
+                      {categoryContent}
+                    </PreviewCategory>
                   );
                 })}
               </div>

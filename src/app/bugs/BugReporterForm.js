@@ -7,7 +7,7 @@ import FileUpload from "@/components/FileUpload";
 import Preview from "@/components/Preview";
 import TextInput from "@/components/TextInput";
 
-export default function BugReporterForm({ categories, versions, authenticated, creatorUser, onCreated }) {
+export default function BugReporterForm({ categories, versions, authenticated, creatorUser, onCreated, mode = "create", report = null, onUpdated }) {
   const [status, setStatus] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [resetKey, setResetKey] = useState(0);
@@ -21,8 +21,9 @@ export default function BugReporterForm({ categories, versions, authenticated, c
     const formData = new FormData(form);
 
     try {
-      const response = await fetch("/api/bugs/create", {
-        method: "POST",
+      const editing = mode === "edit" && report?.publicId;
+      const response = await fetch(editing ? `/api/bugs/${encodeURIComponent(report.publicId)}` : "/api/bugs/create", {
+        method: editing ? "PATCH" : "POST",
         body: formData,
         credentials: "same-origin",
       });
@@ -33,10 +34,15 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         return;
       }
 
-      form.reset();
-      setResetKey((current) => current + 1);
-      setStatus({ type: "success", message: `Bug report submitted. ID: ${result.publicId ?? result.id}` });
-      onCreated?.(result);
+      if (editing) {
+        setStatus({ type: "success", message: `Bug report ${result.publicId} updated.` });
+        onUpdated?.(result);
+      } else {
+        form.reset();
+        setResetKey((current) => current + 1);
+        setStatus({ type: "success", message: `Bug report submitted. ID: ${result.publicId ?? result.id}` });
+        onCreated?.(result);
+      }
     } catch {
       setStatus({ type: "error", message: "Failed to submit bug report." });
     } finally {
@@ -64,9 +70,10 @@ export default function BugReporterForm({ categories, versions, authenticated, c
           multiple={false}
           placeholder="Choose a category"
           options={categories.map((category) => ({ value: category.slug ?? category, label: category.label ?? category }))}
+          defaultValue={report?.category ?? []}
         />
 
-        <TextInput label="Title" name="title" sampleText="Short summary of the issue" required minCharacters={3} maxCharacters={120} />
+        <TextInput label="Title" name="title" sampleText="Short summary of the issue" required minCharacters={3} maxCharacters={120} defaultValue={report?.title ?? ""} />
       </div>
 
       <TextInput
@@ -77,6 +84,7 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         required
         minCharacters={3}
         maxCharacters={8000}
+        defaultValue={report?.description ?? ""}
       />
 
       <Preview
@@ -86,6 +94,7 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         options={versions}
         placeholder="Choose affected versions"
         menuClassName="!w-64"
+        defaultValue={report?.affectedVersions ?? []}
       />
 
       <FileUpload
@@ -99,6 +108,7 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         maxFileSize={10 * 1024 * 1024}
         compact
         showBrowseButton={false}
+        existingFiles={report?.files ?? []}
       />
 
       {status ? (
@@ -108,7 +118,9 @@ export default function BugReporterForm({ categories, versions, authenticated, c
       ) : null}
 
       <div className="flex flex-wrap gap-3">
-        <Button type="submit" disabled={submitting}>{submitting ? "Submitting..." : "Submit bug report"}</Button>
+        <Button type="submit" disabled={submitting}>
+          {submitting ? (mode === "edit" ? "Saving..." : "Submitting...") : (mode === "edit" ? "Save changes" : "Submit bug report")}
+        </Button>
       </div>
     </form>
   );

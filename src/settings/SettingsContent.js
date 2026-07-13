@@ -18,7 +18,7 @@ const settingComponents = {
   "Bug Panel": BugPanelSettings,
   "Dev Options": DevOptionsSettings,
   "Design Test": DesignTestSettings,
-  "User Management": UserManagementSettings,
+  "User&Role Management": UserManagementSettings,
   "Audit Log": AuditLogSettings,
 };
 

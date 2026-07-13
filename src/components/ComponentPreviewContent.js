@@ -60,6 +60,24 @@ const selectOptions = [
   { label: "Rift", value: "rift" },
 ];
 
+const groupedSelectOptions = [
+  {
+    label: "Permissions",
+    options: [
+      { label: "manage_roles", value: "manage_roles" },
+      { label: "user_management", value: "user_management" },
+      { label: "audit_log", value: "audit_log" },
+    ],
+  },
+  {
+    label: "Roles",
+    options: [
+      { label: "support", value: "role:support" },
+      { label: "moderator", value: "role:moderator" },
+    ],
+  },
+];
+
 export default function ComponentPreviewContent({ embedded = false } = {}) {
   const [designTab, setDesignTab] = useState("buttons");
   const [previewColor, setPreviewColor] = useState("#c269c2");
@@ -261,6 +279,9 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
               </Card>
               <Card title="Multi select" size="md" className="overflow-visible">
                 <MultiSelect label="Targets" options={selectOptions} defaultValue={["vanilla", "fabric"]} min={1} max={4} />
+              </Card>
+              <Card title="Grouped multi select" size="md" className="overflow-visible">
+                <MultiSelect label="Permissions" options={groupedSelectOptions} defaultValue={["manage_roles", "role:support"]} />
               </Card>
               <Card title="Limited multi select" size="md" className="overflow-visible">
                 <MultiSelect label="Server software" options={selectOptions} defaultValue={["paper"]} max={2} />

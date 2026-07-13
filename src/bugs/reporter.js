@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 
@@ -164,7 +164,7 @@ async function ensureDemoBugReporterUser(connection = getPool()) {
   return id;
 }
 
-async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed", fixed = false, affectedVersions = ["Unknown"], fixedVersion = null }) {
+async function allocateCategoryIdentity(connection, category) {
   const categoryConfig = getBugReportCategoryConfig(category);
 
   if (!categoryConfig) {
@@ -175,24 +175,42 @@ async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), c
     "INSERT IGNORE INTO bug_report_counters (category, next_sequence) VALUES (?, 1)",
     [category]
   );
-
-  const [counterRows] = await connection.execute(
+  await connection.execute(
     "SELECT next_sequence FROM bug_report_counters WHERE category = ? FOR UPDATE",
     [category]
   );
-  const sequence = counterRows[0]?.next_sequence ?? 1;
-  const publicId = `${categoryConfig.shortening}-${sequence}`;
+  const [sequenceRows] = await connection.execute(
+    "SELECT category_sequence FROM bug_reports WHERE category = ? ORDER BY category_sequence ASC FOR UPDATE",
+    [category]
+  );
+  let sequence = 1;
+  for (const row of sequenceRows) {
+    const usedSequence = Number(row.category_sequence);
+    if (usedSequence === sequence) sequence += 1;
+    if (usedSequence > sequence) break;
+  }
 
   await connection.execute(
-    "UPDATE bug_report_counters SET next_sequence = ? WHERE category = ?",
+    "UPDATE bug_report_counters SET next_sequence = GREATEST(next_sequence, ?) WHERE category = ?",
     [sequence + 1, category]
   );
+
+  return {
+    shortening: categoryConfig.shortening,
+    sequence,
+    publicId: `${categoryConfig.shortening}-${sequence}`,
+  };
+}
+
+async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed", fixed = false, affectedVersions = ["Unknown"], fixedVersion = null }) {
+  const identity = await allocateCategoryIdentity(connection, category);
+  const { sequence, publicId } = identity;
 
   await connection.execute(
     `INSERT INTO bug_reports
       (id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, publicId, creatorUserId, category, categoryConfig.shortening, sequence, title, description, priority, status, fixed, JSON.stringify(affectedVersions), fixedVersion]
+    [id, publicId, creatorUserId, category, identity.shortening, sequence, title, description, priority, status, fixed, JSON.stringify(affectedVersions), fixedVersion]
   );
 
   return { id, publicId };
@@ -394,7 +412,7 @@ function isFileLike(value) {
   return value && typeof value === "object" && typeof value.arrayBuffer === "function";
 }
 
-export function validateBugReportFormData(formData, { expectedCreatorUserId } = {}) {
+export function validateBugReportFormData(formData, { expectedCreatorUserId, existingFiles = null } = {}) {
   const submittedCreatorUserId = getString(formData, "creatorUserId");
   const categoryValues = getAllStrings(formData, "category");
   const category = categoryValues[0] ?? "";
@@ -407,6 +425,9 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId } = 
   const affectedVersions = [...new Set(submittedAffectedVersions)];
   const fixedVersion = null;
   const files = formData.getAll("files").filter((file) => isFileLike(file) && file.size > 0);
+  const submittedRetainedFileIds = getAllStrings(formData, "retainedFileIds");
+  const retainedFileIds = [...new Set(submittedRetainedFileIds)];
+  const existingFileIds = new Set((existingFiles ?? []).map((file) => file.id));
 
   const serverControlledFieldError = validateNoClientControlledFields(formData, BUG_REPORT_SERVER_CONTROLLED_FIELDS, "bug report field");
 
@@ -442,8 +463,16 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId } = 
     return { error: "Choose a valid fixed version." };
   }
 
-  if (files.length > BUG_REPORT_MAX_FILES) {
-    return { error: `Upload up to ${BUG_REPORT_MAX_FILES} files.` };
+  if (existingFiles === null && submittedRetainedFileIds.length) {
+    return { error: "Existing attachments can only be retained while editing." };
+  }
+
+  if (existingFiles !== null && (submittedRetainedFileIds.length !== retainedFileIds.length || retainedFileIds.some((id) => !existingFileIds.has(id)))) {
+    return { error: "Choose valid existing attachments." };
+  }
+
+  if (files.length + retainedFileIds.length > BUG_REPORT_MAX_FILES) {
+    return { error: `Keep or upload up to ${BUG_REPORT_MAX_FILES} files.` };
   }
 
   for (const file of files) {
@@ -470,6 +499,7 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId } = 
       affectedVersions: affectedVersions.length ? affectedVersions : ["Unknown"],
       fixedVersion,
       files,
+      retainedFileIds,
     },
   };
 }
@@ -480,26 +510,31 @@ async function saveBugReportFiles(reportId, files) {
 
   const savedFiles = [];
 
-  for (const file of files) {
-    const id = randomUUID();
-    const originalName = getSafeOriginalName(file.name);
-    const extension = getExtension(originalName);
-    const storedName = `${id}${extension}`;
-    const storagePath = path.join(reportDirectory, storedName);
+  try {
+    for (const file of files) {
+      const id = randomUUID();
+      const originalName = getSafeOriginalName(file.name);
+      const extension = getExtension(originalName);
+      const storedName = `${id}${extension}`;
+      const storagePath = path.join(reportDirectory, storedName);
 
-    await writeFile(storagePath, Buffer.from(await file.arrayBuffer()), { flag: "wx" });
+      await writeFile(storagePath, Buffer.from(await file.arrayBuffer()), { flag: "wx" });
 
-    savedFiles.push({
-      id,
-      originalName,
-      storedName,
-      extension,
-      sizeBytes: file.size,
-      storagePath,
-    });
+      savedFiles.push({
+        id,
+        originalName,
+        storedName,
+        extension,
+        sizeBytes: file.size,
+        storagePath,
+      });
+    }
+
+    return savedFiles;
+  } catch (error) {
+    await Promise.allSettled(savedFiles.map((file) => unlink(file.storagePath)));
+    throw error;
   }
-
-  return savedFiles;
 }
 
 export async function createBugReport({ creatorUserId, formData, bypassLimits = false }) {
@@ -548,6 +583,7 @@ export async function createBugReport({ creatorUserId, formData, bypassLimits = 
     await connection.commit();
   } catch (error) {
     await connection.rollback();
+    await rm(path.join(uploadsRoot, id), { recursive: true, force: true });
     throw error;
   } finally {
     connection.release();
@@ -594,13 +630,14 @@ function mapBugReportRow(row) {
   };
 }
 
-function mapBugReportFileRow(row) {
+function mapBugReportFileRow(row, { includeStoragePath = false } = {}) {
   return {
     id: row.id,
     originalName: row.original_name,
     extension: row.extension,
-    sizeBytes: row.size_bytes,
+    sizeBytes: Number(row.size_bytes),
     createdAt: row.created_at,
+    ...(includeStoragePath ? { storagePath: row.storage_path } : {}),
   };
 }
 
@@ -730,4 +767,190 @@ export async function getBugReportByPublicId(publicId, { seed = true } = {}) {
     ...bug,
     files: fileRows.map(mapBugReportFileRow),
   };
+}
+
+function reportAuditSnapshot(report, files = []) {
+  return {
+    id: report.id,
+    publicId: report.publicId,
+    creatorUserId: report.creatorUserId,
+    category: report.category,
+    categorySequence: Number(report.categorySequence),
+    title: report.title,
+    description: report.description,
+    affectedVersions: report.affectedVersions,
+    attachments: files.map((file) => ({
+      id: file.id,
+      originalName: file.originalName,
+      extension: file.extension,
+      sizeBytes: file.sizeBytes,
+    })),
+  };
+}
+
+async function getLockedBugReport(connection, publicId) {
+  const [rows] = await connection.execute(
+    `SELECT id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description,
+            priority, status, fixed, affected_versions, fixed_version, created_at, updated_at
+     FROM bug_reports WHERE LOWER(public_id) = LOWER(?) LIMIT 1 FOR UPDATE`,
+    [String(publicId ?? "").trim()]
+  );
+  if (!rows.length) return null;
+
+  const report = mapBugReportRow(rows[0]);
+  const [fileRows] = await connection.execute(
+    `SELECT id, original_name, stored_name, extension, size_bytes, storage_path, created_at
+     FROM bug_report_files WHERE bug_report_id = ? ORDER BY created_at ASC FOR UPDATE`,
+    [report.id]
+  );
+  return { report, files: fileRows.map((row) => mapBugReportFileRow(row, { includeStoragePath: true })) };
+}
+
+export async function updateBugReport({ publicId, actorUserId, canManage = false, formData }) {
+  await initializeBugReporterTables();
+  const connection = await getPool().getConnection();
+  let savedFiles = [];
+  let removedFiles = [];
+
+  try {
+    await connection.beginTransaction();
+    const current = await getLockedBugReport(connection, publicId);
+    if (!current) {
+      await connection.rollback();
+      return { error: "Bug report not found.", status: 404 };
+    }
+    if (!canManage && current.report.creatorUserId !== actorUserId) {
+      await connection.rollback();
+      return { error: "Forbidden", status: 403 };
+    }
+
+    const validated = validateBugReportFormData(formData, {
+      expectedCreatorUserId: actorUserId,
+      existingFiles: current.files,
+    });
+    if (validated.error) {
+      await connection.rollback();
+      return { error: validated.error, status: 400 };
+    }
+
+    const update = validated.data;
+    savedFiles = await saveBugReportFiles(current.report.id, update.files);
+    const retainedIds = new Set(update.retainedFileIds);
+    removedFiles = current.files.filter((file) => !retainedIds.has(file.id));
+    let identity = {
+      publicId: current.report.publicId,
+      shortening: current.report.categoryShortening,
+      sequence: current.report.categorySequence,
+    };
+    if (update.category !== current.report.category) {
+      identity = await allocateCategoryIdentity(connection, update.category);
+    }
+
+    await connection.execute(
+      `UPDATE bug_reports
+       SET public_id = ?, category = ?, category_shortening = ?, category_sequence = ?, title = ?, description = ?, affected_versions = ?
+       WHERE id = ?`,
+      [identity.publicId, update.category, identity.shortening, identity.sequence, update.title, update.description, JSON.stringify(update.affectedVersions), current.report.id]
+    );
+
+    if (removedFiles.length) {
+      await connection.execute(
+        `DELETE FROM bug_report_files WHERE bug_report_id = ? AND id IN (${removedFiles.map(() => "?").join(", ")})`,
+        [current.report.id, ...removedFiles.map((file) => file.id)]
+      );
+    }
+    for (const file of savedFiles) {
+      await connection.execute(
+        `INSERT INTO bug_report_files (id, bug_report_id, original_name, stored_name, extension, size_bytes, storage_path)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [file.id, current.report.id, file.originalName, file.storedName, file.extension, file.sizeBytes, file.storagePath]
+      );
+    }
+
+    await connection.commit();
+    await Promise.allSettled(removedFiles.map((file) => unlink(file.storagePath)));
+    const retainedFiles = current.files.filter((file) => retainedIds.has(file.id));
+    const afterReport = {
+      ...current.report,
+      publicId: identity.publicId,
+      category: update.category,
+      categoryShortening: identity.shortening,
+      categorySequence: identity.sequence,
+      title: update.title,
+      description: update.description,
+      affectedVersions: update.affectedVersions,
+    };
+
+    return {
+      id: current.report.id,
+      publicId: identity.publicId,
+      before: reportAuditSnapshot(current.report, current.files),
+      after: reportAuditSnapshot(afterReport, [...retainedFiles, ...savedFiles]),
+    };
+  } catch (error) {
+    await connection.rollback();
+    await Promise.allSettled(savedFiles.map((file) => unlink(file.storagePath)));
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteBugReport({ publicId, actorUserId, canManage = false }) {
+  await initializeBugReporterTables();
+  const connection = await getPool().getConnection();
+
+  try {
+    await connection.beginTransaction();
+    const current = await getLockedBugReport(connection, publicId);
+    if (!current) {
+      await connection.rollback();
+      return { error: "Bug report not found.", status: 404 };
+    }
+    if (!canManage) {
+      await connection.rollback();
+      return { error: "Forbidden", status: 403 };
+    }
+
+    await connection.execute("DELETE FROM bug_reports WHERE id = ?", [current.report.id]);
+    await connection.commit();
+    await Promise.allSettled([
+      rm(path.join(uploadsRoot, current.report.id), { recursive: true, force: true }),
+      ...current.files
+        .filter((file) => isBugReportStoragePath(file.storagePath))
+        .map((file) => unlink(file.storagePath)),
+    ]);
+
+    return {
+      id: current.report.id,
+      publicId: current.report.publicId,
+      creatorUserId: current.report.creatorUserId,
+      before: reportAuditSnapshot(current.report, current.files),
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function getBugReportAttachment(publicId, fileId) {
+  await initializeBugReporterTables();
+  const [rows] = await getPool().execute(
+    `SELECT f.id, f.original_name, f.extension, f.size_bytes, f.storage_path
+     FROM bug_report_files f
+     INNER JOIN bug_reports b ON b.id = f.bug_report_id
+     WHERE LOWER(b.public_id) = LOWER(?) AND f.id = ?
+     LIMIT 1`,
+    [String(publicId ?? "").trim(), String(fileId ?? "").trim()]
+  );
+  if (!rows.length) return null;
+
+  return mapBugReportFileRow(rows[0], { includeStoragePath: true });
+}
+
+export function isBugReportStoragePath(storagePath) {
+  const relative = path.relative(uploadsRoot, path.resolve(String(storagePath ?? "")));
+  return Boolean(relative) && !relative.startsWith("..") && !path.isAbsolute(relative);
 }

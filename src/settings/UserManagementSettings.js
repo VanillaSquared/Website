@@ -20,6 +20,30 @@ import useRetainedModalValue from "@/settings/useRetainedModalValue";
 const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"];
 const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "developer", "support", "default"]);
 const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
+const ROLE_OPTION_PREFIX = "role:";
+
+function roleAuthorizationOptions(roles, excludedRole = null) {
+  return [
+    { label: "Permissions", options: ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission })) },
+    {
+      label: "Roles",
+      options: sortRolesByHierarchy(roles)
+        .filter((role) => role.name !== excludedRole)
+        .map((role) => ({ label: formatRole(role.name), value: `${ROLE_OPTION_PREFIX}${role.name}` })),
+    },
+  ];
+}
+
+function roleAuthorizationSelection(permissions, includedRoles) {
+  return [...permissions, ...includedRoles.map((role) => `${ROLE_OPTION_PREFIX}${role}`)];
+}
+
+function splitRoleAuthorization(selection) {
+  return {
+    permissions: selection.filter((value) => !value.startsWith(ROLE_OPTION_PREFIX)),
+    includedRoles: selection.filter((value) => value.startsWith(ROLE_OPTION_PREFIX)).map((value) => value.slice(ROLE_OPTION_PREFIX.length)),
+  };
+}
 
 function ModalSeparator({ bleed = false, className = "" }) {
   return <Separator className={`${bleed ? "-mx-6 w-[calc(100%+3rem)]" : "w-full"} ${className}`} />;
@@ -172,10 +196,11 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
   );
 }
 
-function RoleDetailsModal({ role, actions, onClose, onChanged }) {
+function RoleDetailsModal({ role, roles, actions, onClose, onChanged }) {
   const displayedRole = useRetainedModalValue(role);
   const [name, setName] = useState(displayedRole?.name ?? "");
   const [permissions, setPermissions] = useState(displayedRole?.permissions ?? []);
+  const [includedRoles, setIncludedRoles] = useState(displayedRole?.includedRoles ?? []);
   const [color, setColor] = useState(displayedRole?.color ?? "#c269c2");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -187,6 +212,7 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
 
     setName(role.name ?? "");
     setPermissions(role.permissions ?? []);
+    setIncludedRoles(role.includedRoles ?? []);
     setColor(role.color ?? "#c269c2");
     setError("");
   }, [role]);
@@ -215,11 +241,22 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
           {PROTECTED_ROLE_NAMES.has(displayedRole.name) ? <p className="text-sm text-muted">This built-in role cannot be deleted.</p> : null}
           <TextInput label="Role name" locked={!canEdit || busy || PROTECTED_ROLE_NAMES.has(displayedRole.name)} value={name} onChange={(e) => setName(e.target.value)} />
           <ColorPicker label="Role color" locked={!canEdit || busy} value={color} onChange={setColor} />
-          <MultiSelect label="Permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canEdit || busy} placeholder="Select permissions" />
+          <MultiSelect
+            label="Permissions"
+            options={roleAuthorizationOptions(roles, displayedRole.name)}
+            value={roleAuthorizationSelection(permissions, includedRoles)}
+            onChange={(selection) => {
+              const authorization = splitRoleAuthorization(selection);
+              setPermissions(authorization.permissions);
+              setIncludedRoles(authorization.includedRoles);
+            }}
+            locked={!canEdit || busy}
+            placeholder="Select permissions or roles"
+          />
           <div className="flex gap-2">
             <Button size="sm" variant={canEdit ? "green" : "locked"} disabled={busy} locked={!canEdit} onClick={() => mutate(async () => {
               const target = (await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "PATCH", body: JSON.stringify({ name, color }) })).role.name;
-              await api(`/api/roles/${encodeURIComponent(target)}/permissions`, { method: "PUT", body: JSON.stringify({ permissions }) });
+              await api(`/api/roles/${encodeURIComponent(target)}/permissions`, { method: "PUT", body: JSON.stringify({ permissions, includedRoles }) });
             })}>Save role</Button>
             <Button size="sm" variant={canDelete ? "red" : "locked"} disabled={busy} locked={!canDelete} onClick={() => mutate(async () => { await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "DELETE" }); onClose(); })}>Delete role</Button>
           </div>
@@ -229,9 +266,10 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
   );
 }
 
-function CreateRoleModal({ open, actions, onClose, onCreated }) {
+function CreateRoleModal({ open, roles, actions, onClose, onCreated }) {
   const [name, setName] = useState("");
   const [permissions, setPermissions] = useState([]);
+  const [includedRoles, setIncludedRoles] = useState([]);
   const [color, setColor] = useState("#c269c2");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -241,6 +279,7 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
     if (open) {
       setName("");
       setPermissions([]);
+      setIncludedRoles([]);
       setColor("#c269c2");
       setError("");
     }
@@ -250,7 +289,7 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
     setBusy(true);
     setError("");
     try {
-      const data = await api("/api/roles", { method: "POST", body: JSON.stringify({ name, permissions, color }) });
+      const data = await api("/api/roles", { method: "POST", body: JSON.stringify({ name, permissions, includedRoles, color }) });
       await onCreated(data.role.name);
       onClose();
     } catch (err) {
@@ -268,7 +307,18 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
           <TextInput label="Role name" sampleText="moderator" locked={!canCreate || busy} value={name} onChange={(event) => setName(event.target.value)} />
           <ColorPicker label="Role color" locked={!canCreate || busy} value={color} onChange={setColor} />
-          <MultiSelect label="Initial permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canCreate || busy} placeholder="Select permissions" />
+          <MultiSelect
+            label="Initial permissions"
+            options={roleAuthorizationOptions(roles)}
+            value={roleAuthorizationSelection(permissions, includedRoles)}
+            onChange={(selection) => {
+              const authorization = splitRoleAuthorization(selection);
+              setPermissions(authorization.permissions);
+              setIncludedRoles(authorization.includedRoles);
+            }}
+            locked={!canCreate || busy}
+            placeholder="Select permissions or roles"
+          />
           <Button size="sm" variant={canCreate ? "green" : "locked"} disabled={busy} locked={!canCreate} onClick={submit}>Create role</Button>
         </div>
       </div>
@@ -307,7 +357,7 @@ function RoleRow({ role, canDrag, dragging, onClick, onDragStart, onDragEnter, o
         {canDrag ? <span className="select-none text-lg leading-none text-muted" aria-hidden="true">⋮⋮</span> : null}
         <div className="min-w-0">
           <Tag color={role.color}>{formatRole(role.name)}</Tag>
-          <p className="mt-2 text-sm text-muted">{(role.permissions ?? []).length} permissions</p>
+          <p className="mt-2 text-sm text-muted">{(role.permissions ?? []).length} permissions{role.includedRoles?.length ? ` · ${role.includedRoles.length} roles` : ""}</p>
         </div>
       </div>
     </article>
@@ -365,7 +415,7 @@ export default function UserManagementSettings({ permissions }) {
   const roleRanks = useMemo(() => new Map(sortedRoles.map((role, index) => [role.name, index])), [sortedRoles]);
   const roleColors = useMemo(() => new Map(sortedRoles.map((role) => [role.name, role.color])), [sortedRoles]);
   const visibleUsers = useMemo(() => users.filter((u) => matchesQuery([u.username, u.email, u.id, getHighestRole(u, roleRanks)], query)), [users, roleRanks, query]);
-  const visibleRoles = useMemo(() => sortedRoles.filter((r) => matchesQuery([r.name, formatRole(r.name), ...(r.permissions ?? [])], query)), [sortedRoles, query]);
+  const visibleRoles = useMemo(() => sortedRoles.filter((r) => matchesQuery([r.name, formatRole(r.name), ...(r.permissions ?? []), ...(r.includedRoles ?? [])], query)), [sortedRoles, query]);
   const selectedUser = users.find((user) => user.id === selectedUserId);
   const selectedRole = roles.find((role) => role.name === selectedRoleName);
   currentRoleOrderRef.current = sortedRoles.map((role) => role.name);
@@ -452,8 +502,8 @@ export default function UserManagementSettings({ permissions }) {
       {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} roleRanks={roleRanks} roleColors={roleColors} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<RoleRow role={role} canDrag={Boolean(actions.canManageRoles && role.manageable)} dragging={draggingRoleName === role.name} onClick={() => handleRoleClick(role.name)} onDragStart={(event) => handleRoleDragStart(role.name, event)} onDragEnter={() => handleRoleDragEnter(role.name)} onDragEnd={handleRoleDragEnd} /></div>)}</div></div> : null}
       {!status && ((page === "users" && !visibleUsers.length) || (page === "roles" && !visibleRoles.length)) ? <p className="text-center text-sm text-muted">No {page} found.</p> : null}
       <UserDetailsModal user={selectedUser} roles={roles} actions={actions} onClose={() => setSelectedUserId(null)} onChanged={load} />
-      <RoleDetailsModal role={selectedRole} actions={actions} onClose={() => setSelectedRoleName(null)} onChanged={load} />
-      <CreateRoleModal open={creatingRole} actions={actions} onClose={() => setCreatingRole(false)} onCreated={async (roleName) => { await load(); setSelectedRoleName(roleName); }} />
+      <RoleDetailsModal role={selectedRole} roles={roles} actions={actions} onClose={() => setSelectedRoleName(null)} onChanged={load} />
+      <CreateRoleModal open={creatingRole} roles={roles} actions={actions} onClose={() => setCreatingRole(false)} onCreated={async (roleName) => { await load(); setSelectedRoleName(roleName); }} />
     </div>
   );
 }

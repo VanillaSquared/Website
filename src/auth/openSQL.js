@@ -4,10 +4,10 @@ const poolGlobalKey = Symbol.for("vanillasquared.mysql.pool");
 const initializedGlobalKey = Symbol.for("vanillasquared.mysql.initialized");
 
 const BUILT_IN_ROLE_PERMISSIONS = Object.freeze({
-  owner: ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"],
+  owner: ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "edit_bugs", "manage_bugs", "bypass_limits"],
   developer: ["design_test", "dev_options", "bypass_limits", "audit_log"],
-  support: ["bug_panel", "bypass_limits", "audit_log"],
-  default: ["create_bugs", "view_bugs"],
+  support: ["bug_panel", "manage_bugs", "bypass_limits", "audit_log"],
+  default: ["create_bugs", "view_bugs", "edit_bugs"],
   not_signed_in: ["view_bugs"],
 });
 
@@ -96,6 +96,17 @@ export async function initializeUsersTable() {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (role, permission),
             CONSTRAINT role_permissions_role_fk FOREIGN KEY (role) REFERENCES roles(name) ON DELETE CASCADE ON UPDATE CASCADE
+          )
+        `);
+
+        await getPool().query(`
+          CREATE TABLE IF NOT EXISTS role_inclusions (
+            role VARCHAR(64) NOT NULL,
+            included_role VARCHAR(64) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (role, included_role),
+            CONSTRAINT role_inclusions_role_fk FOREIGN KEY (role) REFERENCES roles(name) ON DELETE CASCADE ON UPDATE CASCADE,
+            CONSTRAINT role_inclusions_included_role_fk FOREIGN KEY (included_role) REFERENCES roles(name) ON DELETE CASCADE ON UPDATE CASCADE
           )
         `);
 
@@ -346,11 +357,11 @@ export async function getRole(name) {
   return parseRole(rows[0]);
 }
 
-export async function createRole(name, permissions = [], color = "#c269c2") {
+export async function createRole(name, permissions = [], color = "#c269c2", includedRoles = []) {
   await initializeUsersTable();
   const [rows] = await getPool().execute("SELECT COALESCE(MAX(hierarchy_order), -1) + 1 AS next_order FROM roles");
   await getPool().execute("INSERT INTO roles (name, hierarchy_order, color) VALUES (?, ?, ?)", [name, Number(rows[0]?.next_order ?? 0), color]);
-  await setRolePermissions(name, permissions);
+  await setRoleAuthorization(name, permissions, includedRoles);
   return getRole(name);
 }
 
@@ -414,26 +425,60 @@ export async function getRolePermissions(role) {
   return rows.map((row) => row.permission);
 }
 
-export async function getPermissionsForRolesFromDb(roles = []) {
-  const cleanRoles = roles.filter(Boolean);
-  if (!cleanRoles.length) return [];
+export async function getRoleIncludedRoles(role) {
   await initializeUsersTable();
-  const placeholders = cleanRoles.map(() => "?").join(", ");
-  const [rows] = await getPool().execute(
-    `SELECT DISTINCT permission FROM role_permissions WHERE role IN (${placeholders}) ORDER BY permission`,
-    cleanRoles
-  );
-  return rows.map((row) => row.permission);
+  const [rows] = await getPool().execute("SELECT included_role FROM role_inclusions WHERE role = ? ORDER BY included_role", [role]);
+  return rows.map((row) => row.included_role);
 }
 
-export async function setRolePermissions(role, permissions = []) {
+export async function getPermissionsForRolesFromDb(roles = []) {
+  const pendingRoles = [...new Set(roles.filter(Boolean))];
+  if (!pendingRoles.length) return [];
+  await initializeUsersTable();
+
+  const visitedRoles = new Set();
+  const permissions = new Set();
+  while (pendingRoles.length) {
+    const role = pendingRoles.shift();
+    if (visitedRoles.has(role)) continue;
+    visitedRoles.add(role);
+    const [permissionRows, inclusionRows] = await Promise.all([
+      getPool().execute("SELECT permission FROM role_permissions WHERE role = ?", [role]),
+      getPool().execute("SELECT included_role FROM role_inclusions WHERE role = ?", [role]),
+    ]);
+    permissionRows[0].forEach((row) => permissions.add(row.permission));
+    inclusionRows[0].forEach((row) => {
+      if (!visitedRoles.has(row.included_role)) pendingRoles.push(row.included_role);
+    });
+  }
+  return [...permissions].sort();
+}
+
+export async function wouldCreateRoleInclusionCycle(role, includedRoles = []) {
+  const pendingRoles = [...new Set(includedRoles)];
+  const visitedRoles = new Set();
+  while (pendingRoles.length) {
+    const nextRole = pendingRoles.shift();
+    if (nextRole === role) return true;
+    if (visitedRoles.has(nextRole)) continue;
+    visitedRoles.add(nextRole);
+    pendingRoles.push(...await getRoleIncludedRoles(nextRole));
+  }
+  return false;
+}
+
+export async function setRoleAuthorization(role, permissions = [], includedRoles = []) {
   await initializeUsersTable();
   const connection = await getPool().getConnection();
   try {
     await connection.beginTransaction();
     await connection.execute("DELETE FROM role_permissions WHERE role = ?", [role]);
+    await connection.execute("DELETE FROM role_inclusions WHERE role = ?", [role]);
     for (const permission of [...new Set(permissions)]) {
       await connection.execute("INSERT INTO role_permissions (role, permission) VALUES (?, ?)", [role, permission]);
+    }
+    for (const includedRole of [...new Set(includedRoles)]) {
+      await connection.execute("INSERT INTO role_inclusions (role, included_role) VALUES (?, ?)", [role, includedRole]);
     }
     await connection.commit();
   } catch (error) {
@@ -442,4 +487,8 @@ export async function setRolePermissions(role, permissions = []) {
   } finally {
     connection.release();
   }
+}
+
+export async function setRolePermissions(role, permissions = []) {
+  return setRoleAuthorization(role, permissions, await getRoleIncludedRoles(role));
 }

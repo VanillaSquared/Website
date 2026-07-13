@@ -72,15 +72,21 @@ export default function FileUpload({
   compact = false,
   showBrowseButton = true,
   locked = false,
+  existingFiles = [],
+  retainedFilesName = "retainedFileIds",
+  onExistingFilesChange,
 }) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const inputRef = useRef(null);
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState([]);
+  const [removedExistingFileIds, setRemovedExistingFileIds] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const acceptedTypes = useMemo(() => normalizeFileTypes(fileTypes, accept), [fileTypes, accept]);
   const fileLimit = maxFiles ?? (multiple ? Infinity : 1);
+  const retainedExistingFiles = existingFiles.filter((file) => !removedExistingFileIds.includes(file.id));
+  const availableNewFileSlots = Number.isFinite(fileLimit) ? Math.max(0, fileLimit - retainedExistingFiles.length) : Infinity;
   const fileLimitText = Number.isFinite(fileLimit) ? fileLimit : "Unlimited";
   const fileSizeLimitText = Number.isFinite(maxFileSize) ? formatBytes(maxFileSize) : "Any";
   const acceptedTypesText = acceptedTypes || "Any";
@@ -116,12 +122,12 @@ export default function FileUpload({
       validFiles.push(file);
     });
 
-    if (validFiles.length > fileLimit) {
-      nextErrors.push(`Only ${fileLimit} file${fileLimit === 1 ? "" : "s"} can be uploaded.`);
+    if (validFiles.length > availableNewFileSlots) {
+      nextErrors.push(`Only ${fileLimit} file${fileLimit === 1 ? "" : "s"} can be kept or uploaded in total.`);
     }
 
     return {
-      files: validFiles.slice(0, fileLimit),
+      files: validFiles.slice(0, availableNewFileSlots),
       errors: nextErrors,
     };
   }
@@ -158,6 +164,24 @@ export default function FileUpload({
     }
   }
 
+  function toggleExistingFile(file) {
+    if (locked) return;
+
+    const isRemoved = removedExistingFileIds.includes(file.id);
+    if (isRemoved && Number.isFinite(fileLimit) && retainedExistingFiles.length + files.length >= fileLimit) {
+      setErrors([`Only ${fileLimit} files can be kept or uploaded in total.`]);
+      return;
+    }
+
+    const nextRemovedIds = isRemoved
+      ? removedExistingFileIds.filter((id) => id !== file.id)
+      : [...removedExistingFileIds, file.id];
+    setRemovedExistingFileIds(nextRemovedIds);
+    setErrors([]);
+    const nextRetainedFiles = existingFiles.filter((existingFile) => !nextRemovedIds.includes(existingFile.id));
+    onExistingFilesChange?.(nextRetainedFiles);
+  }
+
   function openFilePicker() {
     if (!locked && !showBrowseButton) {
       inputRef.current?.click();
@@ -175,6 +199,9 @@ export default function FileUpload({
 
   return (
     <div className={`flex flex-col gap-2 text-sm font-semibold text-soft ${className}`}>
+      {retainedExistingFiles.map((file) => (
+        <input key={file.id} type="hidden" name={retainedFilesName} value={file.id} />
+      ))}
       <span>{label}</span>
       <div
         onDragEnter={(event) => {
@@ -224,6 +251,31 @@ export default function FileUpload({
           disabled={locked}
           onChange={(event) => handleFiles(event.target.files, event)}
         />
+
+        {existingFiles.length ? (
+          <div className="flex w-full flex-col text-left" onClick={(event) => event.stopPropagation()}>
+            <span className="mb-1 text-xs uppercase tracking-wide text-muted">Existing files</span>
+            {existingFiles.map((file) => {
+              const removed = removedExistingFileIds.includes(file.id);
+              return (
+                <div key={file.id} className="flex min-w-0 items-center gap-3 border-t border-control-border py-2 first:border-t-0">
+                  <div className={`min-w-0 flex-1 ${removed ? "opacity-50" : ""}`}>
+                    <p className={`truncate text-sm text-soft ${removed ? "line-through" : ""}`}>{file.originalName}</p>
+                    <p className="text-xs font-normal text-muted">{formatBytes(Number(file.sizeBytes))} · {String(file.extension ?? "file").replace(/^\./, "").toUpperCase()}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => toggleExistingFile(file)}
+                    disabled={locked}
+                    className="rounded-md px-2 py-1 text-xs text-accent transition-colors hover:bg-control-hover hover:text-heading disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {removed ? "Restore" : "Remove"}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
 
         {errors.length ? (
           <div className="flex w-full flex-col gap-1 rounded-lg border border-error bg-error-surface p-2 text-left text-xs font-normal text-error">

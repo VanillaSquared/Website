@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAuditLog } from "@/audit/logs";
-import { createRole, getRole, getRolePermissions, listRoles, reorderRoles } from "@/auth/openSQL";
+import { createRole, getRole, getRoleIncludedRoles, getRolePermissions, listRoles, reorderRoles } from "@/auth/openSQL";
 import { PERMISSIONS, isValidPermission, isValidRoleColor, isValidRoleName } from "@/auth/permissions";
 import { canManageRoleByHierarchy, jsonError, normalizePermissionList, normalizeRoleName, requireApiPermission, validateRoleHierarchyChange } from "@/auth/userManagement";
 import { guardSameOriginRequest } from "@/security/requestGuards";
@@ -13,6 +13,7 @@ async function rolesWithPermissions(actor = null) {
   return Promise.all(roles.map(async (role) => ({
     ...role,
     permissions: await getRolePermissions(role.name),
+    includedRoles: await getRoleIncludedRoles(role.name),
     ...(actor ? { manageable: await canManageRoleByHierarchy(actor, role.name) } : {}),
   })));
 }
@@ -37,9 +38,14 @@ export async function POST(request) {
   if (await getRole(name)) return jsonError("Role already exists.", 409);
 
   const permissions = normalizePermissionList(body.permissions, isValidPermission);
+  const existingRoleNames = new Set((await listRoles()).map((role) => role.name));
+  const requestedIncludedRoles = Array.isArray(body.includedRoles) ? body.includedRoles : [];
+  const isValidIncludedRole = (role) => isValidRoleName(role) && existingRoleNames.has(role) && role !== name;
+  if (!requestedIncludedRoles.every(isValidIncludedRole)) return jsonError("Invalid included role.", 400);
+  const includedRoles = normalizePermissionList(requestedIncludedRoles, isValidIncludedRole);
   const color = isValidRoleColor(body.color) ? body.color.toLowerCase() : "#c269c2";
-  const role = await createRole(name, permissions, color);
-  const roleWithPermissions = { ...role, permissions: await getRolePermissions(name) };
+  const role = await createRole(name, permissions, color, includedRoles);
+  const roleWithPermissions = { ...role, permissions: await getRolePermissions(name), includedRoles: await getRoleIncludedRoles(name) };
   await createAuditLog({
     type: "user_management",
     action: "role.created",

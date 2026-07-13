@@ -1,10 +1,15 @@
 import { notFound } from "next/navigation";
 
+import { getAuthSubject } from "@/app/auth";
+import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
-import { getBugReportByPublicId } from "@/bugs/reporter";
+import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_VERSIONS, getBugReportByPublicId } from "@/bugs/reporter";
+import AttachmentList from "@/components/AttachmentList";
 import Checkmark from "@/components/Checkmark";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
+
+import BugReportActions from "./BugReportActions";
 
 export const dynamic = "force-dynamic";
 
@@ -50,24 +55,6 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-function formatBytes(bytes) {
-  const value = Number(bytes);
-
-  if (!Number.isFinite(value)) {
-    return "Unknown size";
-  }
-
-  if (value < 1024) {
-    return `${value} B`;
-  }
-
-  if (value < 1024 * 1024) {
-    return `${(value / 1024).toFixed(1)} KB`;
-  }
-
-  return `${(value / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 export async function generateMetadata({ params }) {
   const { bug: bugParam } = await params;
   const bug = await getBugReportByPublicId(decodeURIComponent(bugParam));
@@ -86,12 +73,23 @@ export async function generateMetadata({ params }) {
 
 export default async function BugViewPage({ params }) {
   const { bug: bugParam } = await params;
-  const bug = await getBugReportByPublicId(decodeURIComponent(bugParam));
+  const [bug, subject] = await Promise.all([
+    getBugReportByPublicId(decodeURIComponent(bugParam)),
+    getAuthSubject({ updateTokens: false }),
+  ]);
 
   if (!bug) {
     notFound();
   }
 
+  const user = subject?.properties ?? null;
+  const authorization = user?.id ? await getAuthorizationForUser(user) : null;
+  const canManage = authorization ? hasResolvedPermission(authorization, PERMISSIONS.MANAGE_BUGS) : false;
+  const canEdit = canManage || Boolean(
+    authorization
+    && bug.creatorUserId === user.id
+    && hasResolvedPermission(authorization, PERMISSIONS.EDIT_BUGS)
+  );
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
   const affectedVersions = bug.affectedVersions?.length ? bug.affectedVersions.join(", ") : "Unknown";
   const bugStatusCheckmark = getBugStatusCheckmarkProps(bug);
@@ -120,28 +118,26 @@ export default async function BugViewPage({ params }) {
       ]}
     >
       <section className="flex flex-col gap-5">
-        <div className="flex flex-wrap gap-2">
-          <Tag variant="subtle">{categoryLabel}</Tag>
-          <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
-          <Tag variant="accent">{bug.status}</Tag>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Tag variant="subtle">{categoryLabel}</Tag>
+            <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
+            <Tag variant="accent">{bug.status}</Tag>
+          </div>
+          {canEdit || canManage ? (
+            <BugReportActions
+              report={bug}
+              categories={BUG_REPORT_CATEGORY_CONFIGS}
+              versions={BUG_REPORT_VERSIONS}
+              creatorUser={user}
+              canEdit={canEdit}
+              canDelete={canManage}
+            />
+          ) : null}
         </div>
         <p className="whitespace-pre-wrap text-base leading-6 text-soft">{bug.description}</p>
         <div className="-mx-5 h-px bg-divider sm:-mx-7" />
-        <section className="rounded-2xl border border-divider bg-control p-4 sm:p-5">
-          <h2 className="text-base font-semibold text-heading">Attachments</h2>
-          {bug.files?.length ? (
-            <ul className="mt-4 space-y-2">
-              {bug.files.map((file) => (
-                <li key={file.id} className="rounded-xl border border-divider bg-card px-3 py-2">
-                  <p className="truncate text-sm font-semibold text-soft">{file.originalName}</p>
-                  <p className="mt-1 text-xs text-muted">{formatBytes(file.sizeBytes)} · {file.extension}</p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-3 text-sm text-muted">No attachments were uploaded.</p>
-          )}
-        </section>
+        <AttachmentList files={bug.files} bugPublicId={bug.publicId} />
       </section>
     </ElementViewTemplatePage>
   );
