@@ -22,12 +22,12 @@ const settingComponents = {
   "Audit Log": AuditLogSettings,
 };
 
-export default function SettingsContent({ activeItem, children }) {
+export default function SettingsContent({ activeItem, permissions, children }) {
   if (children) {
     return children;
   }
 
   const ActiveSetting = settingComponents[activeItem] ?? AccountSettings;
 
-  return <ActiveSetting />;
+  return <ActiveSetting permissions={permissions} />;
 }

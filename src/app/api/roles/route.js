@@ -18,7 +18,7 @@ async function rolesWithPermissions(actor = null) {
 }
 
 export async function GET() {
-  const auth = await requireApiPermission(PERMISSIONS.USER_MANAGEMENT);
+  const auth = await requireApiPermission(PERMISSIONS.MANAGE_ROLES);
   if (auth.error) return auth.error;
 
   return NextResponse.json({ roles: await rolesWithPermissions(auth.user) }, { headers: { "Cache-Control": "no-store" } });

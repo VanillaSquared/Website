@@ -58,6 +58,10 @@ function matchesQuery(values, query) {
   return !normalizedQuery || values.filter(Boolean).some((value) => String(value).toLowerCase().includes(normalizedQuery));
 }
 
+function hasResolvedPermission(authorization, permission) {
+  return Boolean(authorization?.permissionMap?.[permission] || authorization?.permissions?.includes?.(permission));
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     cache: "no-store",
@@ -158,7 +162,7 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
           <Button size="sm" variant={canManageRoles ? "green" : "locked"} disabled={busy} locked={!canManageRoles} onClick={() => mutate(async () => {
             await syncUserRoles(displayedUser.id, authorization.roles ?? [], selectedRoles);
             await syncUserPermissions(displayedUser.id, authorization.individualPermissions ?? [], selectedPermissions);
-          })}>Save authorization</Button>
+          })}>Save perms</Button>
           <div><h3 className="font-semibold text-heading">Resolved permissions</h3><p className="mt-2 text-sm text-muted">{(authorization.permissions ?? []).join(", ") || "None"}</p></div>
           <ModalSeparator bleed />
           <Button size="sm" variant={canDeleteUser ? "red" : "locked"} disabled={busy} locked={!canDeleteUser} onClick={() => mutate(async () => { await api(`/api/users/${displayedUser.id}`, { method: "DELETE" }); onClose(); })}>Delete user</Button>
@@ -310,8 +314,10 @@ function RoleRow({ role, canDrag, dragging, onClick, onDragStart, onDragEnter, o
   );
 }
 
-export default function UserManagementSettings() {
-  const [page, setPage] = useState("users");
+export default function UserManagementSettings({ permissions }) {
+  const canViewUsers = hasResolvedPermission(permissions, "user_management");
+  const canViewRoles = hasResolvedPermission(permissions, "manage_roles");
+  const [page, setPage] = useState(canViewUsers ? "users" : "roles");
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [actions, setActions] = useState({});
@@ -330,17 +336,28 @@ export default function UserManagementSettings() {
   const roleOrderChangedRef = useRef(false);
   const suppressRoleClickRef = useRef(false);
   const [isScrolling, setIsScrolling] = useState(false);
+  const tabs = useMemo(() => [
+    ...(canViewUsers ? [{ label: "Users", value: "users" }] : []),
+    ...(canViewRoles ? [{ label: "Roles", value: "roles" }] : []),
+  ], [canViewRoles, canViewUsers]);
 
   const load = useCallback(async () => {
-    const [userData, roleData] = await Promise.all([api("/api/users"), api("/api/roles")]);
-    setUsers(Array.isArray(userData.users) ? userData.users : []);
-    setRoles(Array.isArray(roleData.roles) ? roleData.roles : []);
-    setActions(userData.viewer?.actions ?? {});
+    const [userData, roleData] = await Promise.all([
+      canViewUsers ? api("/api/users") : Promise.resolve(null),
+      canViewRoles ? api("/api/roles") : Promise.resolve(null),
+    ]);
+    setUsers(Array.isArray(userData?.users) ? userData.users : []);
+    setRoles(Array.isArray(roleData?.roles) ? roleData.roles : []);
+    setActions({ ...(userData?.viewer?.actions ?? {}), canManageRoles: canViewRoles });
     setRoleHierarchyDirty(false);
     setRoleHierarchyError("");
     setStatus("");
-  }, []);
+  }, [canViewRoles, canViewUsers]);
 
+  useEffect(() => {
+    if (page === "users" && !canViewUsers) setPage("roles");
+    if (page === "roles" && !canViewRoles) setPage("users");
+  }, [canViewRoles, canViewUsers, page]);
   useEffect(() => { load().catch(() => setStatus("Could not load user management.")); }, [load]);
   useEffect(() => () => scrollTimeoutRef.current && clearTimeout(scrollTimeoutRef.current), []);
   const handleScroll = () => { setIsScrolling(true); if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current); scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 700); };
@@ -425,7 +442,7 @@ export default function UserManagementSettings() {
   return (
     <div className="flex h-full min-h-0 flex-col gap-5">
       <div className="flex shrink-0 flex-wrap items-center justify-between gap-3">
-        <Tabs tabs={[{ label: "Users", value: "users" }, { label: "Roles", value: "roles" }]} value={page} onChange={setPage} line="full" className="min-w-0 flex-1" />
+        <Tabs tabs={tabs} value={page} onChange={setPage} line="full" className="min-w-0 flex-1" />
         {page === "roles" ? <Button size="icon" variant={actions.canManageRoles ? "green" : "locked"} locked={!actions.canManageRoles} icon={plusIcon} aria-label="Create role" onClick={() => setCreatingRole(true)} /> : null}
       </div>
       <SearchBar variant="settings" placeholder={`Search ${page}`} label={`Search ${page}`} value={query} onChange={setQuery} showPreview={false} />

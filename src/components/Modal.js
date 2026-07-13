@@ -124,7 +124,7 @@ const settingsCategories = [
       { label: "Bug Panel", permission: "bug_panel" },
       { label: "Dev Options", permission: "dev_options" },
       { label: "Design Test", permission: "design_test" },
-      { label: "User Management", permission: "user_management" },
+      { label: "User Management", permissions: ["user_management", "manage_roles"] },
       { label: "Audit Log", permission: "audit_log" },
     ],
   },
@@ -144,11 +144,14 @@ const settingsItemIcons = {
 };
 
 function canViewSettingsItem(item, permissions) {
-  if (!item.permission) {
+  const requiredPermissions = item.permissions ?? (item.permission ? [item.permission] : []);
+  if (!requiredPermissions.length) {
     return true;
   }
 
-  return Boolean(permissions?.permissionMap?.[item.permission] || permissions?.permissions?.includes?.(item.permission));
+  return requiredPermissions.some((permission) => (
+    permissions?.permissionMap?.[permission] || permissions?.permissions?.includes?.(permission)
+  ));
 }
 
 function getVisibleSettingsCategories(permissions, query = "") {
@@ -248,7 +251,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
         </header>
 
         <div className={["User Management", "Audit Log"].includes(activeItem) ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
-          <SettingsContent activeItem={activeItem}>{children}</SettingsContent>
+          <SettingsContent activeItem={activeItem} permissions={permissions}>{children}</SettingsContent>
         </div>
       </section>
     </div>
