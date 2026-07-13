@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS } from "@/auth/permissions";
-import { jsonError, requireApiPermission } from "@/auth/userManagement";
+import { getMutableTargetUser, jsonError, requireApiPermission } from "@/auth/userManagement";
 import { getActiveBugPunishment, removeBugPunishment, updateBugPunishment } from "@/bugs/limits";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
@@ -22,6 +22,8 @@ export async function PATCH(request, context) {
   if (auth.error) return auth.error;
 
   const userId = await getUserId(context);
+  const target = await getMutableTargetUser(userId, auth.user);
+  if (target.error) return target.error;
   const body = await request.json().catch(() => ({}));
 
   try {
@@ -50,6 +52,8 @@ export async function DELETE(request, context) {
   if (auth.error) return auth.error;
 
   const userId = await getUserId(context);
+  const target = await getMutableTargetUser(userId, auth.user);
+  if (target.error) return target.error;
   const beforePunishment = await getActiveBugPunishment(userId);
   await removeBugPunishment(userId);
   await createAuditLog({

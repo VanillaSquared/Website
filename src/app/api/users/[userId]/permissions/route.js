@@ -14,7 +14,7 @@ export async function POST(request, { params }) {
   if (auth.error) return auth.error;
 
   const { userId } = await params;
-  const target = await getMutableTargetUser(userId);
+  const target = await getMutableTargetUser(userId, auth.user);
   if (target.error) return target.error;
 
   const { permission } = await request.json().catch(() => ({}));

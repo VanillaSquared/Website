@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createAuditLog } from "@/audit/logs";
 import { getRole, getRolePermissions, setRolePermissions } from "@/auth/openSQL";
 import { PERMISSIONS, isValidPermission, isValidRoleName } from "@/auth/permissions";
-import { jsonError, normalizePermissionList, requireApiPermission } from "@/auth/userManagement";
+import { getMutableTargetRole, jsonError, normalizePermissionList, requireApiPermission } from "@/auth/userManagement";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export async function PUT(request, { params }) {
@@ -15,6 +15,8 @@ export async function PUT(request, { params }) {
 
   const { role } = await params;
   if (!isValidRoleName(role) || !await getRole(role)) return jsonError("Role not found.", 404);
+  const targetRole = await getMutableTargetRole(role, auth.user);
+  if (targetRole.error) return targetRole.error;
 
   const body = await request.json().catch(() => ({}));
   const beforePermissions = await getRolePermissions(role);

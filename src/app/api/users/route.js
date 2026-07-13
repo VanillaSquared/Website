@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthorizationForUser, PERMISSIONS } from "@/auth/permissions";
 import { listUsers } from "@/auth/openSQL";
-import { isProtectedUser, jsonError, requireApiPermission } from "@/auth/userManagement";
+import { canManageUserByHierarchy, jsonError, requireApiPermission } from "@/auth/userManagement";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export async function GET() {
   const users = await listUsers();
   const usersWithAuthorization = await Promise.all(users.map(async (user) => ({
     ...user,
-    isProtected: isProtectedUser(user),
+    isProtected: !await canManageUserByHierarchy(auth.user, user),
     authorization: await getAuthorizationForUser(user),
     actions,
   })));

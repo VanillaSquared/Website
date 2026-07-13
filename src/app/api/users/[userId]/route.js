@@ -24,7 +24,7 @@ export async function PATCH(request, { params }) {
   if (auth.error) return auth.error;
 
   const { userId } = await params;
-  const target = await getMutableTargetUser(userId);
+  const target = await getMutableTargetUser(userId, auth.user);
   if (target.error) return target.error;
 
   const input = validateUserInput(await request.json().catch(() => ({})));
@@ -58,7 +58,7 @@ export async function DELETE(request, { params }) {
   if (auth.error) return auth.error;
 
   const { userId } = await params;
-  const target = await getMutableTargetUser(userId);
+  const target = await getMutableTargetUser(userId, auth.user);
   if (target.error) return target.error;
 
   await createAuditLog({

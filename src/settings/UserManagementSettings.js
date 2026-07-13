@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import plusIcon from "@/assets/icons/plus.svg";
 import closeIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
+import ColorPicker from "@/components/ColorPicker";
 import Modal from "@/components/Modal";
 import MultiSelect from "@/components/MultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
@@ -17,17 +18,11 @@ import TextInput from "@/components/TextInput";
 import useRetainedModalValue from "@/settings/useRetainedModalValue";
 
 const ALL_PERMISSIONS = ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"];
-const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "default"]);
+const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "developer", "support", "default"]);
 const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
 
 function ModalSeparator({ bleed = false, className = "" }) {
   return <Separator className={`${bleed ? "-mx-6 w-[calc(100%+3rem)]" : "w-full"} ${className}`} />;
-}
-
-function getJoinedDate(user) {
-  const date = user.createdAt ? new Date(user.createdAt) : null;
-  if (!date || Number.isNaN(date.getTime())) return "Unknown join date";
-  return `Joined ${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 }
 
 function getHighestRole(user, roleRanks = new Map()) {
@@ -127,6 +122,7 @@ function UserDetailsModal({ user, roles, actions, onClose, onChanged }) {
     setForm({ username: user.username ?? "", email: user.email ?? "" });
     setSelectedRoles(user.authorization?.roles ?? []);
     setSelectedPermissions(user.authorization?.individualPermissions ?? []);
+    setError("");
   }, [user]);
 
   if (!displayedUser) return null;
@@ -176,9 +172,10 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
   const displayedRole = useRetainedModalValue(role);
   const [name, setName] = useState(displayedRole?.name ?? "");
   const [permissions, setPermissions] = useState(displayedRole?.permissions ?? []);
+  const [color, setColor] = useState(displayedRole?.color ?? "#c269c2");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const canEdit = Boolean(actions.canManageRoles);
+  const canEdit = Boolean(actions.canManageRoles && displayedRole?.manageable);
   const canDelete = Boolean(canEdit && !PROTECTED_ROLE_NAMES.has(displayedRole?.name));
 
   useEffect(() => {
@@ -186,6 +183,8 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
 
     setName(role.name ?? "");
     setPermissions(role.permissions ?? []);
+    setColor(role.color ?? "#c269c2");
+    setError("");
   }, [role]);
 
   if (!displayedRole) return null;
@@ -210,11 +209,12 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
         <div className="space-y-5 p-6">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
           {PROTECTED_ROLE_NAMES.has(displayedRole.name) ? <p className="text-sm text-muted">This built-in role cannot be deleted.</p> : null}
-          <TextInput label="Role name" locked={!canEdit || busy} value={name} onChange={(e) => setName(e.target.value)} />
+          <TextInput label="Role name" locked={!canEdit || busy || PROTECTED_ROLE_NAMES.has(displayedRole.name)} value={name} onChange={(e) => setName(e.target.value)} />
+          <ColorPicker label="Role color" locked={!canEdit || busy} value={color} onChange={setColor} />
           <MultiSelect label="Permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canEdit || busy} placeholder="Select permissions" />
           <div className="flex gap-2">
             <Button size="sm" variant={canEdit ? "green" : "locked"} disabled={busy} locked={!canEdit} onClick={() => mutate(async () => {
-              const target = name !== displayedRole.name ? (await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "PATCH", body: JSON.stringify({ name }) })).role.name : displayedRole.name;
+              const target = (await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "PATCH", body: JSON.stringify({ name, color }) })).role.name;
               await api(`/api/roles/${encodeURIComponent(target)}/permissions`, { method: "PUT", body: JSON.stringify({ permissions }) });
             })}>Save role</Button>
             <Button size="sm" variant={canDelete ? "red" : "locked"} disabled={busy} locked={!canDelete} onClick={() => mutate(async () => { await api(`/api/roles/${encodeURIComponent(displayedRole.name)}`, { method: "DELETE" }); onClose(); })}>Delete role</Button>
@@ -228,6 +228,7 @@ function RoleDetailsModal({ role, actions, onClose, onChanged }) {
 function CreateRoleModal({ open, actions, onClose, onCreated }) {
   const [name, setName] = useState("");
   const [permissions, setPermissions] = useState([]);
+  const [color, setColor] = useState("#c269c2");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const canCreate = Boolean(actions.canManageRoles);
@@ -236,6 +237,7 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
     if (open) {
       setName("");
       setPermissions([]);
+      setColor("#c269c2");
       setError("");
     }
   }, [open]);
@@ -244,7 +246,7 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
     setBusy(true);
     setError("");
     try {
-      const data = await api("/api/roles", { method: "POST", body: JSON.stringify({ name, permissions }) });
+      const data = await api("/api/roles", { method: "POST", body: JSON.stringify({ name, permissions, color }) });
       await onCreated(data.role.name);
       onClose();
     } catch (err) {
@@ -261,6 +263,7 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
         <div className="space-y-4 p-5">
           {error ? <p className="rounded-lg border border-red-500/30 px-3 py-2 text-sm text-red-300">{error}</p> : null}
           <TextInput label="Role name" sampleText="moderator" locked={!canCreate || busy} value={name} onChange={(event) => setName(event.target.value)} />
+          <ColorPicker label="Role color" locked={!canCreate || busy} value={color} onChange={setColor} />
           <MultiSelect label="Initial permissions" options={ALL_PERMISSIONS.map((permission) => ({ label: permission, value: permission }))} value={permissions} onChange={setPermissions} locked={!canCreate || busy} placeholder="Select permissions" />
           <Button size="sm" variant={canCreate ? "green" : "locked"} disabled={busy} locked={!canCreate} onClick={submit}>Create role</Button>
         </div>
@@ -269,15 +272,25 @@ function CreateRoleModal({ open, actions, onClose, onCreated }) {
   );
 }
 
-function UserRow({ user, roleRanks, onClick }) {
+function UserRow({ user, roleRanks, roleColors, onClick }) {
   const highestRole = getHighestRole(user, roleRanks);
-  return <article className="cursor-pointer px-4 py-3 hover:bg-card/50" onClick={onClick}><div className="flex gap-3"><ProfilePicture className="mt-0.5 border-accent/40 bg-accent/15" size="sm" username={user.username} email={user.email} /><div className="min-w-0 flex-1"><Tag variant={highestRole === "default" ? "subtle" : "accent"}>{formatRole(highestRole)}</Tag><h2 className="mt-2 text-base font-semibold text-heading">{user.username || "Unnamed user"}</h2><p className="truncate text-sm text-muted">{user.email || "No email"}</p><p className="mt-2 truncate text-xs text-subtle">{getJoinedDate(user)}</p></div></div></article>;
+  return (
+    <article className="cursor-pointer px-4 py-4 hover:bg-card/50" onClick={onClick}>
+      <div className="flex items-start gap-4">
+        <ProfilePicture className="mt-0.5 border-accent/40 bg-accent/15" size="sm" username={user.username} email={user.email} />
+        <div className="min-w-0 flex-1">
+          <Tag color={roleColors.get(highestRole)}>{formatRole(highestRole)}</Tag>
+          <h2 className="mt-2 text-base font-semibold text-heading">{user.username || "Unnamed user"}</h2>
+        </div>
+      </div>
+    </article>
+  );
 }
 
 function RoleRow({ role, canDrag, dragging, onClick, onDragStart, onDragEnter, onDragEnd }) {
   return (
     <article
-      className={`px-4 py-3 transition ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} ${dragging ? "bg-card/70 opacity-70" : "hover:bg-card/50"}`}
+      className={`px-4 py-4 transition ${canDrag ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} ${dragging ? "bg-card/70 opacity-70" : "hover:bg-card/50"}`}
       draggable={canDrag}
       onClick={onClick}
       onDragStart={onDragStart}
@@ -286,11 +299,11 @@ function RoleRow({ role, canDrag, dragging, onClick, onDragStart, onDragEnter, o
       onDragEnd={onDragEnd}
       title={canDrag ? "Drag to change role hierarchy" : undefined}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         {canDrag ? <span className="select-none text-lg leading-none text-muted" aria-hidden="true">⋮⋮</span> : null}
         <div className="min-w-0">
-          <h2 className="font-semibold text-heading">{formatRole(role.name)}</h2>
-          <p className="mt-1 text-sm text-muted">{(role.permissions ?? []).length} permissions</p>
+          <Tag color={role.color}>{formatRole(role.name)}</Tag>
+          <p className="mt-2 text-sm text-muted">{(role.permissions ?? []).length} permissions</p>
         </div>
       </div>
     </article>
@@ -333,6 +346,7 @@ export default function UserManagementSettings() {
   const handleScroll = () => { setIsScrolling(true); if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current); scrollTimeoutRef.current = setTimeout(() => setIsScrolling(false), 700); };
   const sortedRoles = useMemo(() => sortRolesByHierarchy(roles), [roles]);
   const roleRanks = useMemo(() => new Map(sortedRoles.map((role, index) => [role.name, index])), [sortedRoles]);
+  const roleColors = useMemo(() => new Map(sortedRoles.map((role) => [role.name, role.color])), [sortedRoles]);
   const visibleUsers = useMemo(() => users.filter((u) => matchesQuery([u.username, u.email, u.id, getHighestRole(u, roleRanks)], query)), [users, roleRanks, query]);
   const visibleRoles = useMemo(() => sortedRoles.filter((r) => matchesQuery([r.name, formatRole(r.name), ...(r.permissions ?? [])], query)), [sortedRoles, query]);
   const selectedUser = users.find((user) => user.id === selectedUserId);
@@ -354,6 +368,7 @@ export default function UserManagementSettings() {
     if (!actions.canManageRoles || !draggedRoleName || draggedRoleName === targetRoleName) return;
     setRoles((currentRoles) => {
       const ordered = sortRolesByHierarchy(currentRoles);
+      if (!ordered.find((role) => role.name === targetRoleName)?.manageable) return currentRoles;
       const fromIndex = ordered.findIndex((role) => role.name === draggedRoleName);
       const toIndex = ordered.findIndex((role) => role.name === targetRoleName);
       if (fromIndex === -1 || toIndex === -1 || fromIndex === toIndex) return currentRoles;
@@ -417,7 +432,7 @@ export default function UserManagementSettings() {
       {page === "roles" ? <SaveConfirmation show={roleHierarchyDirty} busy={roleHierarchySaving} onReset={resetRoleHierarchy} onSave={saveRoleHierarchy} /> : null}
       {roleHierarchyError ? <p className="text-sm text-red-300">{roleHierarchyError}</p> : null}
       {status ? <p className="text-sm text-muted">{status}</p> : null}
-      {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} roleRanks={roleRanks} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<RoleRow role={role} canDrag={Boolean(actions.canManageRoles)} dragging={draggingRoleName === role.name} onClick={() => handleRoleClick(role.name)} onDragStart={(event) => handleRoleDragStart(role.name, event)} onDragEnter={() => handleRoleDragEnter(role.name)} onDragEnd={handleRoleDragEnd} /></div>)}</div></div> : null}
+      {!status ? <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator"><div className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`} onScroll={handleScroll}>{page === "users" ? visibleUsers.map((user, index) => <div key={user.id}>{index > 0 ? <Separator /> : null}<UserRow user={user} roleRanks={roleRanks} roleColors={roleColors} onClick={() => setSelectedUserId(user.id)} /></div>) : visibleRoles.map((role, index) => <div key={role.name}>{index > 0 ? <Separator /> : null}<RoleRow role={role} canDrag={Boolean(actions.canManageRoles && role.manageable)} dragging={draggingRoleName === role.name} onClick={() => handleRoleClick(role.name)} onDragStart={(event) => handleRoleDragStart(role.name, event)} onDragEnter={() => handleRoleDragEnter(role.name)} onDragEnd={handleRoleDragEnd} /></div>)}</div></div> : null}
       {!status && ((page === "users" && !visibleUsers.length) || (page === "roles" && !visibleRoles.length)) ? <p className="text-center text-sm text-muted">No {page} found.</p> : null}
       <UserDetailsModal user={selectedUser} roles={roles} actions={actions} onClose={() => setSelectedUserId(null)} onChanged={load} />
       <RoleDetailsModal role={selectedRole} actions={actions} onClose={() => setSelectedRoleName(null)} onChanged={load} />

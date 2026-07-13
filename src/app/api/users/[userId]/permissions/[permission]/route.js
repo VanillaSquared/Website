@@ -14,7 +14,7 @@ export async function DELETE(request, { params }) {
   if (auth.error) return auth.error;
 
   const { userId, permission } = await params;
-  const target = await getMutableTargetUser(userId);
+  const target = await getMutableTargetUser(userId, auth.user);
   if (target.error) return target.error;
 
   if (!isValidPermission(permission)) return NextResponse.json({ error: "Invalid permission" }, { status: 400 });

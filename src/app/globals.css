@@ -14,6 +14,14 @@
   --vsq-surface-header: rgb(23 23 23 / 0.75);
   --vsq-surface-modal: #1b1b1b;
   --vsq-surface-tag: #2d2d2d;
+  --vsq-role-color-owner: #e20d3f;
+  --vsq-role-color-developer: #8a15db;
+  --vsq-role-color-support: #00a4e5;
+  --vsq-role-color-default: #9ca3af;
+  --vsq-role-color-not-signed-in: #6b7280;
+  --vsq-role-color-custom-default: #c269c2;
+  --vsq-role-color-background-mix: 12%;
+  --vsq-role-color-border-mix: 42%;
   --vsq-tag-low-bg: rgb(52 211 153 / 0.1);
   --vsq-tag-low-border: rgb(52 211 153 / 0.4);
   --vsq-tag-low-text: #34d399;
@@ -112,6 +120,12 @@
   --vsq-button-green-hover: #2a8955;
   --vsq-button-green-outline: #43b978;
   --vsq-button-green-outline-hover: #3aa86b;
+}
+
+.role-color-tag {
+  color: var(--role-color, var(--vsq-role-color-custom-default));
+  background-color: color-mix(in srgb, var(--role-color, var(--vsq-role-color-custom-default)) var(--vsq-role-color-background-mix), transparent);
+  border-color: color-mix(in srgb, var(--role-color, var(--vsq-role-color-custom-default)) var(--vsq-role-color-border-mix), transparent);
 }
 
 @theme inline {

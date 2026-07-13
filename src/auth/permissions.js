@@ -29,6 +29,10 @@ export function isValidRoleName(role) {
   return typeof role === "string" && /^[a-z0-9_-]{1,64}$/i.test(role);
 }
 
+export function isValidRoleColor(color) {
+  return typeof color === "string" && /^#[0-9a-f]{6}$/i.test(color);
+}
+
 export async function isValidRole(role) {
   if (!isValidRoleName(role)) return false;
   return Boolean((await listRoles()).some((item) => item.name === role));

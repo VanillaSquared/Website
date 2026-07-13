@@ -7,6 +7,7 @@ import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Checkmark from "@/components/Checkmark";
+import ColorPicker from "@/components/ColorPicker";
 import FileUpload from "@/components/FileUpload";
 import ModalShowcase from "@/components/ModalShowcase";
 import MultiSelect from "@/components/MultiSelect";
@@ -61,6 +62,7 @@ const selectOptions = [
 
 export default function ComponentPreviewContent({ embedded = false } = {}) {
   const [designTab, setDesignTab] = useState("buttons");
+  const [previewColor, setPreviewColor] = useState("#c269c2");
 
   return (
     <>
@@ -93,7 +95,7 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
                 <div className="flex flex-wrap gap-3"><Button>Primary</Button><Button variant="green">Save</Button><Button variant="red">Delete</Button><Button variant="locked">Locked</Button></div>
               ) : null}
               {designTab === "inputs" ? (
-                <div className="grid gap-3 md:grid-cols-2"><TextInput label="Editable" sampleText="Type here" /><TextInput locked label="Locked" defaultValue="Unavailable" /></div>
+                <div className="grid gap-3 md:grid-cols-2"><TextInput label="Editable" sampleText="Type here" /><TextInput locked label="Locked" defaultValue="Unavailable" /><ColorPicker label="Color" value={previewColor} onChange={setPreviewColor} /><ColorPicker locked label="Locked color" value="#6b7280" /></div>
               ) : null}
               {designTab === "controls" ? (
                 <div className="grid gap-3 md:grid-cols-2"><Toggle label="Enabled" defaultChecked /><MultiSelect label="Multi select" options={selectOptions} defaultValue={["vanilla"]} /></div>
@@ -215,10 +217,14 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
                 maxCharacters={240}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Tag>Minecraft 26.2</Tag>
-              <Tag>Fabric</Tag>
-              <Tag>Java 25</Tag>
+            <div className="grid gap-4 md:grid-cols-2">
+              <ColorPicker label="Role color" value={previewColor} onChange={setPreviewColor} />
+              <div className="flex items-end gap-2 pb-2">
+                <Tag color={previewColor}>Custom role</Tag>
+                <Tag>Minecraft 26.2</Tag>
+                <Tag>Fabric</Tag>
+                <Tag>Java 25</Tag>
+              </div>
             </div>
           </section>
 

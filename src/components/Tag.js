@@ -9,11 +9,12 @@ const variants = {
   locked: "border-[var(--vsq-locked-border)] bg-[var(--vsq-locked-bg)] text-[var(--vsq-locked-text)]",
 };
 
-export default function Tag({ children, variant = "default", bordered = false, className = "" }) {
+export default function Tag({ children, variant = "default", color, bordered = false, className = "" }) {
   const borderClass = bordered ? "border" : "border";
+  const colorProps = color ? { className: "role-color-tag", style: { "--role-color": color } } : { className: variants[variant] ?? variants.default };
 
   return (
-    <span className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${borderClass} ${variants[variant] ?? variants.default} ${className}`}>
+    <span style={colorProps.style} className={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${borderClass} ${colorProps.className} ${className}`}>
       {children}
     </span>
   );

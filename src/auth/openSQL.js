@@ -4,12 +4,28 @@ const poolGlobalKey = Symbol.for("vanillasquared.mysql.pool");
 const initializedGlobalKey = Symbol.for("vanillasquared.mysql.initialized");
 
 const BUILT_IN_ROLE_PERMISSIONS = Object.freeze({
+  owner: ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"],
+  developer: ["design_test", "dev_options", "bypass_limits", "audit_log"],
+  support: ["bug_panel", "bypass_limits", "audit_log"],
   default: ["create_bugs", "view_bugs"],
   not_signed_in: ["view_bugs"],
-  support: ["bug_panel", "bypass_limits", "audit_log"],
-  developer: ["design_test", "dev_options", "bypass_limits", "audit_log"],
-  owner: ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "bypass_limits"],
 });
+
+const BUILT_IN_ROLE_COLORS = Object.freeze({
+  owner: "#e20d3f",
+  developer: "#8a15db",
+  support: "#00a4e5",
+  default: "#9ca3af",
+  not_signed_in: "#6b7280",
+});
+
+const LEGACY_BUILT_IN_ROLE_COLORS = Object.freeze({
+  owner: "#f59e0b",
+  developer: "#a855f7",
+  support: "#3b82f6",
+});
+
+const LEGACY_BUILT_IN_ROLE_NAMES = Object.freeze(["default", "not_signed_in", "support", "developer", "owner"]);
 
 let pool = globalThis[poolGlobalKey];
 let initialized = globalThis[initializedGlobalKey];
@@ -67,6 +83,7 @@ export async function initializeUsersTable() {
           CREATE TABLE IF NOT EXISTS roles (
             name VARCHAR(64) PRIMARY KEY,
             hierarchy_order INT NULL,
+            color CHAR(7) NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
           )
@@ -108,6 +125,12 @@ export async function initializeUsersTable() {
           // Older installs that already have this column do not need migration.
         }
 
+        try {
+          await getPool().query("ALTER TABLE roles ADD COLUMN color CHAR(7) NULL");
+        } catch {
+          // Older installs that already have this column do not need migration.
+        }
+
         await seedBuiltInRoles();
         await assignFirstUserOwnerRole();
 
@@ -134,6 +157,7 @@ async function seedBuiltInRoles() {
     const permissions = BUILT_IN_ROLE_PERMISSIONS[role];
     await getPool().execute("INSERT IGNORE INTO roles (name, hierarchy_order) VALUES (?, ?)", [role, index]);
     await getPool().execute("UPDATE roles SET hierarchy_order = ? WHERE name = ? AND hierarchy_order IS NULL", [index, role]);
+    await getPool().execute("UPDATE roles SET color = ? WHERE name = ? AND color IS NULL", [BUILT_IN_ROLE_COLORS[role], role]);
     for (const permission of permissions) {
       await getPool().execute("INSERT IGNORE INTO role_permissions (role, permission) VALUES (?, ?)", [role, permission]);
     }
@@ -141,6 +165,41 @@ async function seedBuiltInRoles() {
   const [unrankedRoles] = await getPool().execute("SELECT name FROM roles WHERE hierarchy_order IS NULL ORDER BY name");
   for (const [offset, row] of unrankedRoles.entries()) {
     await getPool().execute("UPDATE roles SET hierarchy_order = ? WHERE name = ?", [roleNames.length + offset, row.name]);
+  }
+  await Promise.all(Object.entries(LEGACY_BUILT_IN_ROLE_COLORS).map(([role, legacyColor]) => (
+    getPool().execute("UPDATE roles SET color = ? WHERE name = ? AND color = ?", [BUILT_IN_ROLE_COLORS[role], role, legacyColor])
+  )));
+  await migrateLegacyBuiltInRoleHierarchy();
+}
+
+async function migrateLegacyBuiltInRoleHierarchy() {
+  const placeholders = LEGACY_BUILT_IN_ROLE_NAMES.map(() => "?").join(", ");
+  const [legacyRoles] = await getPool().execute(
+    `SELECT name, hierarchy_order FROM roles WHERE name IN (${placeholders})`,
+    LEGACY_BUILT_IN_ROLE_NAMES
+  );
+  const roleOrders = new Map(legacyRoles.map((role) => [role.name, Number(role.hierarchy_order)]));
+  const baseRoleOrders = new Set([roleOrders.get("default"), roleOrders.get("not_signed_in")]);
+  const isLegacyHierarchy = roleOrders.get("owner") === 4
+    && roleOrders.get("developer") === 3
+    && roleOrders.get("support") === 2
+    && baseRoleOrders.size === 2
+    && baseRoleOrders.has(0)
+    && baseRoleOrders.has(1);
+  if (!isLegacyHierarchy) return;
+
+  const connection = await getPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    for (const [index, role] of Object.keys(BUILT_IN_ROLE_PERMISSIONS).entries()) {
+      await connection.execute("UPDATE roles SET hierarchy_order = ? WHERE name = ?", [index, role]);
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
   }
 }
 
@@ -171,6 +230,7 @@ function parseRole(row) {
   return {
     name: row.name,
     hierarchyOrder: Number(row.hierarchy_order ?? 0),
+    color: row.color ?? "#c269c2",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -286,10 +346,10 @@ export async function getRole(name) {
   return parseRole(rows[0]);
 }
 
-export async function createRole(name, permissions = []) {
+export async function createRole(name, permissions = [], color = "#c269c2") {
   await initializeUsersTable();
   const [rows] = await getPool().execute("SELECT COALESCE(MAX(hierarchy_order), -1) + 1 AS next_order FROM roles");
-  await getPool().execute("INSERT INTO roles (name, hierarchy_order) VALUES (?, ?)", [name, Number(rows[0]?.next_order ?? 0)]);
+  await getPool().execute("INSERT INTO roles (name, hierarchy_order, color) VALUES (?, ?, ?)", [name, Number(rows[0]?.next_order ?? 0), color]);
   await setRolePermissions(name, permissions);
   return getRole(name);
 }
@@ -309,6 +369,12 @@ export async function renameRole(role, name) {
     connection.release();
   }
   return getRole(name);
+}
+
+export async function setRoleColor(role, color) {
+  await initializeUsersTable();
+  await getPool().execute("UPDATE roles SET color = ? WHERE name = ?", [color, role]);
+  return getRole(role);
 }
 
 export async function deleteRole(role) {
