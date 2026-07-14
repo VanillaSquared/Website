@@ -6,6 +6,7 @@ export const AUDIT_LOG_TYPES = Object.freeze([
   "user_management",
   "user_action",
   "bug_reporter_action",
+  "comment_action",
   "bug_panel_action",
 ]);
 

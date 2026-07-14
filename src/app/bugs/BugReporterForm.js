@@ -8,7 +8,7 @@ import Preview from "@/components/Preview";
 import TextInput from "@/components/TextInput";
 import Toggle from "@/components/Toggle";
 
-export default function BugReporterForm({ categories, versions, authenticated, creatorUser, onCreated, mode = "create", report = null, onUpdated }) {
+export default function BugReporterForm({ categories, versions, priorities = [], statuses = [], authenticated, creatorUser, onCreated, mode = "create", report = null, onUpdated, canEditState = false }) {
   const [status, setStatus] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [resetKey, setResetKey] = useState(0);
@@ -97,6 +97,32 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         menuClassName="!w-64"
         defaultValue={report?.affectedVersions ?? []}
       />
+
+      {mode === "edit" && canEditState ? (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Preview
+            label="Priority"
+            name="priority"
+            multiple={false}
+            options={priorities}
+            defaultValue={report?.priority ?? "unset"}
+          />
+          <Preview
+            label="Status"
+            name="status"
+            multiple={false}
+            options={statuses}
+            defaultValue={report?.status ?? "Unconfirmed"}
+          />
+          <Preview
+            label="Fixed version"
+            name="fixedVersion"
+            multiple={false}
+            options={[{ value: "__not_fixed__", label: "Not fixed" }, ...versions]}
+            defaultValue={report?.fixedVersion ?? "__not_fixed__"}
+          />
+        </div>
+      ) : null}
 
       <Toggle
         key={`comments-${resetKey}`}

@@ -175,8 +175,10 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
             <h2 className="text-2xl font-semibold text-heading">Comments</h2>
             <Card title="Comment message" size="md">
               <ThreadRow
-                message={{ creatorUsername: "BugHunter", content: "Hover this message to reveal its edit and delete actions.", createdAt: new Date().toISOString() }}
+                message={{ creatorUsername: "BugHunter", content: "Hover this message to reveal its reaction, edit, and delete actions.", createdAt: new Date().toISOString(), reactions: [{ emoji: "🐛", count: 12, reacted: true }, { emoji: "👍", count: 4, reacted: false }] }}
                 canChange
+                canReact
+                onReact={() => {}}
                 onEdit={() => {}}
                 onDelete={() => {}}
               />

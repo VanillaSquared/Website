@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getAuthSubject, getTokenCookies } from "@/app/auth";
-import { getUserPermissions } from "@/auth/permissions";
+import { PERMISSIONS, getUserPermissions, hasResolvedPermission } from "@/auth/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +64,7 @@ export async function GET(request) {
   const permissions = await getUserPermissions(user);
   const body = { authenticated, user, permissions };
 
-  if (includeTokens && permissions.canViewStaffSettings) {
+  if (includeTokens && hasResolvedPermission(permissions, PERMISSIONS.DEV_OPTIONS)) {
     const tokens = await getTokenCookies();
 
     body.tokens = {

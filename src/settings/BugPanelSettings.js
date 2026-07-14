@@ -10,8 +10,10 @@ import SaveConfirmation from "@/components/SaveConfirmation";
 import Separator from "@/components/Separator";
 import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
+import Toggle from "@/components/Toggle";
 import UserMultiSelect from "@/components/UserMultiSelect";
 import useRetainedModalValue from "@/settings/useRetainedModalValue";
+import { formatEuropeanDateTime } from "@/utils/dateTime";
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -34,10 +36,22 @@ function typeLabel(type, options) {
 }
 
 function formatStatus(record) {
-  if (record.status === "revoked") return `Revoked ${new Date(record.revokedAt).toLocaleString()}`;
-  if (record.status === "expired") return `Expired ${new Date(record.expiresAt).toLocaleString()}`;
+  if (record.status === "revoked") return `Revoked ${formatEuropeanDateTime(record.revokedAt)}`;
+  if (record.status === "expired") return `Expired ${formatEuropeanDateTime(record.expiresAt)}`;
   if (record.permanent) return "Active · Permanent";
-  return `Active until ${new Date(record.expiresAt).toLocaleString()}`;
+  return `Active until ${formatEuropeanDateTime(record.expiresAt)}`;
+}
+
+function configState(value = {}) {
+  return {
+    amount: String(value.amount ?? 1),
+    duration: String(value.duration ?? "1d"),
+    reactionCountLimit: String(value.reactionCountLimit ?? 3200),
+    reactionTypeLimit: String(value.reactionTypeLimit ?? 20),
+    automodEnabled: value.automodEnabled ?? true,
+    blockedPhrases: Array.isArray(value.blockedPhrases) ? value.blockedPhrases.join("\n") : String(value.blockedPhrases ?? ""),
+    allowedLinkHosts: Array.isArray(value.allowedLinkHosts) ? value.allowedLinkHosts.join("\n") : String(value.allowedLinkHosts ?? ""),
+  };
 }
 
 function PunishmentHistoryModal({ user, records, types, onClose, onChanged }) {
@@ -86,7 +100,7 @@ function PunishmentHistoryModal({ user, records, types, onClose, onChanged }) {
                 <div>
                   <p className="text-sm font-semibold text-heading">{typeLabel(record.type, types)}</p>
                   <p className="text-xs text-muted">{formatStatus(record)}</p>
-                  <p className="mt-0.5 text-xs text-subtle">Created {new Date(record.createdAt).toLocaleString()}</p>
+                  <p className="mt-0.5 text-xs text-subtle">Created {formatEuropeanDateTime(record.createdAt)}</p>
                 </div>
                 {record.status === "active" ? (
                   <div className="flex gap-2">
@@ -127,8 +141,8 @@ function UserPunishmentRow({ user, records, onOpen }) {
 
 export default function BugPanelSettings() {
   const [tab, setTab] = useState("config");
-  const [config, setConfig] = useState({ amount: "1", duration: "1d" });
-  const [savedConfig, setSavedConfig] = useState({ amount: "1", duration: "1d" });
+  const [config, setConfig] = useState(() => configState());
+  const [savedConfig, setSavedConfig] = useState(() => configState());
   const [users, setUsers] = useState([]);
   const [punishments, setPunishments] = useState([]);
   const [types, setTypes] = useState([]);
@@ -142,7 +156,7 @@ export default function BugPanelSettings() {
 
   const loadConfig = useCallback(async () => {
     const data = await api("/api/bug-panel/config");
-    const next = { amount: String(data.config?.amount ?? 1), duration: String(data.config?.duration ?? "1d") };
+    const next = configState(data.config);
     setConfig(next);
     setSavedConfig(next);
   }, []);
@@ -167,7 +181,7 @@ export default function BugPanelSettings() {
     .map((user) => ({ user, records: punishments.filter((record) => record.userId === user.id) }))
     .filter((entry) => entry.records.length), [users, punishments]);
   const historyRecords = historyUser ? punishments.filter((record) => record.userId === historyUser.id) : [];
-  const configDirty = config.amount !== savedConfig.amount || config.duration !== savedConfig.duration;
+  const configDirty = Object.keys(config).some((key) => config[key] !== savedConfig[key]);
   const moderationDirty = selectedUsers.length > 0 || selectedTypes.length > 0 || duration.trim().length > 0;
 
   async function saveConfig() {
@@ -175,7 +189,7 @@ export default function BugPanelSettings() {
     setError("");
     try {
       const data = await api("/api/bug-panel/config", { method: "PUT", body: JSON.stringify(config) });
-      const next = { amount: String(data.config.amount), duration: String(data.config.duration) };
+      const next = configState(data.config);
       setConfig(next);
       setSavedConfig(next);
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
@@ -202,12 +216,22 @@ export default function BugPanelSettings() {
 
       {!status && tab === "config" ? (
         <div className="max-w-2xl space-y-5">
-          <h2 className="text-base font-semibold text-heading">Bug creation limit:</h2>
+          <h2 className="text-base font-semibold text-heading">Bug creation limit</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="Bug count" sampleText="1" filter="integer" value={config.amount} onChange={(event) => setConfig({ ...config, amount: event.target.value })} />
             <TextInput label="Time window" sampleText="1d" filter="timeLimit" value={config.duration} onChange={(event) => setConfig({ ...config, duration: event.target.value })} />
           </div>
           <p className="text-sm text-muted">Default users can create this many reports during the configured window unless they have bypass_limits.</p>
+          <h2 className="text-base font-semibold text-heading">Comment reaction limits</h2>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextInput label="Users per reaction" sampleText="3200" filter="integer" value={config.reactionCountLimit} onChange={(event) => setConfig({ ...config, reactionCountLimit: event.target.value })} />
+            <TextInput label="Different reactions per comment" sampleText="20" filter="integer" value={config.reactionTypeLimit} onChange={(event) => setConfig({ ...config, reactionTypeLimit: event.target.value })} />
+          </div>
+          <h2 className="text-base font-semibold text-heading">Comment automoderation</h2>
+          <Toggle label="Enable automoderation" description="Block configured phrases and links before comments are created or edited." checked={config.automodEnabled} onChange={(automodEnabled) => setConfig({ ...config, automodEnabled })} />
+          <TextInput label="Blocked words and phrases" sampleText="One word or phrase per line" lines={6} value={config.blockedPhrases} onChange={(event) => setConfig({ ...config, blockedPhrases: event.target.value })} />
+          <TextInput label="Allowed link hosts" sampleText={"minecraft.wiki\nyoutube.com\nyoutu.be"} lines={5} value={config.allowedLinkHosts} onChange={(event) => setConfig({ ...config, allowedLinkHosts: event.target.value })} />
+          <p className="text-sm text-muted">One hostname per line. Subdomains and links to this website are allowed automatically; other websites are blocked.</p>
           <SaveConfirmation show={configDirty} busy={busy} onReset={loadConfig} onSave={saveConfig} />
         </div>
       ) : null}

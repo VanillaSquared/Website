@@ -30,7 +30,7 @@ export async function GET(_request, { params }) {
   const { bug } = await params;
   const id = publicId(bug);
   if (!id) return error("Bug report not found.", 404);
-  return NextResponse.json({ comments: await listComments(id) }, { headers: { "Cache-Control": "no-store" } });
+  return NextResponse.json({ comments: await listComments(id, user?.id ?? null) }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request, { params }) {
@@ -52,11 +52,12 @@ export async function POST(request, { params }) {
       actorUserId: user.id,
       canWrite: hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS),
       bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
+      siteHostname: new URL(request.url).hostname,
       formData,
     });
     if (comment.error) return error(comment.error, comment.status ?? 400);
     await createAuditLog({
-      type: "bug_reporter_action",
+      type: "comment_action",
       action: "bug_comment.created",
       actorUserId: user.id,
       targetUserId: user.id,

@@ -372,26 +372,33 @@ function isFileLike(value) {
   return value && typeof value === "object" && typeof value.arrayBuffer === "function";
 }
 
-export function validateBugReportFormData(formData, { expectedCreatorUserId, existingFiles = null } = {}) {
+export function validateBugReportFormData(formData, { expectedCreatorUserId, existingFiles = null, canEditState = false } = {}) {
   const submittedCreatorUserId = getString(formData, "creatorUserId");
   const categoryValues = getAllStrings(formData, "category");
   const category = categoryValues[0] ?? "";
   const title = getString(formData, "title");
   const description = getString(formData, "description");
-  const priority = "unset";
-  const status = "Unconfirmed";
-  const fixed = false;
+  const priorityValues = formData.getAll("priority").map((value) => String(value).trim());
+  const statusValues = formData.getAll("status").map((value) => String(value).trim());
+  const fixedVersionValues = formData.getAll("fixedVersion").map((value) => String(value).trim());
+  const priority = canEditState ? priorityValues[0] ?? "" : "unset";
+  const status = canEditState ? statusValues[0] ?? "" : "Unconfirmed";
+  const fixed = status === "Fixed";
   const allowCommentsValues = formData.getAll("allowComments").map(String);
   const allowComments = allowCommentsValues.length === 1 && allowCommentsValues[0] === "on";
   const submittedAffectedVersions = getAllStrings(formData, "affectedVersions");
   const affectedVersions = [...new Set(submittedAffectedVersions)];
-  const fixedVersion = null;
+  const submittedFixedVersion = canEditState ? fixedVersionValues[0] ?? "" : "";
+  const fixedVersion = submittedFixedVersion === "__not_fixed__" ? null : (submittedFixedVersion || null);
   const files = formData.getAll("files").filter((file) => isFileLike(file) && file.size > 0);
   const submittedRetainedFileIds = getAllStrings(formData, "retainedFileIds");
   const retainedFileIds = [...new Set(submittedRetainedFileIds)];
   const existingFileIds = new Set((existingFiles ?? []).map((file) => file.id));
+  const protectedFields = canEditState
+    ? BUG_REPORT_SERVER_CONTROLLED_FIELDS.filter((field) => !["priority", "status", "fixedVersion"].includes(field))
+    : BUG_REPORT_SERVER_CONTROLLED_FIELDS;
 
-  const serverControlledFieldError = validateNoClientControlledFields(formData, BUG_REPORT_SERVER_CONTROLLED_FIELDS, "bug report field");
+  const serverControlledFieldError = validateNoClientControlledFields(formData, protectedFields, "bug report field");
 
   if (serverControlledFieldError) {
     return { error: serverControlledFieldError };
@@ -413,6 +420,18 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
     return { error: "Choose a valid bug report category." };
   }
 
+  if (canEditState && (priorityValues.length !== 1 || !BUG_REPORT_PRIORITIES.includes(priority))) {
+    return { error: "Choose a valid bug report priority." };
+  }
+
+  if (canEditState && (statusValues.length !== 1 || !BUG_REPORT_STATUSES.includes(status))) {
+    return { error: "Choose a valid bug report status." };
+  }
+
+  if (canEditState && (fixedVersionValues.length !== 1 || (fixedVersion !== null && !BUG_REPORT_VERSIONS.includes(fixedVersion)))) {
+    return { error: "Choose a valid fixed version." };
+  }
+
   if (title.length < MIN_TITLE_LENGTH || title.length > MAX_TITLE_LENGTH) {
     return { error: `Enter a title between ${MIN_TITLE_LENGTH} and ${MAX_TITLE_LENGTH} characters.` };
   }
@@ -426,7 +445,7 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
   }
 
   if (fixed && !BUG_REPORT_VERSIONS.includes(fixedVersion)) {
-    return { error: "Choose a valid fixed version." };
+    return { error: "Choose a fixed version for a fixed bug report." };
   }
 
   if (existingFiles === null && submittedRetainedFileIds.length) {
@@ -776,7 +795,7 @@ async function getLockedBugReport(connection, publicId) {
   return { report, files: fileRows.map((row) => mapBugReportFileRow(row, { includeStoragePath: true })) };
 }
 
-export async function updateBugReport({ publicId, actorUserId, canManage = false, formData }) {
+export async function updateBugReport({ publicId, actorUserId, canManage = false, canEditAny = false, canEditState = false, formData }) {
   await initializeBugReporterTables();
   const connection = await getPool().getConnection();
   let savedFiles = [];
@@ -789,7 +808,7 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
       await connection.rollback();
       return { error: "Bug report not found.", status: 404 };
     }
-    if (!canManage && current.report.creatorUserId !== actorUserId) {
+    if (!canManage && !canEditAny && current.report.creatorUserId !== actorUserId) {
       await connection.rollback();
       return { error: "Forbidden", status: 403 };
     }
@@ -797,6 +816,7 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
     const validated = validateBugReportFormData(formData, {
       expectedCreatorUserId: actorUserId,
       existingFiles: current.files,
+      canEditState,
     });
     if (validated.error) {
       await connection.rollback();
@@ -816,11 +836,16 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
       identity = await allocateCategoryIdentity(connection, update.category);
     }
 
+    const nextPriority = canEditState ? update.priority : current.report.priority;
+    const nextStatus = canEditState ? update.status : current.report.status;
+    const nextFixed = canEditState ? update.fixed : current.report.fixed;
+    const nextFixedVersion = canEditState ? update.fixedVersion : current.report.fixedVersion;
+
     await connection.execute(
       `UPDATE bug_reports
-       SET public_id = ?, category = ?, category_shortening = ?, category_sequence = ?, title = ?, description = ?, allow_comments = ?, affected_versions = ?
+       SET public_id = ?, category = ?, category_shortening = ?, category_sequence = ?, title = ?, description = ?, priority = ?, status = ?, fixed = ?, allow_comments = ?, affected_versions = ?, fixed_version = ?
        WHERE id = ?`,
-      [identity.publicId, update.category, identity.shortening, identity.sequence, update.title, update.description, update.allowComments, JSON.stringify(update.affectedVersions), current.report.id]
+      [identity.publicId, update.category, identity.shortening, identity.sequence, update.title, update.description, nextPriority, nextStatus, nextFixed, update.allowComments, JSON.stringify(update.affectedVersions), nextFixedVersion, current.report.id]
     );
 
     if (removedFiles.length) {
@@ -848,8 +873,12 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
       categorySequence: identity.sequence,
       title: update.title,
       description: update.description,
+      priority: nextPriority,
+      status: nextStatus,
+      fixed: nextFixed,
       allowComments: update.allowComments,
       affectedVersions: update.affectedVersions,
+      fixedVersion: nextFixedVersion,
     };
 
     return {

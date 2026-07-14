@@ -11,7 +11,7 @@ import Toggle from "@/components/Toggle";
 
 import BugReporterForm from "../BugReporterForm";
 
-export default function BugReportActions({ report, categories, versions, creatorUser, canEdit, canDelete, canToggleComments = false }) {
+export default function BugReportActions({ report, categories, versions, priorities, statuses, creatorUser, canEdit, canEditState = false, canDelete, canToggleComments = false }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -106,8 +106,11 @@ export default function BugReportActions({ report, categories, versions, creator
               report={report}
               categories={categories}
               versions={versions}
+              priorities={priorities}
+              statuses={statuses}
               authenticated
               creatorUser={creatorUser}
+              canEditState={canEditState}
               onUpdated={handleUpdated}
             />
           </div>

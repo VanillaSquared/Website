@@ -29,9 +29,9 @@ export async function PUT(request) {
     const config = await updateBugLimitConfig(body);
     await createAuditLog({
       type: "bug_panel_action",
-      action: "bug_limit_config.updated",
+      action: "bug_panel_config.updated",
       actorUserId: auth.user.id,
-      summary: `${auth.user.username} updated bug report limits.`,
+      summary: `${auth.user.username} updated bug panel configuration.`,
       beforeData: beforeConfig,
       afterData: config,
     });

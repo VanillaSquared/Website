@@ -40,16 +40,19 @@ export async function PATCH(request, { params }) {
   const context = await authenticatedContext(params);
   if (context.error) return context.error;
   const body = await request.json().catch(() => ({}));
+  const canManage = hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_COMMENTS);
+  if (!canManage && !hasResolvedPermission(context.authorization, PERMISSIONS.WRITE_COMMENTS)) return responseError("Forbidden", 403);
   try {
     const result = await updateComment({
       commentId: context.commentId,
       actorUserId: context.user.id,
-      canManage: hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_COMMENTS),
+      canManage,
+      siteHostname: new URL(request.url).hostname,
       content: body.content,
     });
     if (result.error) return responseError(result.error, result.status ?? 400);
     await createAuditLog({
-      type: "bug_reporter_action",
+      type: "comment_action",
       action: "bug_comment.updated",
       actorUserId: context.user.id,
       targetUserId: result.after.creatorUserId,
@@ -70,15 +73,17 @@ export async function DELETE(request, { params }) {
   if (blocked) return blocked;
   const context = await authenticatedContext(params);
   if (context.error) return context.error;
+  const canManage = hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_COMMENTS);
+  if (!canManage && !hasResolvedPermission(context.authorization, PERMISSIONS.WRITE_COMMENTS)) return responseError("Forbidden", 403);
   try {
     const result = await deleteComment({
       commentId: context.commentId,
       actorUserId: context.user.id,
-      canManage: hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_COMMENTS),
+      canManage,
     });
     if (result.error) return responseError(result.error, result.status ?? 400);
     await createAuditLog({
-      type: "bug_reporter_action",
+      type: "comment_action",
       action: "bug_comment.deleted",
       actorUserId: context.user.id,
       targetUserId: result.before.creatorUserId,

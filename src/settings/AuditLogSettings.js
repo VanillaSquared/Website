@@ -9,20 +9,21 @@ import MultiSelect from "@/components/MultiSelect";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import UserMultiSelect from "@/components/UserMultiSelect";
+import { formatEuropeanDateTime } from "@/utils/dateTime";
 
 const TABS = [
   { label: "All", value: "all" },
   { label: "User Management", value: "user_management" },
   { label: "User Actions", value: "user_action" },
   { label: "Bug Reporter", value: "bug_reporter_action" },
+  { label: "Comments", value: "comment_action" },
   { label: "Bug Panel", value: "bug_panel_action" },
 ];
 
 const TYPE_LABELS = Object.fromEntries(TABS.map((tab) => [tab.value, tab.label]));
 
 function formatDate(value) {
-  const date = value ? new Date(value) : null;
-  return date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "Unknown time";
+  return formatEuropeanDateTime(value);
 }
 
 function JsonBlock({ title, value }) {

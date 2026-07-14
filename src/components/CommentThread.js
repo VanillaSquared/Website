@@ -5,8 +5,8 @@ import { useState } from "react";
 import Button from "@/components/Button";
 import MessageComposer from "@/components/MessageComposer";
 import Modal from "@/components/Modal";
-import Separator from "@/components/Separator";
 import ThreadRow from "@/components/ThreadRow";
+import useDeveloperMode from "@/hooks/useDeveloperMode";
 
 async function requestJson(path, options) {
   const response = await fetch(path, { credentials: "same-origin", cache: "no-store", ...options });
@@ -22,11 +22,26 @@ export default function CommentThread({ publicId, initialComments = [], currentU
   const [editContent, setEditContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [developerMode] = useDeveloperMode();
   const basePath = `/api/bugs/${encodeURIComponent(publicId)}/comments`;
 
   async function create(formData) {
     const result = await requestJson(basePath, { method: "POST", body: formData });
     setComments((items) => [...items, result.comment]);
+  }
+
+  async function react(comment, emoji) {
+    setError("");
+    try {
+      const result = await requestJson(`${basePath}/${encodeURIComponent(comment.id)}/reactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emoji }),
+      });
+      setComments((items) => items.map((item) => item.id === comment.id ? { ...item, reactions: result.reactions } : item));
+    } catch (cause) {
+      setError(cause.message);
+    }
   }
 
   function openEdit(comment) {
@@ -73,21 +88,35 @@ export default function CommentThread({ publicId, initialComments = [], currentU
         <h2 id="comments-heading" className="text-lg font-semibold text-heading">Comments</h2>
         <span className="text-xs text-muted">{comments.length}</span>
       </div>
-      <div className="mt-2 divide-y divide-divider">
-        {comments.map((comment) => (
-          <ThreadRow
-            key={comment.id}
-            message={comment}
-            canChange={canManage || Boolean(currentUserId && comment.creatorUserId === currentUserId)}
-            onEdit={() => openEdit(comment)}
-            onDelete={() => { setDeleting(comment); setError(""); }}
-            attachmentHref={(message) => `${basePath}/${encodeURIComponent(message.id)}/attachment/${encodeURIComponent(message.attachment.id)}`}
-          />
-        ))}
+      <div className="mt-2">
+        {comments.map((comment, index) => {
+          const previous = comments[index - 1];
+          const grouped = Boolean(
+            previous?.creatorUserId
+            && previous.creatorUserId === comment.creatorUserId
+            && !previous.reactions?.length
+            && !comment.reactions?.length
+          );
+          return (
+            <ThreadRow
+              key={comment.id}
+              message={comment}
+              grouped={grouped}
+              canCopyId={developerMode}
+              canChange={canManage || Boolean(currentUserId && comment.creatorUserId === currentUserId)}
+              canReact={Boolean(allowComments && canWrite && currentUserId)}
+              onReact={(emoji) => react(comment, emoji)}
+              onEdit={() => openEdit(comment)}
+              onDelete={() => { setDeleting(comment); setError(""); }}
+              attachmentHref={(message) => `${basePath}/${encodeURIComponent(message.id)}/attachment/${encodeURIComponent(message.attachment.id)}`}
+            />
+          );
+        })}
       </div>
       {!comments.length && allowComments ? <p className="py-4 text-sm italic text-muted">No comments yet.</p> : null}
-      <Separator className="mb-4" />
+      {error && !editing && !deleting ? <p className="mb-3 text-sm text-error">{error}</p> : null}
       <MessageComposer
+        className={comments.length ? "mt-3" : ""}
         onSubmit={create}
         disabled={!allowComments || !canWrite}
         disabledMessage={!allowComments ? "Comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment.")}

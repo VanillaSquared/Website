@@ -62,6 +62,8 @@
   --vsq-border-input: #343434;
   --vsq-border-input-hover: #424242;
   --vsq-border-input-focus: #525252;
+  --vsq-border-message-composer: #2b2b2b;
+  --vsq-border-message-composer-hover: #383838;
   --vsq-search-placeholder: #8f8f8f;
   --vsq-input-sample: #6b7280;
   --vsq-locked-bg: #151515;
@@ -152,6 +154,8 @@
   --color-input-border: var(--vsq-border-input);
   --color-input-border-hover: var(--vsq-border-input-hover);
   --color-input-border-focus: var(--vsq-border-input-focus);
+  --color-message-composer-border: var(--vsq-border-message-composer);
+  --color-message-composer-border-hover: var(--vsq-border-message-composer-hover);
   --color-search-border-hover: var(--vsq-border-search-hover);
   --color-search-focus: var(--vsq-border-search-focus);
   --color-search-placeholder: var(--vsq-search-placeholder);

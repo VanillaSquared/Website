@@ -36,8 +36,9 @@ export async function PATCH(request, { params }) {
   const context = await getRequestContext();
   if (context.error) return context.error;
   const canManage = hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_BUGS);
-  const canEditFields = canManage || hasResolvedPermission(context.authorization, PERMISSIONS.EDIT_BUGS);
-  const canToggleAny = hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL);
+  const canUseBugPanel = hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL);
+  const canEditFields = canManage || canUseBugPanel || hasResolvedPermission(context.authorization, PERMISSIONS.EDIT_BUGS);
+  const canToggleAny = canUseBugPanel;
   const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
 
   try {
@@ -69,6 +70,8 @@ export async function PATCH(request, { params }) {
         publicId,
         actorUserId: context.user.id,
         canManage,
+        canEditAny: canUseBugPanel,
+        canEditState: canUseBugPanel,
         formData,
       });
     }

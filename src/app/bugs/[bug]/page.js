@@ -4,12 +4,13 @@ import { getAuthSubject } from "@/app/auth";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import { listComments } from "@/bugs/comments";
-import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_VERSIONS, getBugReportByPublicId } from "@/bugs/reporter";
+import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_PRIORITIES, BUG_REPORT_STATUSES, BUG_REPORT_VERSIONS, getBugReportByPublicId } from "@/bugs/reporter";
 import AttachmentList from "@/components/AttachmentList";
 import Checkmark from "@/components/Checkmark";
 import CommentThread from "@/components/CommentThread";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
+import { formatEuropeanDateTime } from "@/utils/dateTime";
 
 import BugReportActions from "./BugReportActions";
 
@@ -46,14 +47,7 @@ const statusDetailColors = {
 };
 
 function formatDate(value) {
-  if (!value) {
-    return "Unknown";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+  return formatEuropeanDateTime(value, { dateStyle: "medium", timeStyle: "short" }, "Unknown");
 }
 
 export async function generateMetadata({ params }) {
@@ -86,16 +80,17 @@ export default async function BugViewPage({ params }) {
   const user = subject?.properties ?? null;
   const authorization = user?.id ? await getAuthorizationForUser(user) : null;
   const canManage = authorization ? hasResolvedPermission(authorization, PERMISSIONS.MANAGE_BUGS) : false;
-  const canEdit = canManage || Boolean(
+  const canUseBugPanel = authorization ? hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL) : false;
+  const canEdit = canManage || canUseBugPanel || Boolean(
     authorization
     && bug.creatorUserId === user.id
     && hasResolvedPermission(authorization, PERMISSIONS.EDIT_BUGS)
   );
   const canToggleComments = Boolean(authorization && (
     bug.creatorUserId === user.id
-    || hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL)
+    || canUseBugPanel
   ));
-  const comments = await listComments(bug.publicId);
+  const comments = await listComments(bug.publicId, user?.id ?? null);
   const canWriteComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS));
   const canManageComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.MANAGE_COMMENTS));
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
@@ -137,8 +132,11 @@ export default async function BugViewPage({ params }) {
               report={bug}
               categories={BUG_REPORT_CATEGORY_CONFIGS}
               versions={BUG_REPORT_VERSIONS}
+              priorities={BUG_REPORT_PRIORITIES}
+              statuses={BUG_REPORT_STATUSES}
               creatorUser={user}
               canEdit={canEdit}
+              canEditState={canUseBugPanel}
               canDelete={canManage}
               canToggleComments={canToggleComments}
             />

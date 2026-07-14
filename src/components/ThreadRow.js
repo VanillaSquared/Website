@@ -1,25 +1,40 @@
+import copyIcon from "@/assets/icons/copy.svg";
 import editIcon from "@/assets/icons/edit.svg";
 import deleteIcon from "@/assets/icons/trash.svg";
 import AttachmentList from "@/components/AttachmentList";
+import EmojiPicker from "@/components/EmojiPicker";
 import Button from "@/components/Button";
 import ProfilePicture from "@/components/ProfilePicture";
+import { formatEuropeanDateTime, formatEuropeanTime } from "@/utils/dateTime";
 
-function formatTime(value) {
-  if (!value) return "Unknown time";
-  return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
-}
-
-export default function ThreadRow({ message, canChange = false, onEdit, onDelete, attachmentHref }) {
+export default function ThreadRow({ message, grouped = false, canCopyId = false, canChange = false, canReact = false, onEdit, onDelete, onReact, attachmentHref }) {
   return (
-    <article className="group/message relative -mx-3 flex gap-3 rounded-lg px-3 py-4 transition-colors hover:bg-input-hover focus-within:bg-input-hover">
-      <ProfilePicture size="sm" username={message.creatorUsername} className="!h-9 !w-9 !rounded-xl !text-xs" />
+    <article className={`group/message relative -mx-3 flex gap-3 rounded-lg px-3 transition-colors hover:bg-input-hover focus-within:bg-input-hover ${grouped ? "py-0.5" : "py-2"}`}>
+      {grouped ? (
+        <time className="w-9 shrink-0 self-center whitespace-nowrap text-center text-[10px] leading-none text-subtle opacity-0 transition-opacity group-hover/message:opacity-100 group-focus-within/message:opacity-100" dateTime={String(message.createdAt)}>
+          {formatEuropeanTime(message.createdAt)}
+        </time>
+      ) : (
+        <ProfilePicture size="sm" username={message.creatorUsername} className="mt-1 !h-9 !w-9 !rounded-xl !text-xs" />
+      )}
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <h3 className="text-sm font-semibold text-heading">{message.creatorUsername}</h3>
-          <time className="text-xs text-muted" dateTime={String(message.createdAt)}>{formatTime(message.createdAt)}</time>
-          {message.editedAt ? <span className="text-xs text-subtle">edited {formatTime(message.editedAt)}</span> : null}
-        </div>
-        <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-soft">{message.content}</p>
+        {!grouped ? (
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            <h3 className="text-sm font-semibold text-heading">{message.creatorUsername}</h3>
+            <time className="text-xs text-muted" dateTime={String(message.createdAt)}>{formatEuropeanDateTime(message.createdAt)}</time>
+            {message.editedAt ? <span className="text-xs text-subtle">edited {formatEuropeanDateTime(message.editedAt)}</span> : null}
+          </div>
+        ) : null}
+        <p className={`${grouped ? "flex min-h-6 items-center" : "mt-1"} whitespace-pre-wrap break-words text-sm leading-6 text-soft`}>{message.content}</p>
+        {message.reactions?.length ? (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            {message.reactions.map((reaction) => (
+              <button key={reaction.emoji} type="button" disabled={!canReact} onClick={() => onReact?.(reaction.emoji)} className={`flex h-8 items-center gap-1.5 rounded-lg border px-2 text-sm leading-none transition-colors ${reaction.reacted ? "border-control-accent bg-control-accent-soft text-heading" : "border-control-border bg-control text-soft hover:border-control-border-hover"} disabled:cursor-not-allowed disabled:opacity-60`}>
+                <span className="inline-flex items-center text-base leading-none">{reaction.emoji}</span><span className="leading-none">{reaction.count}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
         {message.attachment ? (
           <AttachmentList
             files={[message.attachment]}
@@ -30,10 +45,12 @@ export default function ThreadRow({ message, canChange = false, onEdit, onDelete
             getHref={() => attachmentHref(message)}
           />
         ) : null}
-        {canChange ? (
-          <div className="absolute -top-4 right-3 z-10 flex translate-y-1 overflow-hidden rounded-md border border-control-border bg-control-panel opacity-0 shadow-lg transition-all group-hover/message:translate-y-0 group-hover/message:opacity-100 group-focus-within/message:translate-y-0 group-focus-within/message:opacity-100">
-            <Button size="icon" variant="iconButton" icon={editIcon} iconClassName="h-4 w-4" className="!h-9 !w-9 !rounded-none text-muted hover:text-heading" aria-label="Edit comment" onClick={onEdit} />
-            <Button size="icon" variant="iconButton" icon={deleteIcon} iconClassName="h-4 w-4" className="!h-9 !w-9 !rounded-none text-muted hover:text-error" aria-label="Delete comment" onClick={onDelete} />
+        {canCopyId || canChange || canReact ? (
+          <div className="absolute -top-4 right-3 z-10 flex translate-y-1 overflow-visible rounded-md border border-control-border bg-control-panel opacity-0 shadow-lg transition-all group-hover/message:translate-y-0 group-hover/message:opacity-100 group-focus-within/message:translate-y-0 group-focus-within/message:opacity-100">
+            {canReact ? <EmojiPicker onSelect={onReact} buttonClassName={`!h-9 !w-9 ${canCopyId || canChange ? "!rounded-l-[5px] !rounded-r-none" : "!rounded-[5px]"}`} iconClassName="h-5 w-5" /> : null}
+            {canCopyId ? <Button size="icon" variant="iconButton" icon={copyIcon} iconClassName="h-4 w-4" className={`!h-9 !w-9 text-muted hover:text-heading ${canReact ? "!rounded-l-none" : "!rounded-l-[5px]"} ${canChange ? "!rounded-r-none" : "!rounded-r-[5px]"}`} aria-label="Copy comment ID" title="Copy comment ID" onClick={() => navigator.clipboard?.writeText(message.id)} /> : null}
+            {canChange ? <Button size="icon" variant="iconButton" icon={editIcon} iconClassName="h-4 w-4" className={`!h-9 !w-9 !rounded-none text-muted hover:text-heading ${canReact || canCopyId ? "" : "!rounded-l-[5px]"}`} aria-label="Edit comment" onClick={onEdit} /> : null}
+            {canChange ? <Button size="icon" variant="iconButton" icon={deleteIcon} iconClassName="h-4 w-4" className="!h-9 !w-9 !rounded-l-none !rounded-r-[5px] text-muted hover:text-error" aria-label="Delete comment" onClick={onDelete} /> : null}
           </div>
         ) : null}
       </div>

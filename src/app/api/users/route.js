@@ -35,6 +35,8 @@ export async function GET() {
 export async function PATCH(request) {
   const blocked = guardSameOriginRequest(request);
   if (blocked) return blocked;
+  const auth = await requireApiPermission(PERMISSIONS.MANAGE_USER);
+  if (auth.error) return auth.error;
 
   return jsonError("Use /api/users/[userId] to update a user.", 404);
 }
@@ -42,6 +44,8 @@ export async function PATCH(request) {
 export async function DELETE(request) {
   const blocked = guardSameOriginRequest(request);
   if (blocked) return blocked;
+  const auth = await requireApiPermission(PERMISSIONS.DELETE_USER);
+  if (auth.error) return auth.error;
 
   return jsonError("Use /api/users/[userId] to delete a user.", 404);
 }

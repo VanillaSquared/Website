@@ -5,7 +5,7 @@ const initializedGlobalKey = Symbol.for("vanillasquared.mysql.initialized");
 
 const BUILT_IN_ROLE_PERMISSIONS = Object.freeze({
   owner: ["bug_panel", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "edit_bugs", "manage_bugs", "write_comments", "manage_comments", "bypass_limits"],
-  developer: ["design_test", "dev_options", "bypass_limits", "audit_log"],
+  developer: ["bug_panel", "design_test", "dev_options", "bypass_limits", "audit_log"],
   support: ["bug_panel", "manage_bugs", "manage_comments", "bypass_limits", "audit_log"],
   default: ["create_bugs", "view_bugs", "edit_bugs", "write_comments"],
   not_signed_in: ["view_bugs"],

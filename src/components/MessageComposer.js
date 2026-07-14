@@ -6,7 +6,7 @@ import plusIcon from "@/assets/icons/plus.svg";
 import Button from "@/components/Button";
 import EmojiPicker from "@/components/EmojiPicker";
 
-export default function MessageComposer({ onSubmit, disabled = false, disabledMessage = "", disabledHref = "", placeholder = "Write a comment..." }) {
+export default function MessageComposer({ onSubmit, disabled = false, disabledMessage = "", disabledHref = "", placeholder = "Write a comment...", className = "" }) {
   const [content, setContent] = useState("");
   const [fileName, setFileName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -44,22 +44,14 @@ export default function MessageComposer({ onSubmit, disabled = false, disabledMe
 
   if (disabled) {
     const message = disabledMessage || "Comments are unavailable.";
-    const classes = "block w-full rounded-xl border border-locked-input-border bg-locked-input px-4 py-3 text-sm text-locked-text";
+    const classes = `block w-full rounded-xl border border-locked-input-border bg-locked-input px-4 py-3 text-sm text-locked-text ${className}`;
     return disabledHref ? <a href={disabledHref} className={`${classes} hover:text-soft`}>{message}</a> : <div className={classes} aria-disabled="true">{message}</div>;
   }
 
   return (
-    <form onSubmit={submit} className="space-y-2">
-      <div className="flex min-h-14 items-end gap-1 rounded-xl bg-input px-2 py-2 focus-within:ring-1 focus-within:ring-input-border-focus">
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={busy}
-          className="mb-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted text-input transition-colors hover:bg-soft disabled:opacity-50"
-          aria-label="Attach a file"
-        >
-          <span className="h-4 w-4 bg-current" style={{ WebkitMask: `url(${plusIcon.src}) center / contain no-repeat`, mask: `url(${plusIcon.src}) center / contain no-repeat` }} />
-        </button>
+    <form onSubmit={submit} className={`space-y-2 ${className}`}>
+      <div className="flex min-h-14 items-center gap-1 rounded-xl border border-message-composer-border bg-input px-2 py-2 transition-colors hover:border-message-composer-border-hover focus-within:border-message-composer-border-hover">
+        <Button type="button" variant="iconButton" size="icon" icon={plusIcon} iconClassName="h-6 w-6" className="!h-10 !w-10 shrink-0 !rounded-lg text-muted hover:text-heading" onClick={() => fileRef.current?.click()} disabled={busy} aria-label="Attach a file" />
         <input ref={fileRef} type="file" name="attachment" accept=".log,.png,.txt,.json,.html" className="sr-only" onChange={(event) => setFileName(event.target.files?.[0]?.name ?? "")} />
         <textarea
           ref={textRef}
@@ -72,10 +64,10 @@ export default function MessageComposer({ onSubmit, disabled = false, disabledMe
           rows={1}
           required
           disabled={busy}
-          className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-2 py-2 text-sm leading-5 text-heading outline-none placeholder:text-muted disabled:opacity-60"
+          className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2.5 text-sm leading-5 text-heading outline-none placeholder:text-muted disabled:opacity-60"
         />
         <EmojiPicker onSelect={addEmoji} disabled={busy} />
-        <Button type="submit" size="sm" className="mb-0.5 shrink-0" disabled={busy || !content.trim()}>{busy ? "Sending..." : "Send"}</Button>
+        <Button type="submit" variant="tertiary" size="sm" className="!h-10 shrink-0" disabled={busy || !content.trim()}>{busy ? "Sending..." : "Send"}</Button>
       </div>
       {fileName ? (
         <div className="flex items-center justify-between gap-3 rounded-lg bg-control px-3 py-2 text-xs text-soft">
