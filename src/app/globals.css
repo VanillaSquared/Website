@@ -373,6 +373,14 @@ body {
   margin-top: 0.25rem;
 }
 
+.docs-content > .docs-separator-compact-before {
+  margin-top: 0.125rem;
+}
+
+.docs-content > .docs-separator-compact-after + * {
+  margin-top: 0.125rem;
+}
+
 .docs-content p.docs-subheader {
   color: var(--vsq-text-subtle);
   font-size: 0.75rem;
@@ -395,7 +403,9 @@ body {
 .markdown-content > .markdown-subheader-compact-before,
 .markdown-content > .markdown-subheader-compact-after + *,
 .markdown-content > .markdown-heading-compact-before,
-.markdown-content > .markdown-heading-compact-after + * {
+.markdown-content > .markdown-heading-compact-after + *,
+.markdown-content > .markdown-separator-compact-before,
+.markdown-content > .markdown-separator-compact-after + * {
   margin-block-start: 0.125rem;
 }
 

@@ -61,24 +61,25 @@ function resolveLocalLinks(basePath) {
   };
 }
 
-function formatHeadingSpacing(source) {
+function formatBlockSpacing(source) {
   return () => (tree) => {
     const lines = source.split("\n");
 
     function visit(node) {
-      if (node.type === "heading" && node.position) {
+      if ((node.type === "heading" || node.type === "thematicBreak") && node.position) {
         const previousLine = lines[node.position.start.line - 2];
         const nextLine = lines[node.position.end.line];
         const compactBefore = previousLine !== undefined && previousLine.trim() !== "";
         const compactAfter = nextLine !== undefined && nextLine.trim() !== "";
+        const classPrefix = node.type === "heading" ? "docs-heading" : "docs-separator";
         node.data = {
           ...node.data,
           hProperties: {
             ...node.data?.hProperties,
             className: [
-              "docs-heading",
-              compactBefore ? "docs-heading-compact-before" : null,
-              compactAfter ? "docs-heading-compact-after" : null,
+              classPrefix,
+              compactBefore ? `${classPrefix}-compact-before` : null,
+              compactAfter ? `${classPrefix}-compact-after` : null,
             ].filter(Boolean),
           },
         };
@@ -126,7 +127,7 @@ export default async function DocsMarkdown({ source, basePath = "/docs" }) {
     components: docsComponents,
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders, formatHeadingSpacing(preparedSource), resolveLocalLinks(basePath)],
+        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders, formatBlockSpacing(preparedSource), resolveLocalLinks(basePath)],
         rehypePlugins: [rehypeSlug],
       },
     },

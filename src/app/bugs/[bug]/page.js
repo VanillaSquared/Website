@@ -7,6 +7,7 @@ import { listComments } from "@/bugs/comments";
 import { getBugLimitConfig } from "@/bugs/limits";
 import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_PRIORITIES, BUG_REPORT_STATUSES, getBugReportByPublicId } from "@/bugs/reporter";
 import AttachmentList from "@/components/AttachmentList";
+import AttachmentText from "@/components/AttachmentText";
 import Checkmark from "@/components/Checkmark";
 import CommentThread from "@/components/CommentThread";
 import Tag from "@/components/Tag";
@@ -150,7 +151,12 @@ export default async function BugViewPage({ params }) {
             />
           ) : null}
         </div>
-        <p className="whitespace-pre-wrap text-base leading-6 text-soft">{bug.description}</p>
+        <AttachmentText
+          value={bug.description}
+          files={bug.files}
+          getHref={(file) => `/api/bugs/${encodeURIComponent(bug.publicId)}/files/${encodeURIComponent(file.id)}`}
+          className="text-base leading-6"
+        />
         <div className="-mx-5 h-px bg-divider sm:-mx-7" />
         <AttachmentList files={bug.files} bugPublicId={bug.publicId} />
         <div className="-mx-5 h-px bg-divider sm:-mx-7" />

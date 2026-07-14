@@ -135,7 +135,7 @@ export default function BugReporterForm({ categories, versions, priorities = [],
       <FileUpload
         key={`files-${resetKey}`}
         label="Attachments"
-        description="Drop files here or click to upload."
+        description="Drop files here or click to upload. Reference a PNG in the description with @filename.png."
         name="files"
         multiple
         accept=".log,.png,.txt,.json,.html"

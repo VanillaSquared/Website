@@ -75,7 +75,14 @@ function renderText(text, keyPrefix) {
   lines.forEach((line, index) => {
     if (/^[ \t]*---[ \t]*$/.test(line)) {
       flushPlain();
-      blocks.push(<Separator key={`${keyPrefix}-separator-${index}`} className="my-2" />);
+      const compactBefore = index > 0 && lines[index - 1].trim() !== "";
+      const compactAfter = index < lines.length - 1 && lines[index + 1].trim() !== "";
+      blocks.push(
+        <Separator
+          key={`${keyPrefix}-separator-${index}`}
+          className={`markdown-separator ${compactBefore ? "markdown-separator-compact-before" : ""} ${compactAfter ? "markdown-separator-compact-after" : ""}`}
+        />,
+      );
       return;
     }
 

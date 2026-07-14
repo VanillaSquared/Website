@@ -2,6 +2,7 @@ import idIcon from "@/assets/icons/id.svg";
 import editIcon from "@/assets/icons/edit.svg";
 import deleteIcon from "@/assets/icons/trash.svg";
 import AttachmentList from "@/components/AttachmentList";
+import AttachmentText from "@/components/AttachmentText";
 import EmojiPicker from "@/components/EmojiPicker";
 import Button from "@/components/Button";
 import ProfilePicture from "@/components/ProfilePicture";
@@ -46,7 +47,14 @@ export default function ThreadRow({ message, grouped = false, canCopyId = false,
             <p className="mt-1 text-xs text-muted">escape to <button type="button" className="text-accent hover:underline" onClick={onCancelEdit}>cancel</button> · enter to <button type="button" className="text-accent hover:underline disabled:opacity-50" disabled={!editContent.trim() || editBusy} onClick={onSaveEdit}>save</button></p>
             {editError ? <p className="mt-1 text-sm text-error">{editError}</p> : null}
           </div>
-        ) : <p className={`${grouped ? "flex min-h-6 items-center" : "mt-1"} whitespace-pre-wrap break-words text-sm leading-6 text-soft`}>{message.content}</p>}
+        ) : (
+          <AttachmentText
+            value={message.content}
+            files={message.attachment ? [message.attachment] : []}
+            getHref={() => attachmentHref(message)}
+            className={`${grouped ? "min-h-6" : "mt-1"} text-sm leading-6`}
+          />
+        )}
         {message.attachment ? (
           <AttachmentList
             files={[message.attachment]}

@@ -11,11 +11,11 @@ import { getBugReportAttachment, isBugReportStoragePath } from "@/bugs/reporter"
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-function contentDisposition(name) {
+function contentDisposition(name, type = "attachment") {
   const filename = path.basename(String(name ?? "attachment"));
   const ascii = filename.replace(/[^\x20-\x7e]/g, "_").replace(/["\\]/g, "_") || "attachment";
   const encoded = encodeURIComponent(filename).replace(/[!'()*]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`);
-  return `attachment; filename="${ascii}"; filename*=UTF-8''${encoded}`;
+  return `${type}; filename="${ascii}"; filename*=UTF-8''${encoded}`;
 }
 
 function decodeRouteParam(value) {
@@ -26,7 +26,7 @@ function decodeRouteParam(value) {
   }
 }
 
-export async function GET(_request, { params }) {
+export async function GET(request, { params }) {
   const subject = await getAuthSubject({ updateTokens: false });
   const user = subject?.properties;
   if (!await hasPermission(user, PERMISSIONS.VIEW_BUGS)) {
@@ -47,12 +47,13 @@ export async function GET(_request, { params }) {
 
     await access(attachment.storagePath);
     const stream = Readable.toWeb(createReadStream(attachment.storagePath));
+    const renderInline = new URL(request.url).searchParams.get("inline") === "1" && attachment.extension === ".png";
     return new Response(stream, {
       headers: {
         "Cache-Control": "private, no-store",
-        "Content-Disposition": contentDisposition(attachment.originalName),
+        "Content-Disposition": contentDisposition(attachment.originalName, renderInline ? "inline" : "attachment"),
         "Content-Length": String(attachment.sizeBytes),
-        "Content-Type": "application/octet-stream",
+        "Content-Type": renderInline ? "image/png" : "application/octet-stream",
         "X-Content-Type-Options": "nosniff",
       },
     });

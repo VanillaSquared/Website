@@ -72,8 +72,11 @@ export default function MessageComposer({ onSubmit, disabled = false, disabledMe
       </div>
       {fileName ? (
         <div className="flex items-center justify-between gap-3 rounded-lg bg-control px-3 py-2 text-xs text-soft">
-          <span className="truncate">{fileName}</span>
-          <button type="button" className="text-muted hover:text-error" onClick={() => { if (fileRef.current) fileRef.current.value = ""; setFileName(""); }}>Remove</button>
+          <span className="min-w-0">
+            <span className="block truncate">{fileName}</span>
+            {fileName.toLowerCase().endsWith(".png") ? <span className="mt-0.5 block text-muted">Use @{fileName} to show this image in your comment.</span> : null}
+          </span>
+          <button type="button" className="shrink-0 text-muted hover:text-error" onClick={() => { if (fileRef.current) fileRef.current.value = ""; setFileName(""); }}>Remove</button>
         </div>
       ) : null}
       {error ? <p className="text-sm text-error">{error}</p> : null}
