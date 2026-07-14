@@ -55,7 +55,7 @@ export async function POST(request) {
       actorUserId: creatorUserId,
       targetUserId: creatorUserId,
       summary: `${user.username} created bug report ${result.publicId}.`,
-      afterData: { id: result.id, publicId: result.publicId },
+      afterData: { id: result.id, publicId: result.publicId, allowComments: result.allowComments },
     });
 
     return NextResponse.json({ id: result.id, publicId: result.publicId }, { status: 201 });

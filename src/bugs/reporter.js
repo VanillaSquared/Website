@@ -42,6 +42,7 @@ const MAX_TITLE_LENGTH = 120;
 const MIN_DESCRIPTION_LENGTH = 3;
 const MAX_DESCRIPTION_LENGTH = 8000;
 const uploadsRoot = path.join(process.cwd(), ".data", "bug-reports");
+const commentUploadsRoot = path.join(process.cwd(), ".data", "bug-comments");
 let bugReporterInitialized;
 let bugReporterSeeded;
 
@@ -97,6 +98,7 @@ export async function initializeBugReporterTables() {
             priority VARCHAR(32) NOT NULL DEFAULT 'unset',
             status VARCHAR(64) NOT NULL DEFAULT 'Unconfirmed',
             fixed BOOLEAN NOT NULL DEFAULT FALSE,
+            allow_comments BOOLEAN NOT NULL DEFAULT TRUE,
             affected_versions JSON NULL,
             fixed_version VARCHAR(64) NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -111,6 +113,7 @@ export async function initializeBugReporterTables() {
         await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN category_sequence INT UNSIGNED NULL AFTER category_shortening");
         await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN priority VARCHAR(32) NOT NULL DEFAULT 'unset' AFTER description");
         await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN status VARCHAR(64) NOT NULL DEFAULT 'Unconfirmed' AFTER priority");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN allow_comments BOOLEAN NOT NULL DEFAULT TRUE AFTER fixed");
         await runSchemaUpdate("ALTER TABLE bug_reports ADD UNIQUE KEY bug_reports_category_sequence_unique (category, category_sequence)");
         await runSchemaUpdate("ALTER TABLE bug_reports MODIFY affected_versions JSON NULL");
 
@@ -201,15 +204,15 @@ async function allocateCategoryIdentity(connection, category) {
   };
 }
 
-async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed", fixed = false, affectedVersions = ["Unknown"], fixedVersion = null }) {
+async function insertBugReportWithGeneratedId(connection, { id = randomUUID(), creatorUserId, category, title, description, priority = "unset", status = "Unconfirmed", fixed = false, allowComments = true, affectedVersions = ["Unknown"], fixedVersion = null }) {
   const identity = await allocateCategoryIdentity(connection, category);
   const { sequence, publicId } = identity;
 
   await connection.execute(
     `INSERT INTO bug_reports
-      (id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, publicId, creatorUserId, category, identity.shortening, sequence, title, description, priority, status, fixed, JSON.stringify(affectedVersions), fixedVersion]
+      (id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, affected_versions, fixed_version)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, publicId, creatorUserId, category, identity.shortening, sequence, title, description, priority, status, fixed, allowComments, JSON.stringify(affectedVersions), fixedVersion]
   );
 
   return { id, publicId };
@@ -420,6 +423,8 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
   const priority = "unset";
   const status = "Unconfirmed";
   const fixed = false;
+  const allowCommentsValues = formData.getAll("allowComments").map(String);
+  const allowComments = allowCommentsValues.length === 1 && allowCommentsValues[0] === "on";
   const submittedAffectedVersions = getAllStrings(formData, "affectedVersions");
   const affectedVersions = [...new Set(submittedAffectedVersions)];
   const fixedVersion = null;
@@ -440,6 +445,10 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
 
   if (categoryValues.length !== 1) {
     return { error: "Choose one bug report category." };
+  }
+
+  if (allowCommentsValues.length > 1 || allowCommentsValues.some((value) => value !== "on")) {
+    return { error: "Choose a valid comments setting." };
   }
 
   if (!BUG_REPORT_CATEGORIES.includes(category)) {
@@ -495,6 +504,7 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
       priority,
       status,
       fixed,
+      allowComments,
       affectedVersions: affectedVersions.length ? affectedVersions : ["Unknown"],
       fixedVersion,
       files,
@@ -567,6 +577,7 @@ export async function createBugReport({ creatorUserId, formData, bypassLimits = 
       priority: report.priority,
       status: report.status,
       fixed: report.fixed,
+      allowComments: report.allowComments,
       affectedVersions: report.affectedVersions,
       fixedVersion: report.fixedVersion,
     });
@@ -588,7 +599,7 @@ export async function createBugReport({ creatorUserId, formData, bypassLimits = 
     connection.release();
   }
 
-  return created;
+  return { ...created, allowComments: report.allowComments };
 }
 
 function parseJsonArray(value) {
@@ -620,6 +631,7 @@ function mapBugReportRow(row) {
     priority: row.priority,
     status: row.status,
     fixed: Boolean(row.fixed),
+    allowComments: Boolean(row.allow_comments),
     affectedVersions: parseJsonArray(row.affected_versions),
     fixedVersion: row.fixed_version,
     creatorUserId: row.creator_user_id,
@@ -687,7 +699,7 @@ export async function listBugReports({ q, category, priority, status, seed = tru
 
   const orderCase = BUG_REPORT_CATEGORY_CONFIGS.map((config) => `WHEN category = '${config.slug}' THEN ${config.order}`).join(" ");
   const [rows] = await getPool().execute(
-    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
      FROM bug_reports
      INNER JOIN users ON users.id = bug_reports.creator_user_id
      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
@@ -741,7 +753,7 @@ export async function getBugReportByPublicId(publicId, { seed = true } = {}) {
   }
 
   const [rows] = await getPool().execute(
-    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
      FROM bug_reports
      INNER JOIN users ON users.id = bug_reports.creator_user_id
      WHERE LOWER(public_id) = LOWER(?)
@@ -777,6 +789,7 @@ function reportAuditSnapshot(report, files = []) {
     categorySequence: Number(report.categorySequence),
     title: report.title,
     description: report.description,
+    allowComments: report.allowComments,
     affectedVersions: report.affectedVersions,
     attachments: files.map((file) => ({
       id: file.id,
@@ -790,7 +803,7 @@ function reportAuditSnapshot(report, files = []) {
 async function getLockedBugReport(connection, publicId) {
   const [rows] = await connection.execute(
     `SELECT id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description,
-            priority, status, fixed, affected_versions, fixed_version, created_at, updated_at
+            priority, status, fixed, allow_comments, affected_versions, fixed_version, created_at, updated_at
      FROM bug_reports WHERE LOWER(public_id) = LOWER(?) LIMIT 1 FOR UPDATE`,
     [String(publicId ?? "").trim()]
   );
@@ -847,9 +860,9 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
 
     await connection.execute(
       `UPDATE bug_reports
-       SET public_id = ?, category = ?, category_shortening = ?, category_sequence = ?, title = ?, description = ?, affected_versions = ?
+       SET public_id = ?, category = ?, category_shortening = ?, category_sequence = ?, title = ?, description = ?, allow_comments = ?, affected_versions = ?
        WHERE id = ?`,
-      [identity.publicId, update.category, identity.shortening, identity.sequence, update.title, update.description, JSON.stringify(update.affectedVersions), current.report.id]
+      [identity.publicId, update.category, identity.shortening, identity.sequence, update.title, update.description, update.allowComments, JSON.stringify(update.affectedVersions), current.report.id]
     );
 
     if (removedFiles.length) {
@@ -877,6 +890,7 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
       categorySequence: identity.sequence,
       title: update.title,
       description: update.description,
+      allowComments: update.allowComments,
       affectedVersions: update.affectedVersions,
     };
 
@@ -889,6 +903,41 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
   } catch (error) {
     await connection.rollback();
     await Promise.allSettled(savedFiles.map((file) => unlink(file.storagePath)));
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function updateBugCommentsSetting({ publicId, actorUserId, canToggleAny = false, allowComments }) {
+  if (typeof allowComments !== "boolean") {
+    return { error: "Choose a valid comments setting.", status: 400 };
+  }
+
+  await initializeBugReporterTables();
+  const connection = await getPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    const current = await getLockedBugReport(connection, publicId);
+    if (!current) {
+      await connection.rollback();
+      return { error: "Bug report not found.", status: 404 };
+    }
+    if (!canToggleAny && current.report.creatorUserId !== actorUserId) {
+      await connection.rollback();
+      return { error: "Forbidden", status: 403 };
+    }
+
+    await connection.execute("UPDATE bug_reports SET allow_comments = ? WHERE id = ?", [allowComments, current.report.id]);
+    await connection.commit();
+    return {
+      id: current.report.id,
+      publicId: current.report.publicId,
+      before: reportAuditSnapshot(current.report, current.files),
+      after: reportAuditSnapshot({ ...current.report, allowComments }, current.files),
+    };
+  } catch (error) {
+    await connection.rollback();
     throw error;
   } finally {
     connection.release();
@@ -915,6 +964,7 @@ export async function deleteBugReport({ publicId, actorUserId, canManage = false
     await connection.commit();
     await Promise.allSettled([
       rm(path.join(uploadsRoot, current.report.id), { recursive: true, force: true }),
+      rm(path.join(commentUploadsRoot, current.report.id), { recursive: true, force: true }),
       ...current.files
         .filter((file) => isBugReportStoragePath(file.storagePath))
         .map((file) => unlink(file.storagePath)),

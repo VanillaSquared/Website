@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import FileUpload from "@/components/FileUpload";
 import Preview from "@/components/Preview";
 import TextInput from "@/components/TextInput";
+import Toggle from "@/components/Toggle";
 
 export default function BugReporterForm({ categories, versions, authenticated, creatorUser, onCreated, mode = "create", report = null, onUpdated }) {
   const [status, setStatus] = useState(null);
@@ -95,6 +96,14 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         placeholder="Choose affected versions"
         menuClassName="!w-64"
         defaultValue={report?.affectedVersions ?? []}
+      />
+
+      <Toggle
+        key={`comments-${resetKey}`}
+        name="allowComments"
+        label="Allow comments"
+        description="Let users discuss this report. Existing comments remain available if this is disabled later."
+        defaultChecked={report?.allowComments ?? true}
       />
 
       <FileUpload

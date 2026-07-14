@@ -7,15 +7,20 @@ import editIcon from "@/assets/icons/edit.svg";
 import xIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
+import Toggle from "@/components/Toggle";
 
 import BugReporterForm from "../BugReporterForm";
 
-export default function BugReportActions({ report, categories, versions, creatorUser, canEdit, canDelete }) {
+export default function BugReportActions({ report, categories, versions, creatorUser, canEdit, canDelete, canToggleComments = false }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteStatus, setDeleteStatus] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [allowComments, setAllowComments] = useState(report.allowComments);
+  const [commentsStatus, setCommentsStatus] = useState(null);
+  const [savingComments, setSavingComments] = useState(false);
 
   function handleUpdated(result) {
     setEditOpen(false);
@@ -23,6 +28,30 @@ export default function BugReportActions({ report, categories, versions, creator
       router.replace(`/bugs/${encodeURIComponent(result.publicId)}`);
     } else {
       router.refresh();
+    }
+  }
+
+  async function saveCommentsSetting() {
+    setSavingComments(true);
+    setCommentsStatus(null);
+    try {
+      const response = await fetch(`/api/bugs/${encodeURIComponent(report.publicId)}`, {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ allowComments }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setCommentsStatus(result.error ?? "Failed to update comments setting.");
+        return;
+      }
+      setCommentsOpen(false);
+      router.refresh();
+    } catch {
+      setCommentsStatus("Failed to update comments setting.");
+    } finally {
+      setSavingComments(false);
     }
   }
 
@@ -54,6 +83,9 @@ export default function BugReportActions({ report, categories, versions, creator
         {canEdit ? (
           <Button variant="tertiary" size="sm" icon={editIcon} onClick={() => setEditOpen(true)}>Edit</Button>
         ) : null}
+        {canToggleComments && !canEdit ? (
+          <Button variant="tertiary" size="sm" onClick={() => setCommentsOpen(true)}>Comments</Button>
+        ) : null}
         {canDelete ? (
           <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>Delete</Button>
         ) : null}
@@ -78,6 +110,24 @@ export default function BugReportActions({ report, categories, versions, creator
               creatorUser={creatorUser}
               onUpdated={handleUpdated}
             />
+          </div>
+        </div>
+      </Modal>
+
+      <Modal open={commentsOpen} onClose={() => !savingComments && setCommentsOpen(false)} variant="compact">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-heading">Comment settings</h2>
+          <Toggle
+            label="Allow comments"
+            description="Existing comments remain visible and manageable when disabled."
+            checked={allowComments}
+            onChange={setAllowComments}
+            disabled={savingComments}
+          />
+          {commentsStatus ? <p className="text-sm text-error">{commentsStatus}</p> : null}
+          <div className="flex justify-end gap-2">
+            <Button variant="tertiary" size="sm" disabled={savingComments} onClick={() => setCommentsOpen(false)}>Cancel</Button>
+            <Button size="sm" disabled={savingComments} onClick={saveCommentsSetting}>{savingComments ? "Saving..." : "Save"}</Button>
           </div>
         </div>
       </Modal>

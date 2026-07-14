@@ -20,6 +20,8 @@ export const PERMISSIONS = Object.freeze({
   VIEW_BUGS: "view_bugs",
   EDIT_BUGS: "edit_bugs",
   MANAGE_BUGS: "manage_bugs",
+  WRITE_COMMENTS: "write_comments",
+  MANAGE_COMMENTS: "manage_comments",
   BYPASS_LIMITS: "bypass_limits",
 });
 

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getAuthSubject } from "@/app/auth";
 import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
-import { deleteBugReport, updateBugReport } from "@/bugs/reporter";
+import { deleteBugReport, updateBugCommentsSetting, updateBugReport } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
@@ -36,30 +36,42 @@ export async function PATCH(request, { params }) {
   const context = await getRequestContext();
   if (context.error) return context.error;
   const canManage = hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_BUGS);
-  if (!canManage && !hasResolvedPermission(context.authorization, PERMISSIONS.EDIT_BUGS)) {
-    return errorResponse("Forbidden", 403);
-  }
-  if (!request.headers.get("content-type")?.toLowerCase().startsWith("multipart/form-data")) {
-    return errorResponse("Submit the report as multipart form data.", 400);
-  }
-
-  let formData;
-  try {
-    formData = await request.formData();
-  } catch {
-    return errorResponse("Submit valid multipart form data.", 400);
-  }
+  const canEditFields = canManage || hasResolvedPermission(context.authorization, PERMISSIONS.EDIT_BUGS);
+  const canToggleAny = hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL);
+  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
 
   try {
     const { bug } = await params;
     const publicId = getBugId(bug);
     if (!publicId) return errorResponse("Choose a valid bug report ID.", 400);
-    const result = await updateBugReport({
-      publicId,
-      actorUserId: context.user.id,
-      canManage,
-      formData,
-    });
+
+    let result;
+    if (contentType.startsWith("application/json")) {
+      const body = await request.json().catch(() => ({}));
+      result = await updateBugCommentsSetting({
+        publicId,
+        actorUserId: context.user.id,
+        canToggleAny,
+        allowComments: body.allowComments,
+      });
+    } else {
+      if (!canEditFields) return errorResponse("Forbidden", 403);
+      if (!contentType.startsWith("multipart/form-data")) {
+        return errorResponse("Submit the report as multipart form data.", 400);
+      }
+      let formData;
+      try {
+        formData = await request.formData();
+      } catch {
+        return errorResponse("Submit valid multipart form data.", 400);
+      }
+      result = await updateBugReport({
+        publicId,
+        actorUserId: context.user.id,
+        canManage,
+        formData,
+      });
+    }
     if (result.error) return errorResponse(result.error, result.status ?? 400);
 
     await createAuditLog({

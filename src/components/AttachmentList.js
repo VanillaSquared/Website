@@ -11,20 +11,26 @@ function formatType(extension) {
   return type ? `${type} file` : "File";
 }
 
-export default function AttachmentList({ files = [], bugPublicId, className = "" }) {
+export default function AttachmentList({ files = [], bugPublicId, getHref, heading = "Attachments", showEmpty = true, compact = false, className = "" }) {
+  function attachmentHref(file) {
+    return getHref?.(file) ?? `/api/bugs/${encodeURIComponent(bugPublicId)}/files/${encodeURIComponent(file.id)}`;
+  }
+
+  if (!files.length && !showEmpty) return null;
+
   return (
-    <section className={className} aria-labelledby="bug-attachments-heading">
-      <h2 id="bug-attachments-heading" className="text-base font-semibold text-heading">Attachments</h2>
+    <section className={className}>
+      {heading ? <h2 className="text-base font-semibold text-heading">{heading}</h2> : null}
       {files.length ? (
-        <ul className="mt-2 divide-y divide-divider overflow-hidden rounded-xl border border-divider bg-control px-4">
+        <ul className={`${heading ? "mt-2" : ""} divide-y divide-divider overflow-hidden rounded-xl border border-divider bg-control px-4`}>
           {files.map((file) => (
-            <li key={file.id} className="flex min-w-0 items-center gap-3 py-3">
+            <li key={file.id} className={`flex min-w-0 items-center gap-3 ${compact ? "py-2" : "py-3"}`}>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-soft">{file.originalName}</p>
                 <p className="mt-0.5 text-xs text-muted">{formatBytes(file.sizeBytes)} · {formatType(file.extension)}</p>
               </div>
               <a
-                href={`/api/bugs/${encodeURIComponent(bugPublicId)}/files/${encodeURIComponent(file.id)}`}
+                href={attachmentHref(file)}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-lg font-semibold text-accent transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none"
                 aria-label={`Download ${file.originalName}`}
                 title={`Download ${file.originalName}`}

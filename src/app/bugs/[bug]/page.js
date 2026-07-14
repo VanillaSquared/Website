@@ -3,9 +3,11 @@ import { notFound } from "next/navigation";
 import { getAuthSubject } from "@/app/auth";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
+import { listComments } from "@/bugs/comments";
 import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_VERSIONS, getBugReportByPublicId } from "@/bugs/reporter";
 import AttachmentList from "@/components/AttachmentList";
 import Checkmark from "@/components/Checkmark";
+import CommentThread from "@/components/CommentThread";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
 
@@ -90,6 +92,13 @@ export default async function BugViewPage({ params }) {
     && bug.creatorUserId === user.id
     && hasResolvedPermission(authorization, PERMISSIONS.EDIT_BUGS)
   );
+  const canToggleComments = Boolean(authorization && (
+    bug.creatorUserId === user.id
+    || hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL)
+  ));
+  const comments = await listComments(bug.publicId);
+  const canWriteComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS));
+  const canManageComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.MANAGE_COMMENTS));
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
   const affectedVersions = bug.affectedVersions?.length ? bug.affectedVersions.join(", ") : "Unknown";
   const bugStatusCheckmark = getBugStatusCheckmarkProps(bug);
@@ -124,7 +133,7 @@ export default async function BugViewPage({ params }) {
             <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
             <Tag variant="accent">{bug.status}</Tag>
           </div>
-          {canEdit || canManage ? (
+          {canEdit || canManage || canToggleComments ? (
             <BugReportActions
               report={bug}
               categories={BUG_REPORT_CATEGORY_CONFIGS}
@@ -132,12 +141,22 @@ export default async function BugViewPage({ params }) {
               creatorUser={user}
               canEdit={canEdit}
               canDelete={canManage}
+              canToggleComments={canToggleComments}
             />
           ) : null}
         </div>
         <p className="whitespace-pre-wrap text-base leading-6 text-soft">{bug.description}</p>
         <div className="-mx-5 h-px bg-divider sm:-mx-7" />
         <AttachmentList files={bug.files} bugPublicId={bug.publicId} />
+        <div className="-mx-5 h-px bg-divider sm:-mx-7" />
+        <CommentThread
+          publicId={bug.publicId}
+          initialComments={comments}
+          currentUserId={user?.id ?? null}
+          canWrite={canWriteComments}
+          canManage={canManageComments}
+          allowComments={bug.allowComments}
+        />
       </section>
     </ElementViewTemplatePage>
   );
