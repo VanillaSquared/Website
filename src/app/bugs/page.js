@@ -73,7 +73,7 @@ export default async function BugsPage({ searchParams }) {
 
   return (
     <SearchListTemplatePage
-      search={{ ...bugSearch, header: { ...bugSearch, placeholder: "Search bugs" } }}
+      search={{ ...bugSearch, header: { placeholder: "Search documentation" } }}
       notice={<BugReportSuccessNotice />}
       leadingActions={(
         <BugCreateButton

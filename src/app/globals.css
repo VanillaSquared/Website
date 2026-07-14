@@ -104,6 +104,8 @@
   --vsq-category-card-border: #303030;
   --vsq-category-label: #292929;
   --vsq-category-label-border: #484848;
+  --vsq-docs-table-stripe: #1a1a1a;
+  --vsq-docs-quote-bg: #1b181b;
 
   --vsq-button-primary: #bd72bd;
   --vsq-button-primary-hover: #a966a9;
@@ -328,6 +330,106 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
+}
+
+.docs-content {
+  color: var(--vsq-text-soft);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.docs-content > * + * {
+  margin-top: 1.25rem;
+}
+
+.docs-content :where(h1, h2, h3, h4) {
+  scroll-margin-top: 6rem;
+  color: var(--vsq-text-heading);
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.docs-content h1 {
+  font-size: 2rem;
+}
+
+.docs-content h2 {
+  margin-top: 2.5rem;
+  font-size: 1.5rem;
+}
+
+.docs-content h3 {
+  margin-top: 2rem;
+  font-size: 1.25rem;
+}
+
+.docs-content h4 {
+  margin-top: 1.5rem;
+  font-size: 1.05rem;
+}
+
+.docs-content :where(ul, ol) {
+  padding-left: 1.5rem;
+}
+
+.docs-content ul {
+  list-style: disc;
+}
+
+.docs-content ol {
+  list-style: decimal;
+}
+
+.docs-content li + li {
+  margin-top: 0.35rem;
+}
+
+.docs-content :where(p, li, blockquote) a {
+  color: var(--vsq-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.docs-content :not(pre) > code {
+  border: 1px solid var(--vsq-category-label-border);
+  border-radius: 0.3rem;
+  background: var(--vsq-category-label);
+  padding: 0.1rem 0.35rem;
+  color: var(--vsq-text-heading);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.875em;
+}
+
+.docs-content blockquote {
+  border-left: 3px solid var(--vsq-accent);
+  background: var(--vsq-docs-quote-bg);
+  padding: 0.75rem 1rem;
+  color: var(--vsq-text-muted);
+}
+
+.docs-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+.docs-content :where(th, td) {
+  border: 1px solid var(--vsq-border-separator);
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+}
+
+.docs-content th {
+  color: var(--vsq-text-heading);
+}
+
+.docs-content tbody tr:nth-child(even) {
+  background: var(--vsq-docs-table-stripe);
+}
+
+.docs-content hr {
+  border-color: var(--vsq-border-divider);
 }
 
 @keyframes save-confirmation-in {

@@ -7,7 +7,16 @@ import HeaderAuthButton from "@/components/AuthButton";
 import SearchBar from "@/components/SearchBar";
 
 export default async function TopBar({ search = {} }) {
-  const searchProps = search ?? {};
+  const searchProps = {
+    action: "/docs",
+    placeholder: "Search documentation",
+    previewEndpoint: "/api/docs/search",
+    previewResultsKey: "results",
+    previewTitleKey: "title",
+    previewDescriptionKey: "description",
+    previewHrefKey: "href",
+    ...(search ?? {}),
+  };
   const subject = await getAuthSubject({ updateTokens: false });
 
   return (

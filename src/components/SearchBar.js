@@ -64,6 +64,7 @@ export default function SearchBar({
   previewTitleKey = "title",
   previewDescriptionKey = "description",
   previewMetaKey,
+  previewHrefKey,
   showPreview = true,
   variant = "default",
   locked = false,
@@ -245,14 +246,19 @@ export default function SearchBar({
               const title = getPathValue(item, previewTitleKey);
               const description = getPathValue(item, previewDescriptionKey);
               const meta = previewMetaKey ? getPathValue(item, previewMetaKey) : "";
+              const href = previewHrefKey ? getPathValue(item, previewHrefKey) : "";
+              const ResultElement = href ? "a" : "button";
 
               return (
-                <button
+                <ResultElement
                   key={item.id ?? `${title}-${index}`}
-                  type="button"
+                  {...(href ? { href } : { type: "button" })}
                   onClick={(event) => {
-                    setValue(title);
-                    submitSearch(event, close, title);
+                    close();
+                    if (!href) {
+                      setValue(title);
+                      submitSearch(event, close, title);
+                    }
                   }}
                   className="block w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none"
                 >
@@ -261,7 +267,7 @@ export default function SearchBar({
                     <span className="truncate">{title}</span>
                   </span>
                   {description ? <span className="mt-1 block truncate text-xs text-muted">{description}</span> : null}
-                </button>
+                </ResultElement>
               );
             })}
             {!previewLoading && previewEndpoint && !previewItems.length ? (
