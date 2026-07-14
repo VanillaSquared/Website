@@ -1,6 +1,7 @@
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
+import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
 import Tag from "@/components/Tag";
 
 export default function Home() {
@@ -37,7 +38,8 @@ export default function Home() {
           <Tag>Fabric Loader ≥0.19.3</Tag>
           <Tag>Java ≥25</Tag>
         </div>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+        <ModrinthDownloadStats />
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Button href="https://modrinth.com/mod/vsq" external>
             Download
           </Button>
