@@ -25,7 +25,13 @@ export async function POST(request, { params }) {
   const commentId = String(values.comment ?? "");
   if (!/^[a-z0-9-]{3,32}$/i.test(publicId) || !/^[0-9a-f-]{36}$/i.test(commentId)) return error("Comment not found.", 404);
   const body = await request.json().catch(() => ({}));
-  const result = await toggleCommentReaction({ publicId, commentId, actorUserId: user.id, emoji: body.emoji });
+  const result = await toggleCommentReaction({
+    publicId,
+    commentId,
+    actorUserId: user.id,
+    emoji: body.emoji,
+    bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
+  });
   if (result.error) return error(result.error, result.status ?? 400);
   return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
 }

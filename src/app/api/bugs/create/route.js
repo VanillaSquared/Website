@@ -43,6 +43,7 @@ export async function POST(request) {
       creatorUserId,
       formData,
       bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
+      bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
     });
 
     if (result.error) {

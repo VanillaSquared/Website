@@ -6,7 +6,7 @@ import path from "node:path";
 
 import { getPool } from "@/auth/openSQL";
 import { moderateComment } from "@/bugs/commentModeration";
-import { checkCommentCreationAllowed, getBugLimitConfig } from "@/bugs/limits";
+import { checkCommentCreationAllowed, checkLockdownAllowed, DEFAULT_COMMENT_CHARACTER_LIMIT, getBugLimitConfig } from "@/bugs/limits";
 import {
   BUG_REPORT_ALLOWED_EXTENSIONS,
   BUG_REPORT_MAX_FILE_SIZE,
@@ -14,7 +14,7 @@ import {
 } from "@/bugs/reporter";
 
 export const COMMENT_MIN_LENGTH = 1;
-export const COMMENT_MAX_LENGTH = 4000;
+export const COMMENT_MAX_LENGTH = 100000;
 export const COMMENT_MAX_ATTACHMENTS = 1;
 
 const uploadsRoot = path.join(process.cwd(), ".data", "bug-comments");
@@ -30,7 +30,7 @@ export async function initializeCommentTables() {
             id CHAR(36) PRIMARY KEY,
             bug_report_id CHAR(36) NOT NULL,
             creator_user_id CHAR(36) NULL,
-            content TEXT NOT NULL,
+            content MEDIUMTEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             edited_at TIMESTAMP NULL,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -39,6 +39,7 @@ export async function initializeCommentTables() {
             CONSTRAINT bug_comments_creator_fk FOREIGN KEY (creator_user_id) REFERENCES users(id) ON DELETE SET NULL
           )
         `);
+        await getPool().query("ALTER TABLE bug_report_comments MODIFY content MEDIUMTEXT NOT NULL");
         await getPool().query(`
           CREATE TABLE IF NOT EXISTS bug_report_comment_reactions (
             comment_id CHAR(36) NOT NULL,
@@ -85,12 +86,13 @@ function isFileLike(value) {
   return value && typeof value === "object" && typeof value.arrayBuffer === "function";
 }
 
-export function validateCommentFormData(formData) {
+export function validateCommentFormData(formData, { characterLimit = DEFAULT_COMMENT_CHARACTER_LIMIT, bypassCharacterLimit = false } = {}) {
   const contentValues = formData.getAll("content");
   const content = String(contentValues[0] ?? "").trim();
   const submittedFiles = formData.getAll("attachment").filter((file) => isFileLike(file) && file.size > 0);
-  if (contentValues.length !== 1 || content.length < COMMENT_MIN_LENGTH || content.length > COMMENT_MAX_LENGTH) {
-    return { error: `Enter a comment between ${COMMENT_MIN_LENGTH} and ${COMMENT_MAX_LENGTH} characters.` };
+  const maximumLength = bypassCharacterLimit ? COMMENT_MAX_LENGTH : characterLimit;
+  if (contentValues.length !== 1 || content.length < COMMENT_MIN_LENGTH || content.length > maximumLength) {
+    return { error: `Enter a comment between ${COMMENT_MIN_LENGTH} and ${maximumLength} characters.` };
   }
   if (submittedFiles.length > COMMENT_MAX_ATTACHMENTS) return { error: "Upload at most one attachment." };
   const attachment = submittedFiles[0] ?? null;
@@ -104,10 +106,11 @@ export function validateCommentFormData(formData) {
   return { data: { content, attachment } };
 }
 
-export function validateCommentContent(value) {
+export function validateCommentContent(value, { characterLimit = DEFAULT_COMMENT_CHARACTER_LIMIT, bypassCharacterLimit = false } = {}) {
   const content = String(value ?? "").trim();
-  if (content.length < COMMENT_MIN_LENGTH || content.length > COMMENT_MAX_LENGTH) {
-    return { error: `Enter a comment between ${COMMENT_MIN_LENGTH} and ${COMMENT_MAX_LENGTH} characters.` };
+  const maximumLength = bypassCharacterLimit ? COMMENT_MAX_LENGTH : characterLimit;
+  if (content.length < COMMENT_MIN_LENGTH || content.length > maximumLength) {
+    return { error: `Enter a comment between ${COMMENT_MIN_LENGTH} and ${maximumLength} characters.` };
   }
   return { data: content };
 }
@@ -188,9 +191,12 @@ async function saveAttachment(bugReportId, commentId, file) {
   return { id, originalName, extension, storedName, storagePath, sizeBytes: file.size };
 }
 
-export async function createComment({ publicId, actorUserId, canWrite, bypassLimits = false, siteHostname = "", formData }) {
+export async function createComment({ publicId, actorUserId, canWrite, bypassLimits = false, bypassLockdown = false, siteHostname = "", formData }) {
   if (!canWrite) return { error: "Forbidden", status: 403 };
-  const validated = validateCommentFormData(formData);
+  const lockdown = await checkLockdownAllowed({ bypassLockdown });
+  if (!lockdown.allowed) return { error: lockdown.error, status: 403 };
+  const config = await getBugLimitConfig();
+  const validated = validateCommentFormData(formData, { characterLimit: config.commentCharacterLimit, bypassCharacterLimit: bypassLimits });
   if (validated.error) return { error: validated.error, status: 400 };
   await initializeCommentTables();
   const bug = await getBug(publicId);
@@ -229,7 +235,9 @@ export async function createComment({ publicId, actorUserId, canWrite, bypassLim
   return getComment(id);
 }
 
-export async function toggleCommentReaction({ publicId, commentId, actorUserId, emoji }) {
+export async function toggleCommentReaction({ publicId, commentId, actorUserId, emoji, bypassLockdown = false }) {
+  const lockdown = await checkLockdownAllowed({ bypassLockdown });
+  if (!lockdown.allowed) return { error: lockdown.error, status: 403 };
   await initializeCommentTables();
   const normalizedEmoji = String(emoji ?? "").trim();
   if (!normalizedEmoji || normalizedEmoji.length > 16 || /[\p{L}\p{N}]/u.test(normalizedEmoji)) return { error: "Choose a valid emoji.", status: 400 };
@@ -280,8 +288,11 @@ function canChange(comment, actorUserId, canManage) {
   return Boolean(canManage || (comment.creatorUserId && comment.creatorUserId === actorUserId));
 }
 
-export async function updateComment({ commentId, actorUserId, canManage = false, siteHostname = "", content }) {
-  const validated = validateCommentContent(content);
+export async function updateComment({ commentId, actorUserId, canManage = false, bypassLimits = false, bypassLockdown = false, siteHostname = "", content }) {
+  const lockdown = await checkLockdownAllowed({ bypassLockdown });
+  if (!lockdown.allowed) return { error: lockdown.error, status: 403 };
+  const config = await getBugLimitConfig();
+  const validated = validateCommentContent(content, { characterLimit: config.commentCharacterLimit, bypassCharacterLimit: bypassLimits });
   if (validated.error) return { error: validated.error, status: 400 };
   const before = await getComment(commentId);
   if (!before) return { error: "Comment not found.", status: 404 };

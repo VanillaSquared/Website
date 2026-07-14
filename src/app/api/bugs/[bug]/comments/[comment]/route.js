@@ -4,6 +4,7 @@ import { getAuthSubject } from "@/app/auth";
 import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { deleteComment, getComment, updateComment } from "@/bugs/comments";
+import { checkLockdownAllowed } from "@/bugs/limits";
 import { getBugReportByPublicId } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
@@ -47,6 +48,8 @@ export async function PATCH(request, { params }) {
       commentId: context.commentId,
       actorUserId: context.user.id,
       canManage,
+      bypassLimits: hasResolvedPermission(context.authorization, PERMISSIONS.BYPASS_LIMITS),
+      bypassLockdown: hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL),
       siteHostname: new URL(request.url).hostname,
       content: body.content,
     });
@@ -75,6 +78,8 @@ export async function DELETE(request, { params }) {
   if (context.error) return context.error;
   const canManage = hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_COMMENTS);
   if (!canManage && !hasResolvedPermission(context.authorization, PERMISSIONS.WRITE_COMMENTS)) return responseError("Forbidden", 403);
+  const lockdown = await checkLockdownAllowed({ bypassLockdown: hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL) });
+  if (!lockdown.allowed) return responseError(lockdown.error, 403);
   try {
     const result = await deleteComment({
       commentId: context.commentId,

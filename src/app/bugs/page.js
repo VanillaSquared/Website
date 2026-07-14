@@ -2,12 +2,11 @@ import {
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_REPORT_PRIORITIES,
   BUG_REPORT_STATUSES,
-  BUG_REPORT_VERSIONS,
   listBugReports,
 } from "@/bugs/reporter";
 import { getAuthSubject } from "@/app/auth";
 import { getAuthorizationForUser, hasResolvedPermission, PERMISSIONS } from "@/auth/permissions";
-import { checkBugCreationAllowed } from "@/bugs/limits";
+import { checkBugCreationAllowed, getBugLimitConfig } from "@/bugs/limits";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugCreateButton from "./BugCreateButton";
@@ -41,15 +40,19 @@ export default async function BugsPage({ searchParams }) {
     priority: getSearchParamValues(params, "priority"),
     status: getSearchParamValues(params, "status"),
   };
-  const [bugs, subject] = await Promise.all([
+  const [bugs, subject, bugConfig] = await Promise.all([
     listBugReports(filters),
     getAuthSubject({ updateTokens: false }),
+    getBugLimitConfig(),
   ]);
   const creatorUser = subject?.properties ?? null;
   const authorization = creatorUser?.id ? await getAuthorizationForUser(creatorUser) : null;
   const canCreateBugs = authorization ? hasResolvedPermission(authorization, PERMISSIONS.CREATE_BUGS) : false;
   const creationAvailability = creatorUser?.id && canCreateBugs
-    ? await checkBugCreationAllowed(creatorUser.id, { bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS) })
+    ? await checkBugCreationAllowed(creatorUser.id, {
+      bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
+      bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
+    })
     : { allowed: canCreateBugs, error: creatorUser?.id ? "You do not have permission to create bug reports." : "Log in to submit bug reports." };
   const searchHiddenFields = {
     category: filters.category,
@@ -75,7 +78,7 @@ export default async function BugsPage({ searchParams }) {
       leadingActions={(
         <BugCreateButton
           categories={BUG_REPORT_CATEGORY_CONFIGS}
-          versions={BUG_REPORT_VERSIONS}
+          versions={bugConfig.affectedVersions}
           authenticated={Boolean(creatorUser?.id)}
           creatorUser={creatorUser}
           creationAvailability={creationAvailability}

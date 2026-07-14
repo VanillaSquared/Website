@@ -37,14 +37,14 @@ export async function POST(request) {
       const target = await getMutableTargetUser(userId, auth.user);
       if (target.error) return target.error;
     }
-    const punishments = await createBugPunishments(userIds, body.types, body.duration);
+    const punishments = await createBugPunishments(userIds, body.types, body.duration, body.reason);
     await createAuditLog({
       type: "bug_panel_action",
       action: "bug_punishments.created",
       actorUserId: auth.user.id,
       summary: `${auth.user.username} created bug-report punishments.`,
       afterData: { punishments },
-      metadata: { affectedUserIds: userIds, types: body.types },
+      metadata: { affectedUserIds: userIds, types: body.types, reason: body.reason },
     });
     return NextResponse.json({ punishments }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {

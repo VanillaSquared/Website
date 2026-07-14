@@ -48,6 +48,9 @@ function configState(value = {}) {
     duration: String(value.duration ?? "1d"),
     reactionCountLimit: String(value.reactionCountLimit ?? 3200),
     reactionTypeLimit: String(value.reactionTypeLimit ?? 20),
+    commentCharacterLimit: String(value.commentCharacterLimit ?? 1000),
+    lockdownEnabled: value.lockdownEnabled ?? false,
+    affectedVersions: Array.isArray(value.affectedVersions) ? value.affectedVersions.join("\n") : String(value.affectedVersions ?? ""),
     automodEnabled: value.automodEnabled ?? true,
     blockedPhrases: Array.isArray(value.blockedPhrases) ? value.blockedPhrases.join("\n") : String(value.blockedPhrases ?? ""),
     allowedLinkHosts: Array.isArray(value.allowedLinkHosts) ? value.allowedLinkHosts.join("\n") : String(value.allowedLinkHosts ?? ""),
@@ -100,6 +103,7 @@ function PunishmentHistoryModal({ user, records, types, onClose, onChanged }) {
                 <div>
                   <p className="text-sm font-semibold text-heading">{typeLabel(record.type, types)}</p>
                   <p className="text-xs text-muted">{formatStatus(record)}</p>
+                  {record.reason ? <p className="mt-1 text-sm text-soft">{record.reason}</p> : null}
                   <p className="mt-0.5 text-xs text-subtle">Created {formatEuropeanDateTime(record.createdAt)}</p>
                 </div>
                 {record.status === "active" ? (
@@ -139,7 +143,7 @@ function UserPunishmentRow({ user, records, onOpen }) {
   );
 }
 
-export default function BugPanelSettings() {
+export default function BugPanelSettings({ permissions }) {
   const [tab, setTab] = useState("config");
   const [config, setConfig] = useState(() => configState());
   const [savedConfig, setSavedConfig] = useState(() => configState());
@@ -149,6 +153,8 @@ export default function BugPanelSettings() {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [duration, setDuration] = useState("");
+  const [reason, setReason] = useState("");
+  const [lockdownConfirmation, setLockdownConfirmation] = useState(null);
   const [status, setStatus] = useState("Loading...");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -182,7 +188,8 @@ export default function BugPanelSettings() {
     .filter((entry) => entry.records.length), [users, punishments]);
   const historyRecords = historyUser ? punishments.filter((record) => record.userId === historyUser.id) : [];
   const configDirty = Object.keys(config).some((key) => config[key] !== savedConfig[key]);
-  const moderationDirty = selectedUsers.length > 0 || selectedTypes.length > 0 || duration.trim().length > 0;
+  const moderationDirty = selectedUsers.length > 0 || selectedTypes.length > 0 || duration.trim().length > 0 || reason.trim().length > 0;
+  const canManageLockdown = Boolean(permissions?.permissionMap?.lockdown || permissions?.permissions?.includes?.("lockdown"));
 
   async function saveConfig() {
     setBusy(true);
@@ -199,10 +206,11 @@ export default function BugPanelSettings() {
     setBusy(true);
     setError("");
     try {
-      await api("/api/bug-panel/punishments", { method: "POST", body: JSON.stringify({ userIds: selectedUsers, types: selectedTypes, duration }) });
+      await api("/api/bug-panel/punishments", { method: "POST", body: JSON.stringify({ userIds: selectedUsers, types: selectedTypes, duration, reason }) });
       setSelectedUsers([]);
       setSelectedTypes([]);
       setDuration("");
+      setReason("");
       await loadPunishments();
       setTab("users");
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
@@ -222,11 +230,25 @@ export default function BugPanelSettings() {
             <TextInput label="Time window" sampleText="1d" filter="timeLimit" value={config.duration} onChange={(event) => setConfig({ ...config, duration: event.target.value })} />
           </div>
           <p className="text-sm text-muted">Default users can create this many reports during the configured window unless they have bypass_limits.</p>
+          <h2 className="text-base font-semibold text-heading">Lockdown</h2>
+          <Toggle
+            label="Lockdown mode"
+            description="Disable bug creation, editing, and commenting. Users with bug_panel bypass lockdown."
+            checked={config.lockdownEnabled}
+            locked={!canManageLockdown}
+            onChange={(next) => setLockdownConfirmation(next)}
+          />
+          {!canManageLockdown ? <p className="text-sm text-muted">The lockdown permission is required to change this setting.</p> : null}
+          <h2 className="text-base font-semibold text-heading">Comments</h2>
+          <TextInput label="Comment character limit" sampleText="1000" filter="integer" value={config.commentCharacterLimit} onChange={(event) => setConfig({ ...config, commentCharacterLimit: event.target.value })} />
+          <p className="text-sm text-muted">Users with bypass_limits can exceed the character limit. Reaction limits always apply.</p>
           <h2 className="text-base font-semibold text-heading">Comment reaction limits</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="Users per reaction" sampleText="3200" filter="integer" value={config.reactionCountLimit} onChange={(event) => setConfig({ ...config, reactionCountLimit: event.target.value })} />
             <TextInput label="Different reactions per comment" sampleText="20" filter="integer" value={config.reactionTypeLimit} onChange={(event) => setConfig({ ...config, reactionTypeLimit: event.target.value })} />
           </div>
+          <h2 className="text-base font-semibold text-heading">Affected versions</h2>
+          <TextInput label="Available versions" sampleText="One version per line" lines={6} value={config.affectedVersions} onChange={(event) => setConfig({ ...config, affectedVersions: event.target.value })} />
           <h2 className="text-base font-semibold text-heading">Comment automoderation</h2>
           <Toggle label="Enable automoderation" description="Block configured phrases and links before comments are created or edited." checked={config.automodEnabled} onChange={(automodEnabled) => setConfig({ ...config, automodEnabled })} />
           <TextInput label="Blocked words and phrases" sampleText="One word or phrase per line" lines={6} value={config.blockedPhrases} onChange={(event) => setConfig({ ...config, blockedPhrases: event.target.value })} />
@@ -241,8 +263,9 @@ export default function BugPanelSettings() {
           <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} placeholder="Select users to punish" />
           <MultiSelect label="Punishment types" options={types} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select punishment types" />
           <TextInput label="Punishment duration" sampleText="7d, 1(hours).30(minutes), or -1" filter="timeLimit" value={duration} onChange={(event) => setDuration(event.target.value)} />
+          <TextInput label="Reason" sampleText="Why are these users being punished?" lines={3} maxCharacters={500} value={reason} onChange={(event) => setReason(event.target.value)} />
           <p className="text-sm text-muted">Use -1 for permanent punishments.</p>
-          <SaveConfirmation show={moderationDirty} busy={busy} onReset={() => { setSelectedUsers([]); setSelectedTypes([]); setDuration(""); }} onSave={saveModeration} />
+          <SaveConfirmation show={moderationDirty} busy={busy} onReset={() => { setSelectedUsers([]); setSelectedTypes([]); setDuration(""); setReason(""); }} onSave={saveModeration} />
         </div>
       ) : null}
 
@@ -261,6 +284,16 @@ export default function BugPanelSettings() {
       ) : null}
 
       <PunishmentHistoryModal user={historyUser} records={historyRecords} types={types} onClose={() => setHistoryUser(null)} onChanged={loadPunishments} />
+      <Modal open={lockdownConfirmation !== null} onClose={() => setLockdownConfirmation(null)} variant="compact">
+        <div className="space-y-3">
+          <h2 className="text-lg font-semibold text-heading">{lockdownConfirmation ? "Enable lockdown?" : "Disable lockdown?"}</h2>
+          <p className="text-sm text-muted">{lockdownConfirmation ? "Bug creation, editing, and commenting will be disabled immediately after you save the configuration." : "Normal bug panel activity will resume after you save the configuration."}</p>
+          <div className="flex justify-end gap-2">
+            <Button size="sm" variant="tertiary" onClick={() => setLockdownConfirmation(null)}>Cancel</Button>
+            <Button size="sm" variant={lockdownConfirmation ? "danger" : "primary"} onClick={() => { setConfig({ ...config, lockdownEnabled: lockdownConfirmation }); setLockdownConfirmation(null); }}>Confirm</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

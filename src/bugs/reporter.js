@@ -3,7 +3,7 @@ import path from "node:path";
 import { randomUUID } from "node:crypto";
 
 import { getPool, initializeUsersTable } from "@/auth/openSQL";
-import { checkBugCreationAllowed } from "@/bugs/limits";
+import { checkBugCreationAllowed, checkLockdownAllowed, DEFAULT_AFFECTED_VERSIONS, getBugLimitConfig } from "@/bugs/limits";
 import { validateNoClientControlledFields } from "@/security/serverFieldGuard";
 
 export const BUG_REPORT_CATEGORY_CONFIGS = [
@@ -22,15 +22,7 @@ export const BUG_REPORT_STATUSES = [
   "Vanilla bug",
 ];
 
-export const BUG_REPORT_VERSIONS = [
-  "1.21.4",
-  "1.21.3",
-  "1.21.1",
-  "1.20.6",
-  "1.20.4",
-  "Website",
-  "Unknown",
-];
+export const BUG_REPORT_VERSIONS = [...DEFAULT_AFFECTED_VERSIONS];
 
 export const BUG_REPORT_ALLOWED_EXTENSIONS = [".log", ".png", ".txt", ".json", ".html"];
 export const BUG_REPORT_MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -372,7 +364,7 @@ function isFileLike(value) {
   return value && typeof value === "object" && typeof value.arrayBuffer === "function";
 }
 
-export function validateBugReportFormData(formData, { expectedCreatorUserId, existingFiles = null, canEditState = false } = {}) {
+export function validateBugReportFormData(formData, { expectedCreatorUserId, existingFiles = null, canEditState = false, versions = BUG_REPORT_VERSIONS } = {}) {
   const submittedCreatorUserId = getString(formData, "creatorUserId");
   const categoryValues = getAllStrings(formData, "category");
   const category = categoryValues[0] ?? "";
@@ -428,7 +420,7 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
     return { error: "Choose a valid bug report status." };
   }
 
-  if (canEditState && (fixedVersionValues.length !== 1 || (fixedVersion !== null && !BUG_REPORT_VERSIONS.includes(fixedVersion)))) {
+  if (canEditState && (fixedVersionValues.length !== 1 || (fixedVersion !== null && !versions.includes(fixedVersion)))) {
     return { error: "Choose a valid fixed version." };
   }
 
@@ -440,11 +432,11 @@ export function validateBugReportFormData(formData, { expectedCreatorUserId, exi
     return { error: `Enter a description between ${MIN_DESCRIPTION_LENGTH} and ${MAX_DESCRIPTION_LENGTH} characters.` };
   }
 
-  if (submittedAffectedVersions.length !== affectedVersions.length || affectedVersions.length > BUG_REPORT_VERSIONS.length || affectedVersions.some((version) => !BUG_REPORT_VERSIONS.includes(version))) {
+  if (submittedAffectedVersions.length !== affectedVersions.length || affectedVersions.length > versions.length || affectedVersions.some((version) => !versions.includes(version))) {
     return { error: "Choose valid affected versions." };
   }
 
-  if (fixed && !BUG_REPORT_VERSIONS.includes(fixedVersion)) {
+  if (fixed && !versions.includes(fixedVersion)) {
     return { error: "Choose a fixed version for a fixed bug report." };
   }
 
@@ -523,8 +515,9 @@ async function saveBugReportFiles(reportId, files) {
   }
 }
 
-export async function createBugReport({ creatorUserId, formData, bypassLimits = false }) {
-  const validated = validateBugReportFormData(formData, { expectedCreatorUserId: creatorUserId });
+export async function createBugReport({ creatorUserId, formData, bypassLimits = false, bypassLockdown = false }) {
+  const config = await getBugLimitConfig();
+  const validated = validateBugReportFormData(formData, { expectedCreatorUserId: creatorUserId, versions: config.affectedVersions });
 
   if (validated.error) {
     return { error: validated.error };
@@ -532,7 +525,7 @@ export async function createBugReport({ creatorUserId, formData, bypassLimits = 
 
   await initializeBugReporterTables();
 
-  const allowed = await checkBugCreationAllowed(creatorUserId, { bypassLimits });
+  const allowed = await checkBugCreationAllowed(creatorUserId, { bypassLimits, bypassLockdown });
   if (!allowed.allowed) {
     return { error: allowed.error };
   }
@@ -795,7 +788,10 @@ async function getLockedBugReport(connection, publicId) {
   return { report, files: fileRows.map((row) => mapBugReportFileRow(row, { includeStoragePath: true })) };
 }
 
-export async function updateBugReport({ publicId, actorUserId, canManage = false, canEditAny = false, canEditState = false, formData }) {
+export async function updateBugReport({ publicId, actorUserId, canManage = false, canEditAny = false, canEditState = false, bypassLockdown = false, formData }) {
+  const lockdown = await checkLockdownAllowed({ bypassLockdown });
+  if (!lockdown.allowed) return { error: lockdown.error, status: 403 };
+  const config = await getBugLimitConfig();
   await initializeBugReporterTables();
   const connection = await getPool().getConnection();
   let savedFiles = [];
@@ -813,10 +809,16 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
       return { error: "Forbidden", status: 403 };
     }
 
+    const validVersions = [...new Set([
+      ...config.affectedVersions,
+      ...(current.report.affectedVersions ?? []),
+      ...(current.report.fixedVersion ? [current.report.fixedVersion] : []),
+    ])];
     const validated = validateBugReportFormData(formData, {
       expectedCreatorUserId: actorUserId,
       existingFiles: current.files,
       canEditState,
+      versions: validVersions,
     });
     if (validated.error) {
       await connection.rollback();

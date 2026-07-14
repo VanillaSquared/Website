@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createAuditLog } from "@/audit/logs";
-import { PERMISSIONS } from "@/auth/permissions";
+import { hasPermission, PERMISSIONS } from "@/auth/permissions";
 import { jsonError, requireApiPermission } from "@/auth/userManagement";
 import { getBugLimitConfig, updateBugLimitConfig } from "@/bugs/limits";
 import { guardSameOriginRequest } from "@/security/requestGuards";
@@ -26,6 +26,9 @@ export async function PUT(request) {
   const body = await request.json().catch(() => ({}));
   try {
     const beforeConfig = await getBugLimitConfig();
+    if (body.lockdownEnabled !== beforeConfig.lockdownEnabled && !await hasPermission(auth.user, PERMISSIONS.LOCKDOWN)) {
+      return jsonError("You do not have permission to change lockdown mode.", 403);
+    }
     const config = await updateBugLimitConfig(body);
     await createAuditLog({
       type: "bug_panel_action",

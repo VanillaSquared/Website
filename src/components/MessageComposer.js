@@ -6,7 +6,7 @@ import plusIcon from "@/assets/icons/plus.svg";
 import Button from "@/components/Button";
 import EmojiPicker from "@/components/EmojiPicker";
 
-export default function MessageComposer({ onSubmit, disabled = false, disabledMessage = "", disabledHref = "", placeholder = "Write a comment...", className = "" }) {
+export default function MessageComposer({ onSubmit, disabled = false, disabledMessage = "", disabledHref = "", placeholder = "Write a comment...", characterLimit = 1000, className = "" }) {
   const [content, setContent] = useState("");
   const [fileName, setFileName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -35,7 +35,7 @@ export default function MessageComposer({ onSubmit, disabled = false, disabledMe
     const textarea = textRef.current;
     const start = textarea?.selectionStart ?? content.length;
     const end = textarea?.selectionEnd ?? content.length;
-    setContent(`${content.slice(0, start)}${emoji}${content.slice(end)}`);
+    setContent(`${content.slice(0, start)}${emoji}${content.slice(end)}`.slice(0, characterLimit));
     requestAnimationFrame(() => {
       textarea?.focus();
       textarea?.setSelectionRange(start + emoji.length, start + emoji.length);
@@ -60,12 +60,13 @@ export default function MessageComposer({ onSubmit, disabled = false, disabledMe
           onChange={(event) => setContent(event.target.value)}
           placeholder={placeholder}
           minLength={1}
-          maxLength={4000}
+          maxLength={characterLimit}
           rows={1}
           required
           disabled={busy}
           className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-2 py-2.5 text-sm leading-5 text-heading outline-none placeholder:text-muted disabled:opacity-60"
         />
+        <span className="shrink-0 text-xs text-muted">{content.length}/{characterLimit}</span>
         <EmojiPicker onSelect={addEmoji} disabled={busy} />
         <Button type="submit" variant="tertiary" size="sm" className="!h-10 shrink-0" disabled={busy || !content.trim()}>{busy ? "Sending..." : "Send"}</Button>
       </div>

@@ -20,6 +20,16 @@ const DEFAULT_LIMIT_AMOUNT = 1;
 const DEFAULT_LIMIT_DURATION = "1d";
 const DEFAULT_REACTION_COUNT_LIMIT = 3200;
 const DEFAULT_REACTION_TYPE_LIMIT = 20;
+export const DEFAULT_COMMENT_CHARACTER_LIMIT = 1000;
+export const DEFAULT_AFFECTED_VERSIONS = Object.freeze([
+  "1.21.4",
+  "1.21.3",
+  "1.21.1",
+  "1.20.6",
+  "1.20.4",
+  "Website",
+  "Unknown",
+]);
 const DEFAULT_AUTOMOD_ENABLED = true;
 const DEFAULT_BLOCKED_PHRASES = Object.freeze(["fuck", "shit", "bitch", "nigger", "faggot", "kill yourself", "kys"]);
 const DEFAULT_ALLOWED_LINK_HOSTS = Object.freeze(["minecraft.wiki", "youtube.com", "youtu.be"]);
@@ -57,6 +67,7 @@ function parseRow(row) {
     username: row.username,
     email: row.email,
     type: row.type,
+    reason: row.reason ?? "",
     expiresAt: row.expires_at,
     permanent: Boolean(row.permanent),
     revokedAt: row.revoked_at,
@@ -112,6 +123,7 @@ async function createPunishmentsTable() {
       id CHAR(36) PRIMARY KEY,
       user_id CHAR(36) NOT NULL,
       type VARCHAR(32) NOT NULL,
+      reason VARCHAR(500) NOT NULL DEFAULT '',
       expires_at TIMESTAMP NULL,
       permanent BOOLEAN NOT NULL DEFAULT FALSE,
       revoked_at TIMESTAMP NULL,
@@ -170,6 +182,9 @@ export async function initializeBugLimitTables() {
             duration VARCHAR(64) NOT NULL,
             reaction_count_limit INT UNSIGNED NOT NULL DEFAULT 3200,
             reaction_type_limit INT UNSIGNED NOT NULL DEFAULT 20,
+            comment_character_limit INT UNSIGNED NOT NULL DEFAULT 1000,
+            lockdown_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+            affected_versions JSON NULL,
             automod_enabled BOOLEAN NOT NULL DEFAULT TRUE,
             automod_blocked_phrases JSON NULL,
             allowed_link_hosts JSON NULL,
@@ -180,11 +195,15 @@ export async function initializeBugLimitTables() {
         await Promise.all([
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN reaction_count_limit INT UNSIGNED NOT NULL DEFAULT 3200").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN reaction_type_limit INT UNSIGNED NOT NULL DEFAULT 20").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
+          getPool().query("ALTER TABLE bug_limit_config ADD COLUMN comment_character_limit INT UNSIGNED NOT NULL DEFAULT 1000").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
+          getPool().query("ALTER TABLE bug_limit_config ADD COLUMN lockdown_enabled BOOLEAN NOT NULL DEFAULT FALSE").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
+          getPool().query("ALTER TABLE bug_limit_config ADD COLUMN affected_versions JSON NULL").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN automod_enabled BOOLEAN NOT NULL DEFAULT TRUE").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN automod_blocked_phrases JSON NULL").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN allowed_link_hosts JSON NULL").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
         ]);
         await migrateLegacyPunishments();
+        await getPool().query("ALTER TABLE bug_report_punishments ADD COLUMN reason VARCHAR(500) NOT NULL DEFAULT '' AFTER type").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; });
         await getPool().execute(
           "INSERT IGNORE INTO bug_limit_config (id, amount, duration) VALUES (1, ?, ?)",
           [DEFAULT_LIMIT_AMOUNT, DEFAULT_LIMIT_DURATION]
@@ -229,24 +248,28 @@ function normalizeHostname(value) {
 
 export async function getBugLimitConfig() {
   await initializeBugLimitTables();
-  const [rows] = await getPool().execute("SELECT amount, duration, reaction_count_limit, reaction_type_limit, automod_enabled, automod_blocked_phrases, allowed_link_hosts FROM bug_limit_config WHERE id = 1 LIMIT 1");
+  const [rows] = await getPool().execute("SELECT amount, duration, reaction_count_limit, reaction_type_limit, comment_character_limit, lockdown_enabled, affected_versions, automod_enabled, automod_blocked_phrases, allowed_link_hosts FROM bug_limit_config WHERE id = 1 LIMIT 1");
   const row = rows[0] ?? {};
   return {
     amount: Number(row.amount ?? DEFAULT_LIMIT_AMOUNT),
     duration: row.duration ?? DEFAULT_LIMIT_DURATION,
     reactionCountLimit: Number(row.reaction_count_limit ?? DEFAULT_REACTION_COUNT_LIMIT),
     reactionTypeLimit: Number(row.reaction_type_limit ?? DEFAULT_REACTION_TYPE_LIMIT),
+    commentCharacterLimit: Number(row.comment_character_limit ?? DEFAULT_COMMENT_CHARACTER_LIMIT),
+    lockdownEnabled: Boolean(row.lockdown_enabled),
+    affectedVersions: parseStoredList(row.affected_versions, DEFAULT_AFFECTED_VERSIONS),
     automodEnabled: row.automod_enabled == null ? DEFAULT_AUTOMOD_ENABLED : Boolean(row.automod_enabled),
     blockedPhrases: parseStoredList(row.automod_blocked_phrases, DEFAULT_BLOCKED_PHRASES),
     allowedLinkHosts: parseStoredList(row.allowed_link_hosts, DEFAULT_ALLOWED_LINK_HOSTS),
   };
 }
 
-export async function updateBugLimitConfig({ amount, duration, reactionCountLimit, reactionTypeLimit, automodEnabled, blockedPhrases, allowedLinkHosts }) {
+export async function updateBugLimitConfig({ amount, duration, reactionCountLimit, reactionTypeLimit, commentCharacterLimit, lockdownEnabled, affectedVersions, automodEnabled, blockedPhrases, allowedLinkHosts }) {
   const parsedAmount = parsePositiveLimitAmount(amount);
   const parsedDuration = parseLimitDuration(duration);
   const parsedReactionCountLimit = parsePositiveLimitAmount(reactionCountLimit);
   const parsedReactionTypeLimit = parsePositiveLimitAmount(reactionTypeLimit);
+  const parsedCommentCharacterLimit = parsePositiveLimitAmount(commentCharacterLimit);
   if (!parsedAmount) {
     const error = new Error("Bug count must be a positive integer.");
     error.status = 400;
@@ -262,8 +285,24 @@ export async function updateBugLimitConfig({ amount, duration, reactionCountLimi
     error.status = 400;
     throw error;
   }
+  if (!parsedCommentCharacterLimit) {
+    const error = new Error("Comment character limit must be a positive integer.");
+    error.status = 400;
+    throw error;
+  }
+  if (typeof lockdownEnabled !== "boolean") {
+    const error = new Error("Choose a valid lockdown setting.");
+    error.status = 400;
+    throw error;
+  }
   if (typeof automodEnabled !== "boolean") {
     const error = new Error("Choose a valid automoderation setting.");
+    error.status = 400;
+    throw error;
+  }
+  const normalizedAffectedVersions = normalizeConfigList(affectedVersions, "Affected versions");
+  if (!normalizedAffectedVersions.length) {
+    const error = new Error("Configure at least one affected version.");
     error.status = 400;
     throw error;
   }
@@ -277,10 +316,10 @@ export async function updateBugLimitConfig({ amount, duration, reactionCountLimi
   }
   await initializeBugLimitTables();
   await getPool().execute(
-    `INSERT INTO bug_limit_config (id, amount, duration, reaction_count_limit, reaction_type_limit, automod_enabled, automod_blocked_phrases, allowed_link_hosts)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE amount = VALUES(amount), duration = VALUES(duration), reaction_count_limit = VALUES(reaction_count_limit), reaction_type_limit = VALUES(reaction_type_limit), automod_enabled = VALUES(automod_enabled), automod_blocked_phrases = VALUES(automod_blocked_phrases), allowed_link_hosts = VALUES(allowed_link_hosts)`,
-    [parsedAmount, parsedDuration.normalized, parsedReactionCountLimit, parsedReactionTypeLimit, automodEnabled, JSON.stringify(normalizedBlockedPhrases), JSON.stringify(normalizedAllowedLinkHosts)]
+    `INSERT INTO bug_limit_config (id, amount, duration, reaction_count_limit, reaction_type_limit, comment_character_limit, lockdown_enabled, affected_versions, automod_enabled, automod_blocked_phrases, allowed_link_hosts)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE amount = VALUES(amount), duration = VALUES(duration), reaction_count_limit = VALUES(reaction_count_limit), reaction_type_limit = VALUES(reaction_type_limit), comment_character_limit = VALUES(comment_character_limit), lockdown_enabled = VALUES(lockdown_enabled), affected_versions = VALUES(affected_versions), automod_enabled = VALUES(automod_enabled), automod_blocked_phrases = VALUES(automod_blocked_phrases), allowed_link_hosts = VALUES(allowed_link_hosts)`,
+    [parsedAmount, parsedDuration.normalized, parsedReactionCountLimit, parsedReactionTypeLimit, parsedCommentCharacterLimit, lockdownEnabled, JSON.stringify(normalizedAffectedVersions), automodEnabled, JSON.stringify(normalizedBlockedPhrases), JSON.stringify(normalizedAllowedLinkHosts)]
   );
   return getBugLimitConfig();
 }
@@ -321,8 +360,9 @@ export async function getActiveBugPunishment(userId) {
   return getActivePunishment(userId, PUNISHMENT_TYPES.BUG_CREATION);
 }
 
-export async function createBugPunishments(userIds, types, duration) {
+export async function createBugPunishments(userIds, types, duration, reason) {
   const parsedDuration = parsePunishmentDuration(duration);
+  const normalizedReason = String(reason ?? "").trim();
   const ids = Array.isArray(userIds) ? [...new Set(userIds.map((id) => String(id ?? "").trim()).filter(Boolean))] : [];
   const normalizedTypes = Array.isArray(types) ? [...new Set(types.map(String).filter((type) => PUNISHMENT_TYPE_VALUES.includes(type)))] : [];
   if (!ids.length) {
@@ -337,6 +377,11 @@ export async function createBugPunishments(userIds, types, duration) {
   }
   if (!parsedDuration) {
     const error = new Error("Enter a valid punishment duration.");
+    error.status = 400;
+    throw error;
+  }
+  if (!normalizedReason || normalizedReason.length > 500) {
+    const error = new Error("Enter a punishment reason of 500 characters or fewer.");
     error.status = 400;
     throw error;
   }
@@ -356,8 +401,8 @@ export async function createBugPunishments(userIds, types, duration) {
     for (const type of normalizedTypes) {
       const id = randomUUID();
       await getPool().execute(
-        "INSERT INTO bug_report_punishments (id, user_id, type, expires_at, permanent) VALUES (?, ?, ?, ?, ?)",
-        [id, userId, type, expiresAt, parsedDuration.permanent]
+        "INSERT INTO bug_report_punishments (id, user_id, type, reason, expires_at, permanent) VALUES (?, ?, ?, ?, ?, ?)",
+        [id, userId, type, normalizedReason, expiresAt, parsedDuration.permanent]
       );
       createdIds.push(id);
     }
@@ -451,7 +496,17 @@ export async function checkCommentCreationAllowed(userId, { bypassLimits = false
   return punishment ? blockedByPunishment(punishment, "creating comments") : { allowed: true };
 }
 
-export async function checkBugCreationAllowed(userId, { bypassLimits = false } = {}) {
+export async function checkLockdownAllowed({ bypassLockdown = false } = {}) {
+  if (bypassLockdown) return { allowed: true };
+  const config = await getBugLimitConfig();
+  return config.lockdownEnabled
+    ? { allowed: false, reason: "lockdown", error: "The bug panel is currently in lockdown." }
+    : { allowed: true };
+}
+
+export async function checkBugCreationAllowed(userId, { bypassLimits = false, bypassLockdown = false } = {}) {
+  const lockdown = await checkLockdownAllowed({ bypassLockdown });
+  if (!lockdown.allowed) return lockdown;
   if (bypassLimits) return { allowed: true };
   const punishment = await getActivePunishment(userId, PUNISHMENT_TYPES.BUG_CREATION);
   if (punishment) return blockedByPunishment(punishment, "creating bug reports");

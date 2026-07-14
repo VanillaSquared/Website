@@ -9,6 +9,7 @@ import {
 
 export const PERMISSIONS = Object.freeze({
   BUG_PANEL: "bug_panel",
+  LOCKDOWN: "lockdown",
   DESIGN_TEST: "design_test",
   DEV_OPTIONS: "dev_options",
   USER_MANAGEMENT: "user_management",

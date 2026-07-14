@@ -52,6 +52,7 @@ export async function POST(request, { params }) {
       actorUserId: user.id,
       canWrite: hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS),
       bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
+      bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
       siteHostname: new URL(request.url).hostname,
       formData,
     });

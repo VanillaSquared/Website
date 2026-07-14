@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getAuthSubject } from "@/app/auth";
 import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
+import { checkLockdownAllowed } from "@/bugs/limits";
 import { deleteBugReport, updateBugCommentsSetting, updateBugReport } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
@@ -39,6 +40,8 @@ export async function PATCH(request, { params }) {
   const canUseBugPanel = hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL);
   const canEditFields = canManage || canUseBugPanel || hasResolvedPermission(context.authorization, PERMISSIONS.EDIT_BUGS);
   const canToggleAny = canUseBugPanel;
+  const lockdown = await checkLockdownAllowed({ bypassLockdown: canUseBugPanel });
+  if (!lockdown.allowed) return errorResponse(lockdown.error, 403);
   const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
 
   try {
@@ -72,6 +75,7 @@ export async function PATCH(request, { params }) {
         canManage,
         canEditAny: canUseBugPanel,
         canEditState: canUseBugPanel,
+        bypassLockdown: canUseBugPanel,
         formData,
       });
     }

@@ -15,7 +15,7 @@ async function requestJson(path, options) {
   return result;
 }
 
-export default function CommentThread({ publicId, initialComments = [], currentUserId = null, canWrite = false, canManage = false, allowComments = true }) {
+export default function CommentThread({ publicId, initialComments = [], currentUserId = null, canWrite = false, canManage = false, allowComments = true, interactionLocked = false, commentCharacterLimit = 1000, bypassCharacterLimit = false }) {
   const [comments, setComments] = useState(initialComments);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -103,8 +103,16 @@ export default function CommentThread({ publicId, initialComments = [], currentU
               message={comment}
               grouped={grouped}
               canCopyId={developerMode}
-              canChange={canManage || Boolean(currentUserId && comment.creatorUserId === currentUserId)}
-              canReact={Boolean(allowComments && canWrite && currentUserId)}
+              canChange={!interactionLocked && (canManage || Boolean(currentUserId && comment.creatorUserId === currentUserId))}
+              canReact={Boolean(!interactionLocked && allowComments && canWrite && currentUserId)}
+              editing={editing?.id === comment.id}
+              editContent={editContent}
+              editError={editing?.id === comment.id ? error : ""}
+              editBusy={busy}
+              editCharacterLimit={bypassCharacterLimit ? 100000 : commentCharacterLimit}
+              onEditContentChange={setEditContent}
+              onSaveEdit={saveEdit}
+              onCancelEdit={() => { if (!busy) { setEditing(null); setError(""); } }}
               onReact={(emoji) => react(comment, emoji)}
               onEdit={() => openEdit(comment)}
               onDelete={() => { setDeleting(comment); setError(""); }}
@@ -116,30 +124,14 @@ export default function CommentThread({ publicId, initialComments = [], currentU
       {!comments.length && allowComments ? <p className="py-4 text-sm italic text-muted">No comments yet.</p> : null}
       {error && !editing && !deleting ? <p className="mb-3 text-sm text-error">{error}</p> : null}
       <MessageComposer
-        className={comments.length ? "mt-3" : ""}
+        className={comments.length ? "mt-6" : ""}
         onSubmit={create}
-        disabled={!allowComments || !canWrite}
-        disabledMessage={!allowComments ? "Comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment.")}
-        disabledHref={allowComments && !currentUserId ? `/login?returnTo=${encodeURIComponent(`/bugs/${publicId}`)}` : ""}
+        disabled={!allowComments || !canWrite || interactionLocked}
+        disabledMessage={interactionLocked ? "The bug panel is currently in lockdown." : (!allowComments ? "Comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment."))}
+        disabledHref={!interactionLocked && allowComments && !currentUserId ? `/login?returnTo=${encodeURIComponent(`/bugs/${publicId}`)}` : ""}
+        characterLimit={bypassCharacterLimit ? 100000 : commentCharacterLimit}
       />
 
-      <Modal open={Boolean(editing)} onClose={() => !busy && setEditing(null)} variant="compact">
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-heading">Edit comment</h2>
-          <textarea
-            value={editContent}
-            onChange={(event) => setEditContent(event.target.value)}
-            rows={5}
-            maxLength={4000}
-            className="w-full resize-y rounded-xl border border-input-border bg-input px-3 py-2 text-sm text-heading outline-none focus:border-input-border-focus"
-          />
-          {error ? <p className="text-sm text-error">{error}</p> : null}
-          <div className="flex justify-end gap-2">
-            <Button size="sm" variant="tertiary" disabled={busy} onClick={() => setEditing(null)}>Cancel</Button>
-            <Button size="sm" disabled={busy || !editContent.trim()} onClick={saveEdit}>{busy ? "Saving..." : "Save"}</Button>
-          </div>
-        </div>
-      </Modal>
 
       <Modal open={Boolean(deleting)} onClose={() => !busy && setDeleting(null)} variant="compact">
         <div className="space-y-3">

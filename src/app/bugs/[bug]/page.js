@@ -4,7 +4,8 @@ import { getAuthSubject } from "@/app/auth";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import { listComments } from "@/bugs/comments";
-import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_PRIORITIES, BUG_REPORT_STATUSES, BUG_REPORT_VERSIONS, getBugReportByPublicId } from "@/bugs/reporter";
+import { getBugLimitConfig } from "@/bugs/limits";
+import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_PRIORITIES, BUG_REPORT_STATUSES, getBugReportByPublicId } from "@/bugs/reporter";
 import AttachmentList from "@/components/AttachmentList";
 import Checkmark from "@/components/Checkmark";
 import CommentThread from "@/components/CommentThread";
@@ -68,9 +69,10 @@ export async function generateMetadata({ params }) {
 
 export default async function BugViewPage({ params }) {
   const { bug: bugParam } = await params;
-  const [bug, subject] = await Promise.all([
+  const [bug, subject, bugConfig] = await Promise.all([
     getBugReportByPublicId(decodeURIComponent(bugParam)),
     getAuthSubject({ updateTokens: false }),
+    getBugLimitConfig(),
   ]);
 
   if (!bug) {
@@ -81,12 +83,13 @@ export default async function BugViewPage({ params }) {
   const authorization = user?.id ? await getAuthorizationForUser(user) : null;
   const canManage = authorization ? hasResolvedPermission(authorization, PERMISSIONS.MANAGE_BUGS) : false;
   const canUseBugPanel = authorization ? hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL) : false;
-  const canEdit = canManage || canUseBugPanel || Boolean(
+  const lockdownBlocked = bugConfig.lockdownEnabled && !canUseBugPanel;
+  const canEdit = !lockdownBlocked && (canManage || canUseBugPanel || Boolean(
     authorization
     && bug.creatorUserId === user.id
     && hasResolvedPermission(authorization, PERMISSIONS.EDIT_BUGS)
-  );
-  const canToggleComments = Boolean(authorization && (
+  ));
+  const canToggleComments = Boolean(!lockdownBlocked && authorization && (
     bug.creatorUserId === user.id
     || canUseBugPanel
   ));
@@ -95,6 +98,7 @@ export default async function BugViewPage({ params }) {
   const canManageComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.MANAGE_COMMENTS));
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
   const affectedVersions = bug.affectedVersions?.length ? bug.affectedVersions.join(", ") : "Unknown";
+  const editableVersions = [...new Set([...bugConfig.affectedVersions, ...(bug.affectedVersions ?? []), ...(bug.fixedVersion ? [bug.fixedVersion] : [])])];
   const bugStatusCheckmark = getBugStatusCheckmarkProps(bug);
 
   return (
@@ -131,7 +135,7 @@ export default async function BugViewPage({ params }) {
             <BugReportActions
               report={bug}
               categories={BUG_REPORT_CATEGORY_CONFIGS}
-              versions={BUG_REPORT_VERSIONS}
+              versions={editableVersions}
               priorities={BUG_REPORT_PRIORITIES}
               statuses={BUG_REPORT_STATUSES}
               creatorUser={user}
@@ -150,9 +154,12 @@ export default async function BugViewPage({ params }) {
           publicId={bug.publicId}
           initialComments={comments}
           currentUserId={user?.id ?? null}
-          canWrite={canWriteComments}
+          canWrite={canWriteComments && !lockdownBlocked}
           canManage={canManageComments}
           allowComments={bug.allowComments}
+          interactionLocked={lockdownBlocked}
+          commentCharacterLimit={bugConfig.commentCharacterLimit}
+          bypassCharacterLimit={Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS))}
         />
       </section>
     </ElementViewTemplatePage>
