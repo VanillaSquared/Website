@@ -83,19 +83,22 @@ export default async function BugViewPage({ params }) {
   const authorization = user?.id ? await getAuthorizationForUser(user) : null;
   const canManage = authorization ? hasResolvedPermission(authorization, PERMISSIONS.MANAGE_BUGS) : false;
   const canUseBugPanel = authorization ? hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL) : false;
+  const canUseSupportPanel = canUseBugPanel;
   const lockdownBlocked = bugConfig.lockdownEnabled && !canUseBugPanel;
-  const canEdit = !lockdownBlocked && (canManage || canUseBugPanel || Boolean(
+  const reportLocked = bug.locked && !canUseSupportPanel;
+  const canEdit = !lockdownBlocked && !reportLocked && (canManage || canUseBugPanel || Boolean(
     authorization
     && bug.creatorUserId === user.id
     && hasResolvedPermission(authorization, PERMISSIONS.EDIT_BUGS)
   ));
-  const canToggleComments = Boolean(!lockdownBlocked && authorization && (
+  const canToggleComments = Boolean(!lockdownBlocked && !reportLocked && authorization && (
     bug.creatorUserId === user.id
-    || canUseBugPanel
+    || canUseSupportPanel
   ));
   const comments = await listComments(bug.publicId, user?.id ?? null);
   const canWriteComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS));
   const canManageComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.MANAGE_COMMENTS));
+  const canUseDeveloperTools = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.DEV_OPTIONS));
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
   const affectedVersions = bug.affectedVersions?.length ? bug.affectedVersions.join(", ") : "Unknown";
   const editableVersions = [...new Set([...bugConfig.affectedVersions, ...(bug.affectedVersions ?? []), ...(bug.fixedVersion ? [bug.fixedVersion] : [])])];
@@ -131,7 +134,7 @@ export default async function BugViewPage({ params }) {
             <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
             <Tag variant="accent">{bug.status}</Tag>
           </div>
-          {canEdit || canManage || canToggleComments ? (
+          {canEdit || canManage || canToggleComments || canUseSupportPanel ? (
             <BugReportActions
               report={bug}
               categories={BUG_REPORT_CATEGORY_CONFIGS}
@@ -143,6 +146,7 @@ export default async function BugViewPage({ params }) {
               canEditState={canUseBugPanel}
               canDelete={canManage}
               canToggleComments={canToggleComments}
+              canLock={canUseSupportPanel}
             />
           ) : null}
         </div>
@@ -154,12 +158,13 @@ export default async function BugViewPage({ params }) {
           publicId={bug.publicId}
           initialComments={comments}
           currentUserId={user?.id ?? null}
-          canWrite={canWriteComments && !lockdownBlocked}
-          canManage={canManageComments}
+          canWrite={canWriteComments && !lockdownBlocked && !reportLocked}
+          canManage={canManageComments && !reportLocked}
+          canUseDeveloperTools={canUseDeveloperTools}
           allowComments={bug.allowComments}
-          interactionLocked={lockdownBlocked}
+          interactionLocked={lockdownBlocked || reportLocked}
+          interactionLockedMessage={reportLocked ? "This bug report is locked." : "The bug panel is currently in lockdown."}
           commentCharacterLimit={bugConfig.commentCharacterLimit}
-          bypassCharacterLimit={Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS))}
         />
       </section>
     </ElementViewTemplatePage>

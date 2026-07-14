@@ -159,6 +159,8 @@ export default function SearchBar({
     close();
   }
 
+  const SearchContainer = onSearch || action ? "form" : "div";
+
   return (
     <Preview
       className={`w-full ${variantConfig.form} ${className}`}
@@ -166,11 +168,13 @@ export default function SearchBar({
       menuMaxHeight="max-h-72"
       locked={locked}
       renderTrigger={({ setOpen, close }) => (
-        <form
+        <SearchContainer
           role="search"
-          action={onSearch ? undefined : action}
-          method={method}
-          onSubmit={(event) => submitSearch(event, close)}
+          {...(SearchContainer === "form" ? {
+            action: onSearch ? undefined : action,
+            method,
+            onSubmit: (event) => submitSearch(event, close),
+          } : {})}
           className="w-full"
         >
           <label htmlFor={inputId} className="sr-only">
@@ -224,7 +228,7 @@ export default function SearchBar({
               </button>
             ) : null}
           </div>
-        </form>
+        </SearchContainer>
       )}
     >
       {({ close }) => {

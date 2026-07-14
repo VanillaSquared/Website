@@ -21,6 +21,7 @@ const DEFAULT_LIMIT_DURATION = "1d";
 const DEFAULT_REACTION_COUNT_LIMIT = 3200;
 const DEFAULT_REACTION_TYPE_LIMIT = 20;
 export const DEFAULT_COMMENT_CHARACTER_LIMIT = 1000;
+export const DEFAULT_COMMENT_COOLDOWN_SECONDS = 5;
 export const DEFAULT_AFFECTED_VERSIONS = Object.freeze([
   "1.21.4",
   "1.21.3",
@@ -183,6 +184,7 @@ export async function initializeBugLimitTables() {
             reaction_count_limit INT UNSIGNED NOT NULL DEFAULT 3200,
             reaction_type_limit INT UNSIGNED NOT NULL DEFAULT 20,
             comment_character_limit INT UNSIGNED NOT NULL DEFAULT 1000,
+            comment_cooldown_seconds INT UNSIGNED NOT NULL DEFAULT 5,
             lockdown_enabled BOOLEAN NOT NULL DEFAULT FALSE,
             affected_versions JSON NULL,
             automod_enabled BOOLEAN NOT NULL DEFAULT TRUE,
@@ -196,6 +198,7 @@ export async function initializeBugLimitTables() {
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN reaction_count_limit INT UNSIGNED NOT NULL DEFAULT 3200").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN reaction_type_limit INT UNSIGNED NOT NULL DEFAULT 20").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN comment_character_limit INT UNSIGNED NOT NULL DEFAULT 1000").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
+          getPool().query("ALTER TABLE bug_limit_config ADD COLUMN comment_cooldown_seconds INT UNSIGNED NOT NULL DEFAULT 5").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN lockdown_enabled BOOLEAN NOT NULL DEFAULT FALSE").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN affected_versions JSON NULL").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
           getPool().query("ALTER TABLE bug_limit_config ADD COLUMN automod_enabled BOOLEAN NOT NULL DEFAULT TRUE").catch((error) => { if (error.code !== "ER_DUP_FIELDNAME") throw error; }),
@@ -248,7 +251,7 @@ function normalizeHostname(value) {
 
 export async function getBugLimitConfig() {
   await initializeBugLimitTables();
-  const [rows] = await getPool().execute("SELECT amount, duration, reaction_count_limit, reaction_type_limit, comment_character_limit, lockdown_enabled, affected_versions, automod_enabled, automod_blocked_phrases, allowed_link_hosts FROM bug_limit_config WHERE id = 1 LIMIT 1");
+  const [rows] = await getPool().execute("SELECT amount, duration, reaction_count_limit, reaction_type_limit, comment_character_limit, comment_cooldown_seconds, lockdown_enabled, affected_versions, automod_enabled, automod_blocked_phrases, allowed_link_hosts FROM bug_limit_config WHERE id = 1 LIMIT 1");
   const row = rows[0] ?? {};
   return {
     amount: Number(row.amount ?? DEFAULT_LIMIT_AMOUNT),
@@ -256,6 +259,7 @@ export async function getBugLimitConfig() {
     reactionCountLimit: Number(row.reaction_count_limit ?? DEFAULT_REACTION_COUNT_LIMIT),
     reactionTypeLimit: Number(row.reaction_type_limit ?? DEFAULT_REACTION_TYPE_LIMIT),
     commentCharacterLimit: Number(row.comment_character_limit ?? DEFAULT_COMMENT_CHARACTER_LIMIT),
+    commentCooldownSeconds: Number(row.comment_cooldown_seconds ?? DEFAULT_COMMENT_COOLDOWN_SECONDS),
     lockdownEnabled: Boolean(row.lockdown_enabled),
     affectedVersions: parseStoredList(row.affected_versions, DEFAULT_AFFECTED_VERSIONS),
     automodEnabled: row.automod_enabled == null ? DEFAULT_AUTOMOD_ENABLED : Boolean(row.automod_enabled),
@@ -264,12 +268,13 @@ export async function getBugLimitConfig() {
   };
 }
 
-export async function updateBugLimitConfig({ amount, duration, reactionCountLimit, reactionTypeLimit, commentCharacterLimit, lockdownEnabled, affectedVersions, automodEnabled, blockedPhrases, allowedLinkHosts }) {
+export async function updateBugLimitConfig({ amount, duration, reactionCountLimit, reactionTypeLimit, commentCharacterLimit, commentCooldownSeconds, lockdownEnabled, affectedVersions, automodEnabled, blockedPhrases, allowedLinkHosts }) {
   const parsedAmount = parsePositiveLimitAmount(amount);
   const parsedDuration = parseLimitDuration(duration);
   const parsedReactionCountLimit = parsePositiveLimitAmount(reactionCountLimit);
   const parsedReactionTypeLimit = parsePositiveLimitAmount(reactionTypeLimit);
   const parsedCommentCharacterLimit = parsePositiveLimitAmount(commentCharacterLimit);
+  const parsedCommentCooldownSeconds = Number(commentCooldownSeconds);
   if (!parsedAmount) {
     const error = new Error("Bug count must be a positive integer.");
     error.status = 400;
@@ -287,6 +292,11 @@ export async function updateBugLimitConfig({ amount, duration, reactionCountLimi
   }
   if (!parsedCommentCharacterLimit) {
     const error = new Error("Comment character limit must be a positive integer.");
+    error.status = 400;
+    throw error;
+  }
+  if (!Number.isSafeInteger(parsedCommentCooldownSeconds) || parsedCommentCooldownSeconds < 0 || parsedCommentCooldownSeconds > MAX_LIMIT_AMOUNT) {
+    const error = new Error(`Comment cooldown must be a whole number between 0 and ${MAX_LIMIT_AMOUNT} seconds.`);
     error.status = 400;
     throw error;
   }
@@ -316,10 +326,10 @@ export async function updateBugLimitConfig({ amount, duration, reactionCountLimi
   }
   await initializeBugLimitTables();
   await getPool().execute(
-    `INSERT INTO bug_limit_config (id, amount, duration, reaction_count_limit, reaction_type_limit, comment_character_limit, lockdown_enabled, affected_versions, automod_enabled, automod_blocked_phrases, allowed_link_hosts)
-     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE amount = VALUES(amount), duration = VALUES(duration), reaction_count_limit = VALUES(reaction_count_limit), reaction_type_limit = VALUES(reaction_type_limit), comment_character_limit = VALUES(comment_character_limit), lockdown_enabled = VALUES(lockdown_enabled), affected_versions = VALUES(affected_versions), automod_enabled = VALUES(automod_enabled), automod_blocked_phrases = VALUES(automod_blocked_phrases), allowed_link_hosts = VALUES(allowed_link_hosts)`,
-    [parsedAmount, parsedDuration.normalized, parsedReactionCountLimit, parsedReactionTypeLimit, parsedCommentCharacterLimit, lockdownEnabled, JSON.stringify(normalizedAffectedVersions), automodEnabled, JSON.stringify(normalizedBlockedPhrases), JSON.stringify(normalizedAllowedLinkHosts)]
+    `INSERT INTO bug_limit_config (id, amount, duration, reaction_count_limit, reaction_type_limit, comment_character_limit, comment_cooldown_seconds, lockdown_enabled, affected_versions, automod_enabled, automod_blocked_phrases, allowed_link_hosts)
+     VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE amount = VALUES(amount), duration = VALUES(duration), reaction_count_limit = VALUES(reaction_count_limit), reaction_type_limit = VALUES(reaction_type_limit), comment_character_limit = VALUES(comment_character_limit), comment_cooldown_seconds = VALUES(comment_cooldown_seconds), lockdown_enabled = VALUES(lockdown_enabled), affected_versions = VALUES(affected_versions), automod_enabled = VALUES(automod_enabled), automod_blocked_phrases = VALUES(automod_blocked_phrases), allowed_link_hosts = VALUES(allowed_link_hosts)`,
+    [parsedAmount, parsedDuration.normalized, parsedReactionCountLimit, parsedReactionTypeLimit, parsedCommentCharacterLimit, parsedCommentCooldownSeconds, lockdownEnabled, JSON.stringify(normalizedAffectedVersions), automodEnabled, JSON.stringify(normalizedBlockedPhrases), JSON.stringify(normalizedAllowedLinkHosts)]
   );
   return getBugLimitConfig();
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import editIcon from "@/assets/icons/edit.svg";
+import lockIcon from "@/assets/icons/lock.svg";
 import xIcon from "@/assets/icons/x.svg";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
@@ -11,7 +12,7 @@ import Toggle from "@/components/Toggle";
 
 import BugReporterForm from "../BugReporterForm";
 
-export default function BugReportActions({ report, categories, versions, priorities, statuses, creatorUser, canEdit, canEditState = false, canDelete, canToggleComments = false }) {
+export default function BugReportActions({ report, categories, versions, priorities, statuses, creatorUser, canEdit, canEditState = false, canDelete, canToggleComments = false, canLock = false }) {
   const router = useRouter();
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -21,6 +22,9 @@ export default function BugReportActions({ report, categories, versions, priorit
   const [allowComments, setAllowComments] = useState(report.allowComments);
   const [commentsStatus, setCommentsStatus] = useState(null);
   const [savingComments, setSavingComments] = useState(false);
+  const [lockOpen, setLockOpen] = useState(false);
+  const [lockStatus, setLockStatus] = useState(null);
+  const [savingLock, setSavingLock] = useState(false);
 
   function handleUpdated(result) {
     setEditOpen(false);
@@ -55,6 +59,30 @@ export default function BugReportActions({ report, categories, versions, priorit
     }
   }
 
+  async function saveLockSetting() {
+    setSavingLock(true);
+    setLockStatus(null);
+    try {
+      const response = await fetch(`/api/bugs/${encodeURIComponent(report.publicId)}`, {
+        method: "PATCH",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locked: !report.locked }),
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        setLockStatus(result.error ?? "Failed to update the report lock.");
+        return;
+      }
+      setLockOpen(false);
+      router.refresh();
+    } catch {
+      setLockStatus("Failed to update the report lock.");
+    } finally {
+      setSavingLock(false);
+    }
+  }
+
   async function handleDelete() {
     setDeleting(true);
     setDeleteStatus(null);
@@ -80,6 +108,9 @@ export default function BugReportActions({ report, categories, versions, priorit
   return (
     <>
       <div className="flex flex-wrap gap-2">
+        {canLock ? (
+          <Button variant="tertiary" size="sm" icon={lockIcon} onClick={() => setLockOpen(true)}>{report.locked ? "Unlock" : "Lock"}</Button>
+        ) : null}
         {canEdit ? (
           <Button variant="tertiary" size="sm" icon={editIcon} onClick={() => setEditOpen(true)}>Edit</Button>
         ) : null}
@@ -90,6 +121,18 @@ export default function BugReportActions({ report, categories, versions, priorit
           <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>Delete</Button>
         ) : null}
       </div>
+
+      <Modal open={lockOpen} onClose={() => !savingLock && setLockOpen(false)} variant="compact">
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-heading">{report.locked ? "Unlock bug report?" : "Lock bug report?"}</h2>
+          <p className="text-sm text-muted">{report.locked ? "Users will be able to edit and comment on this report again." : "Only users with the bug_panel permission will be able to edit or comment on this report."}</p>
+          {lockStatus ? <p className="text-sm text-error">{lockStatus}</p> : null}
+          <div className="flex justify-end gap-2">
+            <Button variant="tertiary" size="sm" disabled={savingLock} onClick={() => setLockOpen(false)}>Cancel</Button>
+            <Button variant={report.locked ? "primary" : "danger"} size="sm" disabled={savingLock} onClick={saveLockSetting}>{savingLock ? "Saving..." : (report.locked ? "Unlock" : "Lock")}</Button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal open={editOpen} onClose={() => setEditOpen(false)} variant="wide" className="!p-0">
         <div className="flex flex-col">

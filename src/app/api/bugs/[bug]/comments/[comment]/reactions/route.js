@@ -31,6 +31,7 @@ export async function POST(request, { params }) {
     actorUserId: user.id,
     emoji: body.emoji,
     bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
+    bypassReportLock: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
   });
   if (result.error) return error(result.error, result.status ?? 400);
   return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });

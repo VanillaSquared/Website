@@ -48,8 +48,8 @@ export async function PATCH(request, { params }) {
       commentId: context.commentId,
       actorUserId: context.user.id,
       canManage,
-      bypassLimits: hasResolvedPermission(context.authorization, PERMISSIONS.BYPASS_LIMITS),
       bypassLockdown: hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL),
+      bypassReportLock: hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL),
       siteHostname: new URL(request.url).hostname,
       content: body.content,
     });

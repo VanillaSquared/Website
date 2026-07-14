@@ -4,7 +4,7 @@ import { getAuthSubject } from "@/app/auth";
 import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { checkLockdownAllowed } from "@/bugs/limits";
-import { deleteBugReport, updateBugCommentsSetting, updateBugReport } from "@/bugs/reporter";
+import { deleteBugReport, updateBugCommentsSetting, updateBugLockSetting, updateBugReport } from "@/bugs/reporter";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
@@ -38,8 +38,9 @@ export async function PATCH(request, { params }) {
   if (context.error) return context.error;
   const canManage = hasResolvedPermission(context.authorization, PERMISSIONS.MANAGE_BUGS);
   const canUseBugPanel = hasResolvedPermission(context.authorization, PERMISSIONS.BUG_PANEL);
+  const canSupport = canUseBugPanel;
   const canEditFields = canManage || canUseBugPanel || hasResolvedPermission(context.authorization, PERMISSIONS.EDIT_BUGS);
-  const canToggleAny = canUseBugPanel;
+  const canToggleAny = canSupport;
   const lockdown = await checkLockdownAllowed({ bypassLockdown: canUseBugPanel });
   if (!lockdown.allowed) return errorResponse(lockdown.error, 403);
   const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
@@ -52,12 +53,18 @@ export async function PATCH(request, { params }) {
     let result;
     if (contentType.startsWith("application/json")) {
       const body = await request.json().catch(() => ({}));
-      result = await updateBugCommentsSetting({
-        publicId,
-        actorUserId: context.user.id,
-        canToggleAny,
-        allowComments: body.allowComments,
-      });
+      const keys = Object.keys(body);
+      if (keys.length !== 1 || !["allowComments", "locked"].includes(keys[0])) {
+        return errorResponse("Choose one valid bug report setting.", 400);
+      }
+      result = keys[0] === "locked"
+        ? await updateBugLockSetting({ publicId, canLock: canSupport, locked: body.locked })
+        : await updateBugCommentsSetting({
+          publicId,
+          actorUserId: context.user.id,
+          canToggleAny,
+          allowComments: body.allowComments,
+        });
     } else {
       if (!canEditFields) return errorResponse("Forbidden", 403);
       if (!contentType.startsWith("multipart/form-data")) {
@@ -76,6 +83,7 @@ export async function PATCH(request, { params }) {
         canEditAny: canUseBugPanel,
         canEditState: canUseBugPanel,
         bypassLockdown: canUseBugPanel,
+        bypassReportLock: canSupport,
         formData,
       });
     }

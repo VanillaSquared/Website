@@ -91,6 +91,7 @@ export async function initializeBugReporterTables() {
             status VARCHAR(64) NOT NULL DEFAULT 'Unconfirmed',
             fixed BOOLEAN NOT NULL DEFAULT FALSE,
             allow_comments BOOLEAN NOT NULL DEFAULT TRUE,
+            locked BOOLEAN NOT NULL DEFAULT FALSE,
             affected_versions JSON NULL,
             fixed_version VARCHAR(64) NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -106,6 +107,7 @@ export async function initializeBugReporterTables() {
         await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN priority VARCHAR(32) NOT NULL DEFAULT 'unset' AFTER description");
         await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN status VARCHAR(64) NOT NULL DEFAULT 'Unconfirmed' AFTER priority");
         await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN allow_comments BOOLEAN NOT NULL DEFAULT TRUE AFTER fixed");
+        await runSchemaUpdate("ALTER TABLE bug_reports ADD COLUMN locked BOOLEAN NOT NULL DEFAULT FALSE AFTER allow_comments");
         await runSchemaUpdate("ALTER TABLE bug_reports ADD UNIQUE KEY bug_reports_category_sequence_unique (category, category_sequence)");
         await runSchemaUpdate("ALTER TABLE bug_reports MODIFY affected_versions JSON NULL");
 
@@ -602,6 +604,7 @@ function mapBugReportRow(row) {
     status: row.status,
     fixed: Boolean(row.fixed),
     allowComments: Boolean(row.allow_comments),
+    locked: Boolean(row.locked),
     affectedVersions: parseJsonArray(row.affected_versions),
     fixedVersion: row.fixed_version,
     creatorUserId: row.creator_user_id,
@@ -669,7 +672,7 @@ export async function listBugReports({ q, category, priority, status, seed = tru
 
   const orderCase = BUG_REPORT_CATEGORY_CONFIGS.map((config) => `WHEN category = '${config.slug}' THEN ${config.order}`).join(" ");
   const [rows] = await getPool().execute(
-    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, locked, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
      FROM bug_reports
      INNER JOIN users ON users.id = bug_reports.creator_user_id
      ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
@@ -723,7 +726,7 @@ export async function getBugReportByPublicId(publicId, { seed = true } = {}) {
   }
 
   const [rows] = await getPool().execute(
-    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
+    `SELECT bug_reports.id, public_id, category, category_shortening, category_sequence, title, description, priority, status, fixed, allow_comments, locked, affected_versions, fixed_version, creator_user_id, users.username AS creator_username, bug_reports.created_at, bug_reports.updated_at
      FROM bug_reports
      INNER JOIN users ON users.id = bug_reports.creator_user_id
      WHERE LOWER(public_id) = LOWER(?)
@@ -760,6 +763,7 @@ function reportAuditSnapshot(report, files = []) {
     title: report.title,
     description: report.description,
     allowComments: report.allowComments,
+    locked: report.locked,
     affectedVersions: report.affectedVersions,
     attachments: files.map((file) => ({
       id: file.id,
@@ -773,7 +777,7 @@ function reportAuditSnapshot(report, files = []) {
 async function getLockedBugReport(connection, publicId) {
   const [rows] = await connection.execute(
     `SELECT id, public_id, creator_user_id, category, category_shortening, category_sequence, title, description,
-            priority, status, fixed, allow_comments, affected_versions, fixed_version, created_at, updated_at
+            priority, status, fixed, allow_comments, locked, affected_versions, fixed_version, created_at, updated_at
      FROM bug_reports WHERE LOWER(public_id) = LOWER(?) LIMIT 1 FOR UPDATE`,
     [String(publicId ?? "").trim()]
   );
@@ -788,7 +792,7 @@ async function getLockedBugReport(connection, publicId) {
   return { report, files: fileRows.map((row) => mapBugReportFileRow(row, { includeStoragePath: true })) };
 }
 
-export async function updateBugReport({ publicId, actorUserId, canManage = false, canEditAny = false, canEditState = false, bypassLockdown = false, formData }) {
+export async function updateBugReport({ publicId, actorUserId, canManage = false, canEditAny = false, canEditState = false, bypassLockdown = false, bypassReportLock = false, formData }) {
   const lockdown = await checkLockdownAllowed({ bypassLockdown });
   if (!lockdown.allowed) return { error: lockdown.error, status: 403 };
   const config = await getBugLimitConfig();
@@ -807,6 +811,10 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
     if (!canManage && !canEditAny && current.report.creatorUserId !== actorUserId) {
       await connection.rollback();
       return { error: "Forbidden", status: 403 };
+    }
+    if (current.report.locked && !bypassReportLock) {
+      await connection.rollback();
+      return { error: "This bug report is locked.", status: 403 };
     }
 
     const validVersions = [...new Set([
@@ -898,6 +906,35 @@ export async function updateBugReport({ publicId, actorUserId, canManage = false
   }
 }
 
+export async function updateBugLockSetting({ publicId, canLock = false, locked }) {
+  if (!canLock) return { error: "Forbidden", status: 403 };
+  if (typeof locked !== "boolean") return { error: "Choose a valid lock setting.", status: 400 };
+
+  await initializeBugReporterTables();
+  const connection = await getPool().getConnection();
+  try {
+    await connection.beginTransaction();
+    const current = await getLockedBugReport(connection, publicId);
+    if (!current) {
+      await connection.rollback();
+      return { error: "Bug report not found.", status: 404 };
+    }
+    await connection.execute("UPDATE bug_reports SET locked = ? WHERE id = ?", [locked, current.report.id]);
+    await connection.commit();
+    return {
+      id: current.report.id,
+      publicId: current.report.publicId,
+      before: reportAuditSnapshot(current.report, current.files),
+      after: reportAuditSnapshot({ ...current.report, locked }, current.files),
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
 export async function updateBugCommentsSetting({ publicId, actorUserId, canToggleAny = false, allowComments }) {
   if (typeof allowComments !== "boolean") {
     return { error: "Choose a valid comments setting.", status: 400 };
@@ -915,6 +952,10 @@ export async function updateBugCommentsSetting({ publicId, actorUserId, canToggl
     if (!canToggleAny && current.report.creatorUserId !== actorUserId) {
       await connection.rollback();
       return { error: "Forbidden", status: 403 };
+    }
+    if (current.report.locked && !canToggleAny) {
+      await connection.rollback();
+      return { error: "This bug report is locked.", status: 403 };
     }
 
     await connection.execute("UPDATE bug_reports SET allow_comments = ? WHERE id = ?", [allowComments, current.report.id]);

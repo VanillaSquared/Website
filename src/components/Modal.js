@@ -244,7 +244,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
         ) : null}
       </aside>
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-modal">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-divider px-6">
           <h2 className="text-xl font-semibold text-heading">{activeItem}</h2>
           <Button size="icon" variant="tertiary" icon={closeIcon} aria-label="Close settings" onClick={onClose} />

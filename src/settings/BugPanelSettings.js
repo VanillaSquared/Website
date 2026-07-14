@@ -49,6 +49,7 @@ function configState(value = {}) {
     reactionCountLimit: String(value.reactionCountLimit ?? 3200),
     reactionTypeLimit: String(value.reactionTypeLimit ?? 20),
     commentCharacterLimit: String(value.commentCharacterLimit ?? 1000),
+    commentCooldownSeconds: String(value.commentCooldownSeconds ?? 5),
     lockdownEnabled: value.lockdownEnabled ?? false,
     affectedVersions: Array.isArray(value.affectedVersions) ? value.affectedVersions.join("\n") : String(value.affectedVersions ?? ""),
     automodEnabled: value.automodEnabled ?? true,
@@ -217,13 +218,13 @@ export default function BugPanelSettings({ permissions }) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-5">
+    <div className="flex min-h-full flex-col gap-5 pb-8">
       <Tabs tabs={[{ label: "Config", value: "config" }, { label: "Moderation", value: "moderation" }, { label: "Punishments", value: "users" }]} value={tab} onChange={setTab} line="full" />
       {status ? <p className="text-sm text-muted">{status}</p> : null}
       <ErrorText>{error}</ErrorText>
 
       {!status && tab === "config" ? (
-        <div className="max-w-2xl space-y-5">
+        <div className="max-w-2xl space-y-5 pb-4">
           <h2 className="text-base font-semibold text-heading">Bug creation limit</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="Bug count" sampleText="1" filter="integer" value={config.amount} onChange={(event) => setConfig({ ...config, amount: event.target.value })} />
@@ -241,7 +242,8 @@ export default function BugPanelSettings({ permissions }) {
           {!canManageLockdown ? <p className="text-sm text-muted">The lockdown permission is required to change this setting.</p> : null}
           <h2 className="text-base font-semibold text-heading">Comments</h2>
           <TextInput label="Comment character limit" sampleText="1000" filter="integer" value={config.commentCharacterLimit} onChange={(event) => setConfig({ ...config, commentCharacterLimit: event.target.value })} />
-          <p className="text-sm text-muted">Users with bypass_limits can exceed the character limit. Reaction limits always apply.</p>
+          <TextInput label="Comment cooldown (seconds)" sampleText="5" filter="integer" value={config.commentCooldownSeconds} onChange={(event) => setConfig({ ...config, commentCooldownSeconds: event.target.value })} />
+          <p className="text-sm text-muted">The character limit applies to all users. Users with bypass_limits bypass the comment cooldown. Reaction limits always apply.</p>
           <h2 className="text-base font-semibold text-heading">Comment reaction limits</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextInput label="Users per reaction" sampleText="3200" filter="integer" value={config.reactionCountLimit} onChange={(event) => setConfig({ ...config, reactionCountLimit: event.target.value })} />
@@ -252,8 +254,7 @@ export default function BugPanelSettings({ permissions }) {
           <h2 className="text-base font-semibold text-heading">Comment automoderation</h2>
           <Toggle label="Enable automoderation" description="Block configured phrases and links before comments are created or edited." checked={config.automodEnabled} onChange={(automodEnabled) => setConfig({ ...config, automodEnabled })} />
           <TextInput label="Blocked words and phrases" sampleText="One word or phrase per line" lines={6} value={config.blockedPhrases} onChange={(event) => setConfig({ ...config, blockedPhrases: event.target.value })} />
-          <TextInput label="Allowed link hosts" sampleText={"minecraft.wiki\nyoutube.com\nyoutu.be"} lines={5} value={config.allowedLinkHosts} onChange={(event) => setConfig({ ...config, allowedLinkHosts: event.target.value })} />
-          <p className="text-sm text-muted">One hostname per line. Subdomains and links to this website are allowed automatically; other websites are blocked.</p>
+          <TextInput label="Allowed links" sampleText={"minecraft.wiki\nyoutube.com\nyoutu.be"} lines={5} value={config.allowedLinkHosts} onChange={(event) => setConfig({ ...config, allowedLinkHosts: event.target.value })} />
           <SaveConfirmation show={configDirty} busy={busy} onReset={loadConfig} onSave={saveConfig} />
         </div>
       ) : null}

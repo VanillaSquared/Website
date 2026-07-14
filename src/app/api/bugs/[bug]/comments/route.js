@@ -53,6 +53,7 @@ export async function POST(request, { params }) {
       canWrite: hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS),
       bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
       bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
+      bypassReportLock: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
       siteHostname: new URL(request.url).hostname,
       formData,
     });

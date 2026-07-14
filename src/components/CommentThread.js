@@ -15,7 +15,7 @@ async function requestJson(path, options) {
   return result;
 }
 
-export default function CommentThread({ publicId, initialComments = [], currentUserId = null, canWrite = false, canManage = false, allowComments = true, interactionLocked = false, commentCharacterLimit = 1000, bypassCharacterLimit = false }) {
+export default function CommentThread({ publicId, initialComments = [], currentUserId = null, canWrite = false, canManage = false, canUseDeveloperTools = false, allowComments = true, interactionLocked = false, interactionLockedMessage = "The bug panel is currently in lockdown.", commentCharacterLimit = 1000 }) {
   const [comments, setComments] = useState(initialComments);
   const [editing, setEditing] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -95,21 +95,20 @@ export default function CommentThread({ publicId, initialComments = [], currentU
             previous?.creatorUserId
             && previous.creatorUserId === comment.creatorUserId
             && !previous.reactions?.length
-            && !comment.reactions?.length
           );
           return (
             <ThreadRow
               key={comment.id}
               message={comment}
               grouped={grouped}
-              canCopyId={developerMode}
+              canCopyId={canUseDeveloperTools && developerMode}
               canChange={!interactionLocked && (canManage || Boolean(currentUserId && comment.creatorUserId === currentUserId))}
               canReact={Boolean(!interactionLocked && allowComments && canWrite && currentUserId)}
               editing={editing?.id === comment.id}
               editContent={editContent}
               editError={editing?.id === comment.id ? error : ""}
               editBusy={busy}
-              editCharacterLimit={bypassCharacterLimit ? 100000 : commentCharacterLimit}
+              editCharacterLimit={commentCharacterLimit}
               onEditContentChange={setEditContent}
               onSaveEdit={saveEdit}
               onCancelEdit={() => { if (!busy) { setEditing(null); setError(""); } }}
@@ -127,9 +126,9 @@ export default function CommentThread({ publicId, initialComments = [], currentU
         className={comments.length ? "mt-6" : ""}
         onSubmit={create}
         disabled={!allowComments || !canWrite || interactionLocked}
-        disabledMessage={interactionLocked ? "The bug panel is currently in lockdown." : (!allowComments ? "Comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment."))}
+        disabledMessage={interactionLocked ? interactionLockedMessage : (!allowComments ? "Comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment."))}
         disabledHref={!interactionLocked && allowComments && !currentUserId ? `/login?returnTo=${encodeURIComponent(`/bugs/${publicId}`)}` : ""}
-        characterLimit={bypassCharacterLimit ? 100000 : commentCharacterLimit}
+        characterLimit={commentCharacterLimit}
       />
 
 
