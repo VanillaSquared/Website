@@ -44,6 +44,10 @@ Headings receive stable anchor IDs and are added to the “On this page” navig
 
 Create an inline link by putting the visible text in square brackets followed by the URL in parentheses: `[this is a hidden link](https://google.com)`. For example: [this is a hidden link](https://google.com).
 
+Use `---` on its own line to render the shared `Separator` component.
+
+---
+
 Use `-#` at the beginning of a standalone line for small, muted subheader text.
 
 -# Subheaders provide secondary context without adding an item to the page navigation.

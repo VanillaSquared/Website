@@ -47,5 +47,6 @@ export const docsComponents = {
   Tabs,
   TextInput,
   Toggle,
+  hr: Separator,
   pre: FencedCodeBlock,
 };

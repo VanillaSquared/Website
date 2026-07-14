@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 
 import CodeBlock from "@/components/CodeBlock";
+import Separator from "@/components/Separator";
 
 const inlinePatterns = [
   { expression: /\[([^\]]+?)\]\(([^)\s]+?)\)/, tag: "a" },
@@ -72,6 +73,12 @@ function renderText(text, keyPrefix) {
   }
 
   lines.forEach((line, index) => {
+    if (/^[ \t]*---[ \t]*$/.test(line)) {
+      flushPlain();
+      blocks.push(<Separator key={`${keyPrefix}-separator-${index}`} className="my-2" />);
+      return;
+    }
+
     const subheader = /^-#[ \t]+(?!#)(.+)$/.exec(line);
     if (subheader) {
       flushPlain();
