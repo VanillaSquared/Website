@@ -1,53 +1,15 @@
 ---
 title: 📘Introduction
-description: Guides and reference material for configuring and using Vanilla².
+description: Introductory to Vanilla Squared.
 order: 1
 ---
+-# The vsq wiki is updated to version -2.12.0-snapshot.4 as of 14/07/2026
 
-## Welcome
+## Overview
+Vanilla Squared (*short: "vsq"*) is a minecraft fabric mod originally created by @PainterFlow11 that updates old systems and improves Mojangs drops by a slight bit to give them that extra touch the community wanted. 
 
-Documentation pages are discovered automatically from Markdown files in `src/docs`. Use the navigation to browse a guide, or search the documentation from the site header.
+## Main Feature(s)
+Vanilla Squareds main feature is the overhauled enchanting system! Items now have enchanting slots limiting the amount of maximum enchantments that can be put on an item. The way to obtain enchantments was however also completely turned on its head, you now have to find recipes for enchanting in structures or trade for them through villagers. After that, you now also have to obtain materials on top of some level requirements. But we can't forget the new special enchantments, enchantments with a cooldown that can be used through a new keybind with some very cool effects. And to top it all of, its all fully datapack compatible, so you can use these features to create your own experience without having to know how to code. On top of all the enchanting stuff, there are also other cool changes requested by the minecraft community which didn't make it into the final drops, for example redstone sulfur cubes, this mod makes them real(*currently only available on [github](https://github.com/VanillaSquared/Mod)*) 
 
-## Authoring a page
-
-Add a `.md` file and optionally begin it with frontmatter:
-
-```md
----
-title: Items
-description: Configure custom item behavior.
-order: 20
----
-
-## First section
-
-Standard Markdown and **GitHub-flavored Markdown** are supported.
-
-<Card title="A registered component" description="Only components in the docs registry are available.">
-  Native <strong>HTML</strong> can be used inside registered components.
-</Card>
-```
-
-Nested folders create navigation groups. A folder is a clickable category when it contains a Markdown file with the same name. For example, `configuration/configuration.md` becomes `/docs/configuration`, while `configuration/items.md` becomes `/docs/configuration/items`.
-
-<Card title="Safe, reusable components" description="Button, Card, and CodeBlock are registered for documentation authors.">
-  <Button href="/components" variant="tertiary">Browse components</Button>
-</Card>
-
-## Component registry
-
-Approved components are maintained centrally in `src/docs/components.js`. Documentation files cannot import arbitrary modules.
-
-### Headings and links
-
-Headings receive stable anchor IDs and are added to the “On this page” navigation. Tables, task lists, links, and fenced code blocks are supported through GitHub-flavored Markdown.
-
-Create an inline link by putting the visible text in square brackets followed by the URL in parentheses: `[this is a hidden link](https://google.com)`. For example: [this is a hidden link](https://google.com).
-
-Use `---` on its own line to render the shared `Separator` component.
-
----
-
-Use `-#` at the beginning of a standalone line for small, muted subheader text.
-
--# Subheaders provide secondary context without adding an item to the page navigation.
+## Other Important Information
+You can report bugs through our own [bug reporter]()
