@@ -105,7 +105,16 @@ function renderText(text, keyPrefix) {
     const level = heading[1].length;
     const Heading = `h${level}`;
     const size = level === 1 ? "text-3xl" : level === 2 ? "text-2xl" : "text-xl";
-    blocks.push(<Heading key={`${keyPrefix}-heading-${index}`} className={`${size} font-bold text-heading`}>{renderInline(heading[2], `${keyPrefix}-heading-inline-${index}`)}</Heading>);
+    const compactBefore = index > 0 && lines[index - 1].trim() !== "";
+    const compactAfter = index < lines.length - 1 && lines[index + 1].trim() !== "";
+    blocks.push(
+      <Heading
+        key={`${keyPrefix}-heading-${index}`}
+        className={`markdown-heading ${size} font-bold text-heading ${compactBefore ? "markdown-heading-compact-before" : ""} ${compactAfter ? "markdown-heading-compact-after" : ""}`}
+      >
+        {renderInline(heading[2], `${keyPrefix}-heading-inline-${index}`)}
+      </Heading>,
+    );
   });
   flushPlain();
 

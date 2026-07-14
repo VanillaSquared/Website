@@ -354,18 +354,23 @@ body {
 }
 
 .docs-content h2 {
-  margin-top: 2.5rem;
   font-size: 1.5rem;
 }
 
 .docs-content h3 {
-  margin-top: 2rem;
   font-size: 1.25rem;
 }
 
 .docs-content h4 {
-  margin-top: 1.5rem;
   font-size: 1.05rem;
+}
+
+.docs-content > .docs-heading-compact-before {
+  margin-top: 0.125rem;
+}
+
+.docs-content > .docs-heading-compact-after + * {
+  margin-top: 0.25rem;
 }
 
 .docs-content p.docs-subheader {
@@ -388,7 +393,9 @@ body {
 }
 
 .markdown-content > .markdown-subheader-compact-before,
-.markdown-content > .markdown-subheader-compact-after + * {
+.markdown-content > .markdown-subheader-compact-after + *,
+.markdown-content > .markdown-heading-compact-before,
+.markdown-content > .markdown-heading-compact-after + * {
   margin-block-start: 0.125rem;
 }
 
