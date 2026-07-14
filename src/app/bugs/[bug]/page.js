@@ -18,7 +18,6 @@ export const dynamic = "force-dynamic";
 const categoryLabels = {
   "vanilla-squared": "Vanilla Squared",
   website: "Website",
-  test: "Test",
 };
 
 const priorityVariants = {

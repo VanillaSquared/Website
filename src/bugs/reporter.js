@@ -243,13 +243,6 @@ export async function seedDemoBugReports() {
           status: "Unconfirmed",
         },
         {
-          category: "test",
-          title: "Development seed entry for filter sidebar testing",
-          description: "Demo report used to verify category grouping, URL filters, and right-side filter sidebar behavior.",
-          priority: "unset",
-          status: "Works as intended",
-        },
-        {
           category: "vanilla-squared",
           title: "Nether portal cooldown occasionally persists",
           description: `A player can remain on portal cooldown after changing dimensions during server lag spikes. The player exits the portal successfully, but the cooldown state remains active long enough that walking back into a portal does nothing.\n\nThis seems most visible when TPS drops during chunk generation or when several players use portals at the same time. Relogging clears the state, so it is likely not persisted permanently, but it is confusing in normal gameplay because there is no visible timer or message explaining why the portal is not responding.\n\nExtended lorem ipsum reproduction log:\n\n${LONG_SCROLL_TEST_LOREM}`,
@@ -318,41 +311,6 @@ export async function seedDemoBugReports() {
           description: "Keyboard focus styles differ between settings navigation items and regular buttons.",
           priority: "Medium",
           status: "Unconfirmed",
-        },
-        {
-          category: "test",
-          title: "Synthetic scrolling test report alpha",
-          description: `Seed report used to ensure long lists scroll smoothly while preserving tight row hit targets.\n\n${LONG_SCROLL_TEST_LOREM}\n\n${LONG_SCROLL_TEST_LOREM}`,
-          priority: "unset",
-          status: "Works as intended",
-        },
-        {
-          category: "test",
-          title: "Synthetic scrolling test report beta",
-          description: `Seed report used to validate search previews and category ordering with multiple rows.\n\n${LONG_SCROLL_TEST_LOREM}`,
-          priority: "Low",
-          status: "Works as intended",
-        },
-        {
-          category: "test",
-          title: "Synthetic filter state persistence test",
-          description: "Seed report used to confirm that URL filters persist while searching from either search bar.",
-          priority: "Medium",
-          status: "Works as intended",
-        },
-        {
-          category: "test",
-          title: "Synthetic code red display test",
-          description: "Seed report used to verify high-contrast Code Red priority tags in the reusable tag component.",
-          priority: "Code Red",
-          status: "Unfixable",
-        },
-        {
-          category: "test",
-          title: "Synthetic vanilla bug status test",
-          description: "Seed report used to verify the Vanilla bug status appears correctly in lists and previews.",
-          priority: "High",
-          status: "Vanilla bug",
         },
       ];
 

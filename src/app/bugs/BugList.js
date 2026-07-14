@@ -11,7 +11,6 @@ import Tag from "@/components/Tag";
 const categoryLabels = {
   "vanilla-squared": "Vanilla Squared",
   website: "Website",
-  test: "Test",
 };
 
 const priorityVariants = {
