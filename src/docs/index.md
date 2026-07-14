@@ -18,7 +18,7 @@ Vanilla Squared is currently still in alpha, although the release after -2.12.0 
 Vanilla Squared always tries to update to the newest version as soon as possible with no backend support since it would be too much to handle at the moment. This will also likely not change in the future.
 
 ## Links
-- You can report bugs through our own [bug reporter](./bugs). 
+- You can report bugs through our own [bug reporter](../bugs). 
 - We also have a [discord server](https://discord.gg/pppHybq9xT), feel free to join.
 - Follow us on [bluesky](https://bsky.app/profile/painterflow11.bsky.social) for frequent updates about the mod and sneak peaks.
 - Of course you can download the mod on [Modrinth](https://modrinth.com/mod/vsq).

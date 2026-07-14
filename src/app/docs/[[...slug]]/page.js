@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 import CategoryNavigation from "@/components/CategoryNavigation";
 import CopyDocumentButton from "@/components/CopyDocumentButton";
 import DocsMarkdown from "@/components/DocsMarkdown";
-import DocsSearchResults from "@/components/DocsSearchResults";
 import OnThisPage from "@/components/OnThisPage";
-import { getBreadcrumbs, getDocsData, getDocument, searchDocuments } from "@/docs/server";
+import { getBreadcrumbs, getDocsData, getDocument } from "@/docs/server";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export function generateStaticParams() {
@@ -24,16 +23,13 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function DocsPage({ params, searchParams }) {
-  const [{ slug = [] }, queryParams] = await Promise.all([params, searchParams]);
+export default async function DocsPage({ params }) {
+  const { slug = [] } = await params;
   const document = getDocument(slug);
   if (!document) notFound();
 
   const { navigation } = getDocsData();
   const breadcrumbs = getBreadcrumbs(document);
-  const query = String(queryParams?.q ?? "").trim().slice(0, 100);
-  const searchResults = query ? searchDocuments(query) : [];
-
   return (
     <DefaultTemplatePage>
       <div className="mx-auto grid w-full max-w-[1540px] flex-1 grid-cols-1 gap-8 px-5 py-8 lg:grid-cols-[250px_minmax(0,1fr)] xl:grid-cols-[250px_minmax(0,1fr)_210px] xl:px-8">
@@ -72,7 +68,6 @@ export default async function DocsPage({ params, searchParams }) {
             </div>
           </header>
 
-          {query ? <DocsSearchResults query={query} results={searchResults} /> : null}
           <DocsMarkdown source={document.source} basePath={document.linkBase} />
         </main>
 

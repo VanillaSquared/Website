@@ -368,10 +368,28 @@ body {
   font-size: 1.05rem;
 }
 
-.docs-content .docs-subheader {
-  color: var(--vsq-text-muted);
-  font-size: 0.875rem;
-  line-height: 1.5;
+.docs-content p.docs-subheader {
+  color: var(--vsq-text-subtle);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+}
+
+.docs-content > p.docs-subheader-compact-before {
+  margin-top: 0.125rem;
+}
+
+.docs-content > p.docs-subheader-compact-after + * {
+  margin-top: 0.25rem;
+}
+
+.markdown-content > * + * {
+  margin-block-start: 0.75rem;
+}
+
+.markdown-content > .markdown-subheader-compact-before,
+.markdown-content > .markdown-subheader-compact-after + * {
+  margin-block-start: 0.125rem;
 }
 
 .docs-content :where(ul, ol) {

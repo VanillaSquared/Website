@@ -1,6 +1,6 @@
 ---
 title: Custom Items
 description: Custom Items added by the mod.
-order: 1
+order: 2
 ---
 ### Items in the Game

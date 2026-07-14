@@ -59,7 +59,7 @@ function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
           <button
             type="button"
             onClick={toggle}
-            className={`shrink-0 rounded-md p-2 transition-colors hover:bg-category-hover hover:text-heading ${selected ? "text-accent" : "text-muted"}`}
+            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-category-hover hover:text-heading ${selected ? "text-accent" : "text-muted"}`}
             aria-expanded={isOpen}
             aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
           >

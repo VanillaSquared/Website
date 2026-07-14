@@ -82,7 +82,16 @@ function renderText(text, keyPrefix) {
     const subheader = /^-#[ \t]+(?!#)(.+)$/.exec(line);
     if (subheader) {
       flushPlain();
-      blocks.push(<p key={`${keyPrefix}-subheader-${index}`} className="text-sm text-muted">{renderInline(subheader[1], `${keyPrefix}-subheader-inline-${index}`)}</p>);
+      const compactBefore = index > 0 && lines[index - 1].trim() !== "";
+      const compactAfter = index < lines.length - 1 && lines[index + 1].trim() !== "";
+      blocks.push(
+        <p
+          key={`${keyPrefix}-subheader-${index}`}
+          className={`markdown-subheader text-xs leading-5 text-subtle ${compactBefore ? "markdown-subheader-compact-before" : ""} ${compactAfter ? "markdown-subheader-compact-after" : ""}`}
+        >
+          {renderInline(subheader[1], `${keyPrefix}-subheader-inline-${index}`)}
+        </p>,
+      );
       return;
     }
 
@@ -121,5 +130,5 @@ export default function Markdown({ children, value, className = "" }) {
 
   if (cursor < markdown.length) blocks.push(...renderText(markdown.slice(cursor), `after-${cursor}`));
 
-  return <div className={`space-y-3 text-soft ${className}`}>{blocks}</div>;
+  return <div className={`markdown-content text-soft ${className}`}>{blocks}</div>;
 }

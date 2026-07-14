@@ -4,6 +4,38 @@ import remarkGfm from "remark-gfm";
 
 import { docsComponents } from "@/docs/components";
 
+const SUBHEADER_MARKER = "VSQ_SUBHEADER:";
+
+function prepareSubheaders(source) {
+  let fenceCharacter = null;
+  const lines = String(source).split("\n");
+  const prepared = [];
+
+  lines.forEach((line, index) => {
+    const fence = /^\s*(`{3,}|~{3,})/.exec(line);
+    if (fence) {
+      const character = fence[1][0];
+      if (!fenceCharacter) fenceCharacter = character;
+      else if (fenceCharacter === character) fenceCharacter = null;
+      prepared.push(line);
+      return;
+    }
+
+    const subheader = !fenceCharacter ? /^\s*-#[ \t]+(.+)$/.exec(line) : null;
+    if (!subheader) {
+      prepared.push(line);
+      return;
+    }
+
+    const compactBefore = index > 0 && lines[index - 1].trim() !== "";
+    const compactAfter = index < lines.length - 1 && lines[index + 1].trim() !== "";
+    if (prepared.at(-1) !== "") prepared.push("");
+    prepared.push(`${SUBHEADER_MARKER}${compactBefore ? "1" : "0"}${compactAfter ? "1" : "0"}: ${subheader[1]}`, "");
+  });
+
+  return prepared.join("\n");
+}
+
 function rejectModuleSyntax() {
   return (tree) => {
     const moduleNode = tree.children?.find((node) => node.type === "mdxjsEsm");
@@ -32,20 +64,22 @@ function resolveLocalLinks(basePath) {
 function formatSubheaders() {
   return (tree) => {
     function visit(node) {
-      if (
-        node.type === "paragraph"
-        && node.position?.start.line === node.position?.end.line
-        && node.children?.[0]?.type === "text"
-        && node.children[0].value.startsWith("-# ")
-      ) {
-        node.children[0].value = node.children[0].value.slice(3);
-        node.data = {
-          ...node.data,
-          hProperties: {
-            ...node.data?.hProperties,
-            className: "docs-subheader",
-          },
-        };
+      if (node.type === "paragraph" && node.children?.[0]?.type === "text") {
+        const marker = /^VSQ_SUBHEADER:([01])([01]): /.exec(node.children[0].value);
+        if (marker) {
+          node.children[0].value = node.children[0].value.slice(marker[0].length);
+          node.data = {
+            ...node.data,
+            hProperties: {
+              ...node.data?.hProperties,
+              className: [
+                "docs-subheader",
+                marker[1] === "1" ? "docs-subheader-compact-before" : null,
+                marker[2] === "1" ? "docs-subheader-compact-after" : null,
+              ].filter(Boolean),
+            },
+          };
+        }
       }
 
       node.children?.forEach(visit);
@@ -57,7 +91,7 @@ function formatSubheaders() {
 
 export default async function DocsMarkdown({ source, basePath = "/docs" }) {
   const { content } = await compileMDX({
-    source,
+    source: prepareSubheaders(source),
     components: docsComponents,
     options: {
       mdxOptions: {
