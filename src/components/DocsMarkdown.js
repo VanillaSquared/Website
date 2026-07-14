@@ -13,13 +13,39 @@ function rejectModuleSyntax() {
   };
 }
 
+function formatSubheaders() {
+  return (tree) => {
+    function visit(node) {
+      if (
+        node.type === "paragraph"
+        && node.position?.start.line === node.position?.end.line
+        && node.children?.[0]?.type === "text"
+        && node.children[0].value.startsWith("-# ")
+      ) {
+        node.children[0].value = node.children[0].value.slice(3);
+        node.data = {
+          ...node.data,
+          hProperties: {
+            ...node.data?.hProperties,
+            className: "docs-subheader",
+          },
+        };
+      }
+
+      node.children?.forEach(visit);
+    }
+
+    visit(tree);
+  };
+}
+
 export default async function DocsMarkdown({ source }) {
   const { content } = await compileMDX({
     source,
     components: docsComponents,
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm, rejectModuleSyntax],
+        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders],
         rehypePlugins: [rehypeSlug],
       },
     },

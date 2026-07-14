@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import CodeBlock from "@/components/CodeBlock";
 
 const inlinePatterns = [
+  { expression: /\[([^\]]+?)\]\(([^)\s]+?)\)/, tag: "a" },
   { expression: /\*\*([\s\S]+?)\*\*/, tag: "strong" },
   { expression: /__([\s\S]+?)__/, tag: "u" },
   { expression: /~~([\s\S]+?)~~/, tag: "s" },
@@ -34,11 +35,25 @@ function renderInline(text, keyPrefix = "inline") {
   const Tag = pattern.tag;
   const before = text.slice(0, match.index);
   const after = text.slice(match.index + match[0].length);
+  const href = pattern.tag === "a" && /^(https?:\/\/|mailto:|\/|#)/i.test(match[2]) ? match[2] : null;
+  const inlineContent = pattern.literal ? match[1] : renderInline(match[1], `${keyPrefix}-content`);
+  const renderedContent = pattern.tag === "a" ? (
+    href ? (
+      <a
+        href={href}
+        target={/^https?:\/\//i.test(href) ? "_blank" : undefined}
+        rel={/^https?:\/\//i.test(href) ? "noopener noreferrer" : undefined}
+        className="text-accent underline underline-offset-2 hover:text-heading"
+      >
+        {inlineContent}
+      </a>
+    ) : match[0]
+  ) : <Tag className={pattern.className}>{inlineContent}</Tag>;
 
   return (
     <Fragment key={keyPrefix}>
       {renderInline(before, `${keyPrefix}-before`)}
-      <Tag className={pattern.className}>{pattern.literal ? match[1] : renderInline(match[1], `${keyPrefix}-content`)}</Tag>
+      {renderedContent}
       {renderInline(after, `${keyPrefix}-after`)}
     </Fragment>
   );
@@ -57,6 +72,13 @@ function renderText(text, keyPrefix) {
   }
 
   lines.forEach((line, index) => {
+    const subheader = /^-#[ \t]+(?!#)(.+)$/.exec(line);
+    if (subheader) {
+      flushPlain();
+      blocks.push(<p key={`${keyPrefix}-subheader-${index}`} className="text-sm text-muted">{renderInline(subheader[1], `${keyPrefix}-subheader-inline-${index}`)}</p>);
+      return;
+    }
+
     const heading = /^(#{1,3})[ \t]+(?!#)(.+)$/.exec(line);
     if (!heading) {
       plainLines.push(line);
