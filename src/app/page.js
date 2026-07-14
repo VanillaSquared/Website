@@ -50,11 +50,7 @@ export default function Home() {
           >
             Discord
           </Button>
-          <Button
-            href="https://github.com/VanillaSquared/Website/wiki"
-            variant="blue"
-            external
-          >
+          <Button href="/docs" variant="blue">
             Docs
           </Button>
           <Button href="/bugs" variant="purple">
