@@ -8,7 +8,9 @@ import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Checkmark from "@/components/Checkmark";
 import ColorPicker from "@/components/ColorPicker";
+import EmojiPicker from "@/components/EmojiPicker";
 import FileUpload from "@/components/FileUpload";
+import MessageComposer from "@/components/MessageComposer";
 import ModalShowcase from "@/components/ModalShowcase";
 import MultiSelect from "@/components/MultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
@@ -17,6 +19,7 @@ import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
 import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
+import ThreadRow from "@/components/ThreadRow";
 import Toggle from "@/components/Toggle";
 import UserMultiSelect from "@/components/UserMultiSelect";
 
@@ -167,6 +170,30 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
           </section>
 
           <ModalShowcase />
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Comments</h2>
+            <Card title="Comment message" size="md">
+              <ThreadRow
+                message={{ creatorUsername: "BugHunter", content: "Hover this message to reveal its edit and delete actions.", createdAt: new Date().toISOString() }}
+                canChange
+                onEdit={() => {}}
+                onDelete={() => {}}
+              />
+            </Card>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Card title="Comment input" size="md">
+                <MessageComposer onSubmit={async () => {}} />
+              </Card>
+              <Card title="Locked comment inputs" size="md" className="space-y-3">
+                <MessageComposer disabled disabledMessage="Comments are disabled for this bug report." />
+                <MessageComposer disabled disabledMessage="Log in to comment." disabledHref="/login?returnTo=/components" />
+              </Card>
+            </div>
+            <Card title="Emoji picker" size="md" className="flex justify-end">
+              <EmojiPicker onSelect={() => {}} />
+            </Card>
+          </section>
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Profile pictures</h2>

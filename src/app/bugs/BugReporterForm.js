@@ -102,7 +102,7 @@ export default function BugReporterForm({ categories, versions, authenticated, c
         key={`comments-${resetKey}`}
         name="allowComments"
         label="Allow comments"
-        description="Let users discuss this report. Existing comments remain available if this is disabled later."
+        description="Let users discuss your bug report. Can be disabled later."
         defaultChecked={report?.allowComments ?? true}
       />
 

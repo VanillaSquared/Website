@@ -85,12 +85,13 @@ export default function CommentThread({ publicId, initialComments = [], currentU
           />
         ))}
       </div>
-      {!comments.length ? <p className="py-4 text-sm italic text-muted">No comments yet.</p> : null}
+      {!comments.length && allowComments ? <p className="py-4 text-sm italic text-muted">No comments yet.</p> : null}
       <Separator className="mb-4" />
       <MessageComposer
         onSubmit={create}
         disabled={!allowComments || !canWrite}
-        disabledMessage={!allowComments ? "New comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment.")}
+        disabledMessage={!allowComments ? "Comments are disabled for this bug report." : (currentUserId ? "You do not have permission to comment." : "Log in to comment.")}
+        disabledHref={allowComments && !currentUserId ? `/login?returnTo=${encodeURIComponent(`/bugs/${publicId}`)}` : ""}
       />
 
       <Modal open={Boolean(editing)} onClose={() => !busy && setEditing(null)} variant="compact">

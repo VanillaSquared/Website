@@ -1,3 +1,5 @@
+import editIcon from "@/assets/icons/edit.svg";
+import deleteIcon from "@/assets/icons/trash.svg";
 import AttachmentList from "@/components/AttachmentList";
 import Button from "@/components/Button";
 import ProfilePicture from "@/components/ProfilePicture";
@@ -9,7 +11,7 @@ function formatTime(value) {
 
 export default function ThreadRow({ message, canChange = false, onEdit, onDelete, attachmentHref }) {
   return (
-    <article className="flex gap-3 py-4">
+    <article className="group/message relative -mx-3 flex gap-3 rounded-lg px-3 py-4 transition-colors hover:bg-input-hover focus-within:bg-input-hover">
       <ProfilePicture size="sm" username={message.creatorUsername} className="!h-9 !w-9 !rounded-xl !text-xs" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
@@ -29,9 +31,9 @@ export default function ThreadRow({ message, canChange = false, onEdit, onDelete
           />
         ) : null}
         {canChange ? (
-          <div className="mt-2 flex gap-2">
-            <Button size="sm" variant="tertiary" onClick={onEdit}>Edit</Button>
-            <Button size="sm" variant="tertiary" onClick={onDelete}>Delete</Button>
+          <div className="absolute -top-4 right-3 z-10 flex translate-y-1 overflow-hidden rounded-md border border-control-border bg-control-panel opacity-0 shadow-lg transition-all group-hover/message:translate-y-0 group-hover/message:opacity-100 group-focus-within/message:translate-y-0 group-focus-within/message:opacity-100">
+            <Button size="icon" variant="iconButton" icon={editIcon} iconClassName="h-4 w-4" className="!h-9 !w-9 !rounded-none text-muted hover:text-heading" aria-label="Edit comment" onClick={onEdit} />
+            <Button size="icon" variant="iconButton" icon={deleteIcon} iconClassName="h-4 w-4" className="!h-9 !w-9 !rounded-none text-muted hover:text-error" aria-label="Delete comment" onClick={onDelete} />
           </div>
         ) : null}
       </div>
