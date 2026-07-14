@@ -9,7 +9,6 @@ import { validateNoClientControlledFields } from "@/security/serverFieldGuard";
 export const BUG_REPORT_CATEGORY_CONFIGS = [
   { slug: "vanilla-squared", label: "Vanilla Squared", shortening: "vsq", order: 1 },
   { slug: "website", label: "Website", shortening: "web", order: 2 },
-  { slug: "test", label: "Test", shortening: "dev", order: 3 },
 ];
 
 export const BUG_REPORT_CATEGORIES = BUG_REPORT_CATEGORY_CONFIGS.map((category) => category.slug);
