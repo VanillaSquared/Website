@@ -6,10 +6,15 @@ import settingsIcon from "@/assets/icons/settings.svg";
 import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
+import CategoryNavigation from "@/components/CategoryNavigation";
 import Checkmark from "@/components/Checkmark";
+import CodeBlock from "@/components/CodeBlock";
+import CollapsibleCategory from "@/components/CollapsibleCategory";
 import ColorPicker from "@/components/ColorPicker";
 import EmojiPicker from "@/components/EmojiPicker";
+import FileTree from "@/components/FileTree";
 import FileUpload from "@/components/FileUpload";
+import Markdown from "@/components/Markdown";
 import MessageComposer from "@/components/MessageComposer";
 import ModalShowcase from "@/components/ModalShowcase";
 import MultiSelect from "@/components/MultiSelect";
@@ -22,6 +27,8 @@ import TextInput from "@/components/TextInput";
 import ThreadRow from "@/components/ThreadRow";
 import Toggle from "@/components/Toggle";
 import UserMultiSelect from "@/components/UserMultiSelect";
+
+const previewCommentCreatedAt = "2026-07-14T14:23:20.000Z";
 
 const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple", "green", "red"];
 const buttonSizes = ["sm", "md", "icon", "iconButton"];
@@ -63,6 +70,83 @@ const selectOptions = [
   { label: "Rift", value: "rift" },
 ];
 
+const categoryItems = [
+  { id: "welcome", label: "Welcome", icon: "👋" },
+  { id: "quick-start", label: "Quick start", icon: "⚡" },
+  {
+    id: "workspace",
+    label: "Workspace",
+    icon: "🧰",
+    children: [
+      {
+        id: "projects",
+        label: "Projects",
+        icon: "📁",
+        children: [
+          {
+            id: "metadata",
+            label: "Metadata",
+            icon: "🏷️",
+            children: [
+              { id: "overview", label: "Overview", icon: "📋" },
+              { id: "validation", label: "Validation", icon: "✅" },
+            ],
+          },
+          { id: "publishing", label: "Publishing", icon: "🚀" },
+          { id: "permissions", label: "Permissions", icon: "🔐" },
+          { id: "history", label: "History", icon: "🕘" },
+        ],
+      },
+      { id: "automation", label: "Automation", icon: "⚙️" },
+      { id: "notifications", label: "Notifications", icon: "🔔" },
+    ],
+  },
+  { id: "team", label: "Team", icon: "👥", children: [{ id: "members", label: "Members", icon: "🪪" }] },
+  { id: "integrations", label: "Integrations", icon: "🔌", children: [{ id: "webhooks", label: "Webhooks", icon: "🪝" }] },
+  { id: "reference", label: "Reference", icon: "📚", children: [{ id: "schema", label: "Schema", icon: "🧱" }] },
+];
+
+const fileTreeNodes = [
+  {
+    id: "workspace-folder",
+    label: "workspace",
+    children: [
+      {
+        id: "settings-folder",
+        label: "settings",
+        children: [
+          {
+            id: "profiles-folder",
+            label: "profiles",
+            children: [
+              { id: "desktop-file", label: "desktop.json", type: "file" },
+              { id: "server-file", label: "server.json", type: "file" },
+            ],
+          },
+          { id: "defaults-file", label: "defaults.json", type: "file" },
+        ],
+      },
+    ],
+  },
+];
+
+const initialMarkdown = [
+  "# Release notes",
+  "## Highlights",
+  "The dashboard is now *faster*, **more reliable**, ~~limited~~, and __fully configurable__.",
+  "Deploy with the `production/eu-west` target when the release is ready.",
+  "",
+  "**This important note continues",
+  "on the next real line.**",
+  "",
+  "### Configuration sample",
+  "```**Formatting remains plain inside this block.**",
+  "refresh_interval: 30```",
+  "",
+  "A wrapped sentence never becomes a heading without a newline character.",
+  "## # Stacked header markers remain regular text",
+].join("\n");
+
 const groupedSelectOptions = [
   {
     label: "Permissions",
@@ -83,7 +167,10 @@ const groupedSelectOptions = [
 
 export default function ComponentPreviewContent({ embedded = false } = {}) {
   const [designTab, setDesignTab] = useState("buttons");
+  const [markdownTab, setMarkdownTab] = useState("editor");
+  const [markdownValue, setMarkdownValue] = useState(initialMarkdown);
   const [previewColor, setPreviewColor] = useState("#c269c2");
+  const [selectedCategory, setSelectedCategory] = useState("publishing");
 
   return (
     <>
@@ -122,6 +209,58 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
                 <div className="grid gap-3 md:grid-cols-2"><Toggle label="Enabled" defaultChecked /><MultiSelect label="Multi select" options={selectOptions} defaultValue={["vanilla"]} /></div>
               ) : null}
             </Card>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Documentation navigation</h2>
+            <p className="text-sm text-muted">Build navigation of any depth and expand each branch independently.</p>
+            <CategoryNavigation items={categoryItems} selectedId={selectedCategory} onSelect={(item) => setSelectedCategory(item.id)} />
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">File tree</h2>
+            <FileTree nodes={fileTreeNodes} />
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Code block</h2>
+            <p className="text-sm text-muted">Hover or keyboard-focus the block to reveal its copy button.</p>
+            <CodeBlock language="yaml">{"release:\n  channel: stable\n  automatic_updates: true"}</CodeBlock>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Rich markdown</h2>
+            <Tabs
+              tabs={[{ label: "Write", value: "editor" }, { label: "Preview", value: "preview" }]}
+              value={markdownTab}
+              onChange={setMarkdownTab}
+              line="full"
+            />
+            <Card title={markdownTab === "editor" ? "Markdown text" : "Rendered markdown"} size="md" hoverAccent={false}>
+              {markdownTab === "editor" ? (
+                <TextInput
+                  aria-label="Markdown text"
+                  lines={12}
+                  maxLines={18}
+                  value={markdownValue}
+                  onChange={(event) => setMarkdownValue(event.target.value)}
+                  inputClassName="font-mono"
+                />
+              ) : <Markdown value={markdownValue} />}
+            </Card>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">Collapsible categories</h2>
+            <div className="space-y-4">
+              <CollapsibleCategory id="cache-policy" title="cache_policy" icon="🗄️">
+                <p className="pt-3 text-soft">Controls how long generated responses remain available locally.</p>
+              </CollapsibleCategory>
+              <CollapsibleCategory id="deployment-target" title="deployment_target" icon="🌐" defaultOpen>
+                <p className="py-3 text-soft">Choose the environment and region used for the next deployment, such as <code className="rounded bg-category-label px-1.5 py-0.5 font-mono">production/eu-west</code>.</p>
+                <CodeBlock language="yaml">{"deployment:\n  target: production\n  region: eu-west"}</CodeBlock>
+              </CollapsibleCategory>
+            </div>
           </section>
 
           <section className="space-y-4">
@@ -175,7 +314,7 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
             <h2 className="text-2xl font-semibold text-heading">Comments</h2>
             <Card title="Comment message" size="md">
               <ThreadRow
-                message={{ creatorUsername: "BugHunter", content: "Hover this message to reveal its reaction, edit, and delete actions.", createdAt: new Date().toISOString(), reactions: [{ emoji: "🐛", count: 12, reacted: true }, { emoji: "👍", count: 4, reacted: false }] }}
+                message={{ creatorUsername: "BugHunter", content: "Hover this message to reveal its reaction, edit, and delete actions.", createdAt: previewCommentCreatedAt, reactions: [{ emoji: "🐛", count: 12, reacted: true }, { emoji: "👍", count: 4, reacted: false }] }}
                 canChange
                 canReact
                 onReact={() => {}}
