@@ -13,6 +13,22 @@ function rejectModuleSyntax() {
   };
 }
 
+function resolveLocalLinks(basePath) {
+  return () => (tree) => {
+    function visit(node) {
+      if (node.type === "link" && node.url?.startsWith("./")) {
+        const resolved = new URL(node.url, `https://docs.local${basePath.replace(/\/$/, "")}/`);
+        const pathname = resolved.pathname.length > 1 ? resolved.pathname.replace(/\/$/, "") : resolved.pathname;
+        node.url = `${pathname}${resolved.search}${resolved.hash}`;
+      }
+
+      node.children?.forEach(visit);
+    }
+
+    visit(tree);
+  };
+}
+
 function formatSubheaders() {
   return (tree) => {
     function visit(node) {
@@ -39,13 +55,13 @@ function formatSubheaders() {
   };
 }
 
-export default async function DocsMarkdown({ source }) {
+export default async function DocsMarkdown({ source, basePath = "/docs" }) {
   const { content } = await compileMDX({
     source,
     components: docsComponents,
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders],
+        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders, resolveLocalLinks(basePath)],
         rehypePlugins: [rehypeSlug],
       },
     },

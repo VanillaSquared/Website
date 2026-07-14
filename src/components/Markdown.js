@@ -36,7 +36,7 @@ function renderInline(text, keyPrefix = "inline") {
   const Tag = pattern.tag;
   const before = text.slice(0, match.index);
   const after = text.slice(match.index + match[0].length);
-  const href = pattern.tag === "a" && /^(https?:\/\/|mailto:|\/|#)/i.test(match[2]) ? match[2] : null;
+  const href = pattern.tag === "a" && /^(https?:\/\/|mailto:|\/|#|\.\.?\/)/i.test(match[2]) ? match[2] : null;
   const inlineContent = pattern.literal ? match[1] : renderInline(match[1], `${keyPrefix}-content`);
   const renderedContent = pattern.tag === "a" ? (
     href ? (

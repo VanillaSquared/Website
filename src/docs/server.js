@@ -158,6 +158,11 @@ export function getDocsData() {
     const parentDirectory = path.basename(path.dirname(relativeFile));
     const categoryDocument = segments.length > 0 && path.parse(relativeFile).name === parentDirectory;
     const pathname = segments.length ? `/docs/${segments.join("/")}` : "/docs";
+    const isDirectoryDocument = categoryDocument || path.parse(relativeFile).name === "index";
+    const parentSegments = segments.slice(0, -1);
+    const linkBase = isDirectoryDocument
+      ? pathname
+      : parentSegments.length ? `/docs/${parentSegments.join("/")}` : "/docs";
 
     return {
       ...metadata,
@@ -165,6 +170,7 @@ export function getDocsData() {
       source: parsed.content.trim(),
       segments,
       path: pathname,
+      linkBase,
       categoryDocument,
     };
   });

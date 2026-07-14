@@ -73,7 +73,7 @@ export default async function DocsPage({ params, searchParams }) {
           </header>
 
           {query ? <DocsSearchResults query={query} results={searchResults} /> : null}
-          <DocsMarkdown source={document.source} />
+          <DocsMarkdown source={document.source} basePath={document.linkBase} />
         </main>
 
         <aside className="hidden xl:block">
