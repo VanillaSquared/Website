@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import { compileMDX } from "next-mdx-remote/rsc";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
@@ -52,6 +55,35 @@ function resolveLocalLinks(basePath) {
         const resolved = new URL(node.url, `https://docs.local${basePath.replace(/\/$/, "")}/`);
         const pathname = resolved.pathname.length > 1 ? resolved.pathname.replace(/\/$/, "") : resolved.pathname;
         node.url = `${pathname}${resolved.search}${resolved.hash}`;
+      }
+
+      node.children?.forEach(visit);
+    }
+
+    visit(tree);
+  };
+}
+
+function resolveAssetImages() {
+  const assetsDirectory = path.resolve(process.cwd(), "src/assets");
+  const mimeTypes = {
+    ".gif": "image/gif",
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+  };
+
+  return () => (tree) => {
+    function visit(node) {
+      if (node.type === "image" && node.url?.startsWith("@/assets/")) {
+        const assetPath = path.resolve(process.cwd(), "src", node.url.slice(2));
+        const mimeType = mimeTypes[path.extname(assetPath).toLowerCase()];
+
+        if (assetPath.startsWith(`${assetsDirectory}${path.sep}`) && mimeType && fs.existsSync(assetPath)) {
+          node.url = `data:${mimeType};base64,${fs.readFileSync(assetPath).toString("base64")}`;
+        }
       }
 
       node.children?.forEach(visit);
@@ -127,7 +159,7 @@ export default async function DocsMarkdown({ source, basePath = "/docs" }) {
     components: docsComponents,
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders, formatBlockSpacing(preparedSource), resolveLocalLinks(basePath)],
+        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders, formatBlockSpacing(preparedSource), resolveLocalLinks(basePath), resolveAssetImages()],
         rehypePlugins: [rehypeSlug],
       },
     },
