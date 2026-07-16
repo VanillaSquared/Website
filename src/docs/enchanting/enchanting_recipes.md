@@ -117,4 +117,10 @@ Open an enchanting table with compatible boots and verify the ingredients, nearb
 
 ### 3. Add it to your own loot table
 
-# Enchanting Recipe Tags will soon undergo a remake, generalizing them more. This is not yet easily possible in the current version of the mod, please be patient.
+You can add your own enchantment recipe to loot tables of structures.
+
+## Enchanting Recipe Book
+
+`vsq:enchant_recipe` only unlocks recipes registered as `vsq:enchanting`.
+
+Although generic recipe tags and `vsq:randomize_recipes` support every recipe type, placing a crafting, smelting, or other non-enchanting recipe on an Enchanting Recipe Book causes the item to reject it without unlocking or consuming the book.
