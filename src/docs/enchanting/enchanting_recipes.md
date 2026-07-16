@@ -1,5 +1,5 @@
 ---
-title: Enchanting Table
-description: How to use the Vanilla Squared enchanting table.
+title: Enchanting Recipes
+description: How to make custom enchanting recipes.
 order: 3
 ---
