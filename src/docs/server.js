@@ -11,6 +11,14 @@ import { unified } from "unified";
 
 const DOCS_DIRECTORY = path.resolve(process.cwd(), "src", "docs");
 const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
+const ASSET_MIME_TYPES = {
+  ".gif": "image/gif",
+  ".jpeg": "image/jpeg",
+  ".jpg": "image/jpeg",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".webp": "image/webp",
+};
 const parser = unified().use(remarkParse);
 
 function titleFromSegment(segment) {
@@ -19,12 +27,39 @@ function titleFromSegment(segment) {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+function resolveAssetDataUrl(source) {
+  if (!String(source).startsWith("@/assets/")) return null;
+  const assetsDirectory = path.resolve(process.cwd(), "src/assets");
+  const assetPath = path.resolve(process.cwd(), "src", String(source).slice(2));
+  const mimeType = ASSET_MIME_TYPES[path.extname(assetPath).toLowerCase()];
+  if (!assetPath.startsWith(`${assetsDirectory}${path.sep}`) || !mimeType || !fs.existsSync(assetPath)) return null;
+  return `data:${mimeType};base64,${fs.readFileSync(assetPath).toString("base64")}`;
+}
+
+function normalizeSidebarCard(value) {
+  if (!value || typeof value !== "object" || value.enabled === false) return null;
+  const details = Array.isArray(value.details)
+    ? value.details
+      .filter((detail) => detail && typeof detail === "object" && detail.label && detail.value !== undefined)
+      .map((detail) => ({ label: String(detail.label), value: String(detail.value) }))
+    : [];
+
+  return {
+    title: String(value.title || "Quick information"),
+    description: value.description ? String(value.description) : "",
+    image: value.image ? resolveAssetDataUrl(value.image) : null,
+    imageAlt: value.imageAlt ? String(value.imageAlt) : "",
+    details,
+  };
+}
+
 function normalizeFrontmatter(data, fallbackSegment) {
   const parsedOrder = Number(data.order);
   return {
     title: String(data.title || titleFromSegment(fallbackSegment)).trim(),
     description: String(data.description || "").trim(),
     order: Number.isFinite(parsedOrder) ? parsedOrder : Number.MAX_SAFE_INTEGER,
+    sidebarCard: normalizeSidebarCard(data.sidebarCard),
   };
 }
 

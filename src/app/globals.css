@@ -95,10 +95,10 @@
   --vsq-tree-bg: #181818;
   --vsq-tree-border: #383838;
   --vsq-tree-hover: #242424;
-  --vsq-category-bg: #111111;
-  --vsq-category-hover: #1b1b1b;
-  --vsq-category-line: #282828;
-  --vsq-category-selected: var(--vsq-control-accent-soft);
+  --vsq-category-bg: #141414;
+  --vsq-category-hover: #1f1f1f;
+  --vsq-category-line: #2b2b2b;
+  --vsq-category-selected: #262626;
   --vsq-category-selected-text: var(--vsq-accent);
   --vsq-category-card: #191919;
   --vsq-category-card-border: #303030;
@@ -330,6 +330,73 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
+}
+
+.docs-resize-handle {
+  position: fixed;
+  z-index: 40;
+  top: 4rem;
+  bottom: 0;
+  width: 9px;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.docs-resize-handle::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 4px;
+  width: 1px;
+  background: var(--vsq-category-line);
+  content: "";
+  transition: background-color 120ms ease;
+}
+
+.docs-resize-handle:hover::after,
+.docs-resize-handle:focus-visible::after {
+  background: var(--vsq-accent);
+}
+
+.docs-resize-handle:focus-visible {
+  outline: none;
+}
+
+.docs-resize-handle-left {
+  left: calc(var(--docs-left-width, 280px) - 4px);
+}
+
+.docs-resize-handle-right {
+  right: calc(var(--docs-right-width, 300px) - 4px);
+}
+
+@media (min-width: 64rem) {
+  .docs-layout-grid {
+    grid-template-columns: var(--docs-left-width, 280px) minmax(0, 1fr);
+  }
+
+  .has-docs-layout footer {
+    background: linear-gradient(
+      to right,
+      var(--vsq-category-bg) 0 var(--docs-left-width, 280px),
+      var(--background) var(--docs-left-width, 280px) 100%
+    );
+  }
+}
+
+@media (min-width: 80rem) {
+  .docs-layout-grid {
+    grid-template-columns: var(--docs-left-width, 280px) minmax(0, 1fr) var(--docs-right-width, 300px);
+  }
+
+  .has-docs-layout footer {
+    background: linear-gradient(
+      to right,
+      var(--vsq-category-bg) 0 var(--docs-left-width, 280px),
+      var(--background) var(--docs-left-width, 280px) calc(100% - var(--docs-right-width, 300px)),
+      var(--vsq-category-bg) calc(100% - var(--docs-right-width, 300px)) 100%
+    );
+  }
 }
 
 .docs-content {

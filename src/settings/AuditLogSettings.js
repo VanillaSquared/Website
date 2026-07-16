@@ -156,7 +156,16 @@ export default function AuditLogSettings() {
             </div>
           ))}
           {!logs.length && !loading ? <p className="py-10 text-center text-sm text-muted">No audit logs found.</p> : null}
-          {hasMore ? <Button className="mx-auto mt-4 flex" variant="tertiary" disabled={loading} onClick={() => loadLogs({ append: true, cursor: nextCursor })}>{loading ? "Loading..." : "Load more"}</Button> : null}
+          {hasMore ? (
+            <button
+              type="button"
+              className="mx-auto mt-4 block text-sm text-muted transition-colors hover:text-soft hover:underline disabled:cursor-default disabled:no-underline disabled:opacity-60"
+              disabled={loading}
+              onClick={() => loadLogs({ append: true, cursor: nextCursor })}
+            >
+              {loading ? "Loading..." : "Load more"}
+            </button>
+          ) : null}
         </div>
       </div>
 

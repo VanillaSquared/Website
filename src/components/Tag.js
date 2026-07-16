@@ -6,7 +6,7 @@ const variants = {
   medium: "border-[var(--vsq-tag-medium-border)] bg-[var(--vsq-tag-medium-bg)] text-[var(--vsq-tag-medium-text)]",
   high: "border-[var(--vsq-tag-high-border)] bg-[var(--vsq-tag-high-bg)] text-[var(--vsq-tag-high-text)]",
   codeRed: "border-[var(--vsq-tag-code-red-border)] bg-[var(--vsq-tag-code-red-bg)] text-[var(--vsq-tag-code-red-text)]",
-  locked: "border-[var(--vsq-locked-border)] bg-[var(--vsq-locked-bg)] text-[var(--vsq-locked-text)]",
+  locked: "cursor-not-allowed border-[var(--vsq-locked-border)] bg-[var(--vsq-locked-bg)] text-[var(--vsq-locked-text)]",
 };
 
 export default function Tag({ children, variant = "default", color, bordered = false, className = "" }) {

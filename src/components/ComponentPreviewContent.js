@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
+import enchantingTableImage from "@/assets/docs/enchantment_table.png";
 import settingsIcon from "@/assets/icons/settings.svg";
 import HeaderAuthButton from "@/components/AuthButton";
 import Button from "@/components/Button";
@@ -363,6 +365,17 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
               >
                 <TextInput label="Username" name="preview-username" sampleText="Steve" />
               </Card>
+              <Card
+                title="Enchanting Table"
+                preset="info"
+                media={<Image src={enchantingTableImage} alt="Vanilla Squared enchanting table" className="h-auto w-full object-contain" />}
+                description="A recipe-driven replacement for random enchanting."
+                details={[
+                  { label: "System", value: "Recipe based" },
+                  { label: "Materials", value: "Lapis and four ingredients" },
+                  { label: "Result", value: "One selected enchantment" },
+                ]}
+              />
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {cardSizes.map((size) => (

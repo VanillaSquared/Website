@@ -217,7 +217,7 @@ export default function FileUpload({
         tabIndex={!showBrowseButton && !locked ? 0 : undefined}
         className={`flex flex-col items-center justify-center rounded-xl border border-dashed px-5 text-center transition-colors ${compact ? "gap-2 py-4" : "gap-3 py-8"} ${
           locked
-            ? "border-locked-input-border bg-locked-input"
+            ? "cursor-not-allowed border-locked-input-border bg-locked-input"
             : isDragging
               ? "border-control-accent bg-control-accent-soft"
               : `border-control-border bg-control hover:border-control-border-hover hover:bg-control-hover ${!showBrowseButton ? "cursor-pointer" : ""}`

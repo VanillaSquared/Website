@@ -21,7 +21,7 @@ function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
   const hasChildren = Boolean(item.children?.length);
   const isOpen = openIds.has(item.id);
   const selected = item.id === selectedId;
-  const itemClasses = `flex min-w-0 flex-1 items-center gap-2 rounded-md px-3 py-2 text-left transition-colors ${selected ? "bg-control-accent-soft text-accent" : "text-muted hover:bg-category-hover hover:text-heading"}`;
+  const itemClasses = `flex min-w-0 flex-1 items-center gap-3 px-3 py-2.5 text-left text-base font-semibold transition-colors ${selected ? "text-category-selected-text" : "text-soft hover:text-heading"}`;
   const content = (
     <>
       {item.icon ? <span className="w-5 shrink-0 text-center" aria-hidden="true">{item.icon}</span> : null}
@@ -40,7 +40,7 @@ function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
 
   return (
     <li>
-      <div className="flex items-center gap-1">
+      <div className={`flex items-center rounded-md transition-colors ${selected ? "bg-category-selected" : "hover:bg-category-hover"}`}>
         {item.href ? (
           <Link href={item.href} onClick={() => onSelect?.(item)} className={itemClasses} aria-current={selected ? "page" : undefined}>
             {content}
@@ -59,16 +59,16 @@ function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
           <button
             type="button"
             onClick={toggle}
-            className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-category-hover hover:text-heading ${selected ? "text-accent" : "text-muted"}`}
+            className={`inline-flex h-10 w-10 shrink-0 items-center justify-center transition-colors hover:text-heading ${selected ? "text-category-selected-text" : "text-muted"}`}
             aria-expanded={isOpen}
             aria-label={`${isOpen ? "Collapse" : "Expand"} ${item.label}`}
           >
-            <Chevron expanded={isOpen} />
+            <Chevron expanded={isOpen} thick className="h-2.5 w-2.5" />
           </button>
         ) : null}
       </div>
       {hasChildren && isOpen ? (
-        <ul className="mt-0.5 space-y-0.5 border-l border-category-line pl-3">
+        <ul className="mt-0.5 ml-4 space-y-0.5">
           {item.children.map((child) => <CategoryItem key={child.id} item={child} selectedId={selectedId} onSelect={onSelect} openIds={openIds} setOpenIds={setOpenIds} />)}
         </ul>
       ) : null}
@@ -85,8 +85,8 @@ export default function CategoryNavigation({ items = [], selectedId, onSelect, c
   }, [items, selectedId]);
 
   return (
-    <nav className={`w-full rounded-xl bg-category p-3 ${className}`} aria-label="Documentation">
-      <ul className="space-y-0.5">{items.map((item) => <CategoryItem key={item.id} item={item} selectedId={selectedId} onSelect={onSelect} openIds={openIds} setOpenIds={setOpenIds} />)}</ul>
+    <nav className={`w-full bg-category px-4 py-5 ${className}`} aria-label="Documentation">
+      <ul className="space-y-1">{items.map((item) => <CategoryItem key={item.id} item={item} selectedId={selectedId} onSelect={onSelect} openIds={openIds} setOpenIds={setOpenIds} />)}</ul>
     </nav>
   );
 }

@@ -44,7 +44,7 @@ export default function MessageComposer({ onSubmit, disabled = false, disabledMe
 
   if (disabled) {
     const message = disabledMessage || "Comments are unavailable.";
-    const classes = `block w-full rounded-xl border border-locked-input-border bg-locked-input px-4 py-3 text-sm text-locked-text ${className}`;
+    const classes = `block w-full rounded-xl border border-locked-input-border bg-locked-input px-4 py-3 text-sm text-locked-text ${disabledHref ? "cursor-pointer" : "cursor-not-allowed"} ${className}`;
     return disabledHref ? <a href={disabledHref} className={`${classes} hover:text-soft`}>{message}</a> : <div className={classes} aria-disabled="true">{message}</div>;
   }
 

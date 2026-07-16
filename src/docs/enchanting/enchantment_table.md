@@ -2,13 +2,24 @@
 title: Enchanting Table
 description: How to use the Vanilla Squared enchanting table.
 order: 3
+sidebarCard:
+  enabled: true
+  title: Enchanting Table
+  image: "@/assets/docs/enchantment_table.png"
+  imageAlt: The Vanilla Squared enchanting table interface
+  description: The table before an enchanting recipe is selected.
+  details:
+    - label: System
+      value: Learned recipes
+    - label: Ingredient slots
+      value: Lapis and four materials
+    - label: Requirements
+      value: Levels and nearby blocks
+    - label: Result
+      value: One chosen enchantment
 ---
 
 The enchanting table uses learned recipes instead of offering random enchantments.
-
-![The Vanilla Squared enchanting table interface](@/assets/docs/enchantment_table.png)
-
-*The enchanting table before a recipe is selected.*
 
 ## Table layout
 
