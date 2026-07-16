@@ -12,7 +12,7 @@ const inlinePatterns = [
     expression: /(?<!`)`(?!`)([\s\S]+?)(?<!`)`(?!`)/,
     tag: "code",
     literal: true,
-    className: "rounded border border-category-label-border bg-category-label px-1.5 py-0.5 font-mono text-sm text-heading",
+    className: "rounded border border-category-label-border bg-category-label font-mono text-sm text-heading",
   },
   { expression: /(?<!\*)\*(?!\*)([\s\S]+?)(?<!\*)\*(?!\*)/, tag: "em" },
 ];

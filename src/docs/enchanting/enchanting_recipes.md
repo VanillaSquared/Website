@@ -11,32 +11,31 @@ Enchanting recipes are loaded from data packs. Place them at **data/namespace/re
 <JsonTree>
   <JsonTreeItem type="object" contents="The root object.">
     <JsonTreeItem type="string" contents="**type**: In this case, it's `vsq:enchanting`." />
-    <JsonTreeItem type="string" contents="**category**: one of ``" />
-    <JsonTreeItem type="string" contents="**group** (optional): Groups related recipes in the recipe book. Defaults to an empty string." />
-    <JsonTreeItem type="object" contents="**description**: A Minecraft text component shown in the recipe tooltip. Plain text is also accepted." />
-    <JsonTreeItem type="object" contents="**icon**: The recipe book icon.">
-      <JsonTreeItem type="string" contents="**id**: One item ID. Item tags are not accepted." />
-      <JsonTreeItem type="object" contents="**components**: A data component patch; may be empty. Item name, lore, glint, and other item components are supported." />
+    <JsonTreeItem type="string" contents="**category**: one of `armor`, `weapons`, `tools`, `util` -- category in the enchanting tables recipe book" />
+    <JsonTreeItem type="string" contents="**group** *(optional)*: Group multiple recipes with the same group id together, this will display them as one in the recipe book" />
+    <JsonTreeItem type="object" contents="**description**: [Text Component](https://minecraft.wiki/w/Text_component_format) -- the text shown when hovering over the enchant book in the UI" />
+    <JsonTreeItem type="object" contents="**icon**: The icon in the recipe book.">
+      <JsonTreeItem type="string" contents="**id**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items), Item Tags are not accepted." />
+      <JsonTreeItem type="object" contents="**components**: [Data Components](https://minecraft.wiki/w/Data_component_format) which are applied to the icon in the recipe book." />
     </JsonTreeItem>
-    <JsonTreeItem type="object" contents="**material**: The ingredient placed in the material slot.">
-      <JsonTreeItem type="string" contents="**item**: An item ID or an item tag beginning with #. Required unless fabric:type is present." />
-      <JsonTreeItem type="string" contents="**fabric:type** (optional): A Fabric custom ingredient type. Used instead of item." />
-      <JsonTreeItem type="number" contents="**count** (optional): A level-based value. Defaults to 1." />
+    <JsonTreeItem type="boolean" contents="**show_notification** *(optional)*: Determines if a notification is shown when unlocking the recipe. Defaults to `true`." />
+    <JsonTreeItem type="object" contents="**material**: The material which is placed in the middle slot of the cross.">
+      <JsonTreeItem type="string" contents="**item**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items) or an [Item Tag](https://minecraft.wiki/w/Item_tag_(Java_Edition)) beginning with `#`." />
+      <JsonTreeItem type="integer" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
     </JsonTreeItem>
-    <JsonTreeItem type="array" contents="**ingredients**: Exactly four ingredient objects. Their order does not matter.">
-      <JsonTreeItem type="object" contents="A cross-slot ingredient.">
-        <JsonTreeItem type="string" contents="**item**: An item ID or an item tag beginning with #. Required unless fabric:type is present." />
-        <JsonTreeItem type="string" contents="**fabric:type** (optional): A Fabric custom ingredient type. Other fields depend on that type." />
-        <JsonTreeItem type="number" contents="**count** (optional): A level-based value. Defaults to 1." />
+    <JsonTreeItem type="array" contents="**ingredients**: Requires Exactly 4 Ingredients, only 1 out of the 4 is shown here. The order does not matter. They are the 4 cross slots around the middle slot where the lapis usually goes.">
+      <JsonTreeItem type="object" contents="">
+        <JsonTreeItem type="string" contents="**item**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items) or an [Item Tag](https://minecraft.wiki/w/Item_tag_(Java_Edition)) beginning with `#`" />
+        <JsonTreeItem type="integer" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="array" contents="**blocks** (optional): Nearby block requirements. Defaults to an empty list.">
+    <JsonTreeItem type="array" contents="**blocks** *(optional)*: Nearby block requirements. Defaults to an empty list.">
       <JsonTreeItem type="object" contents="A block requirement.">
         <JsonTreeItem type="string" contents="**block**: A block ID or a block tag beginning with #." />
-        <JsonTreeItem type="number" contents="**count** (optional): A level-based value. Defaults to 1." />
+        <JsonTreeItem type="integer" contents="**count** *(optional)*: A level-based value. Defaults to 1." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="number" contents="**level**: A level-based value defining the experience levels consumed." />
+    <JsonTreeItem type="integer" contents="**level**: A level-based value defining the experience levels consumed." />
     <JsonTreeItem type="string" contents="**enchantment**: The ID of the enchantment to apply." />
   </JsonTreeItem>
 </JsonTree>
