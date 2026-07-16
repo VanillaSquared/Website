@@ -2,6 +2,7 @@ import { Fragment } from "react";
 
 import CodeBlock from "@/components/CodeBlock";
 import Separator from "@/components/Separator";
+import { replaceDoubleHyphens } from "@/markdown/emDash";
 
 const inlinePatterns = [
   { expression: /\[([^\]]+?)\]\(([^)\s]+?)\)/, tag: "a" },
@@ -31,7 +32,7 @@ function renderInline(text, keyPrefix = "inline") {
     }
   }
 
-  if (!match) return text;
+  if (!match) return replaceDoubleHyphens(text);
 
   const Tag = pattern.tag;
   const before = text.slice(0, match.index);

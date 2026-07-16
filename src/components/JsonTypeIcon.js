@@ -27,8 +27,7 @@ const typeDefinitions = {
   string: { icon: stringIcon },
 };
 
-export default function JsonTypeIcon({ type = "object", className = "", title }) {
-  const requestedType = String(type).toLowerCase();
+function TypeIcon({ requestedType, className = "", title }) {
   const definition = typeDefinitions[requestedType] ?? typeDefinitions.object;
   const normalizedType = definition.normalizedType ?? (typeDefinitions[requestedType] ? requestedType : "object");
   const accessibleLabel = title ?? `${normalizedType} value`;
@@ -40,6 +39,26 @@ export default function JsonTypeIcon({ type = "object", className = "", title })
       aria-label={accessibleLabel}
     >
       <Image className="json-type-icon-image" src={definition.icon} alt="" width={16} height={16} aria-hidden="true" />
+    </span>
+  );
+}
+
+export default function JsonTypeIcon({ type = "object", className = "", title }) {
+  const requestedTypes = String(type)
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  const types = requestedTypes.length ? requestedTypes : ["object"];
+
+  if (types.length === 1) {
+    return <TypeIcon requestedType={types[0]} className={className} title={title} />;
+  }
+
+  return (
+    <span className={`json-type-icons ${className}`} title={title}>
+      {types.map((requestedType, index) => (
+        <TypeIcon key={`${requestedType}-${index}`} requestedType={requestedType} />
+      ))}
     </span>
   );
 }

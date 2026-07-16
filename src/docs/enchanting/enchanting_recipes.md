@@ -21,62 +21,29 @@ Enchanting recipes are loaded from data packs. Place them at **data/namespace/re
     <JsonTreeItem type="boolean" contents="**show_notification** *(optional)*: Determines if a notification is shown when unlocking the recipe. Defaults to `true`." />
     <JsonTreeItem type="object" contents="**material**: The material which is placed in the middle slot of the cross.">
       <JsonTreeItem type="string" contents="**item**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items) or an [Item Tag](https://minecraft.wiki/w/Item_tag_(Java_Edition)) beginning with `#`." />
-      <JsonTreeItem type="integer" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
+      <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
     </JsonTreeItem>
     <JsonTreeItem type="array" contents="**ingredients**: Requires Exactly 4 Ingredients, only 1 out of the 4 is shown here. The order does not matter. They are the 4 cross slots around the middle slot where the lapis usually goes.">
       <JsonTreeItem type="object" contents="">
         <JsonTreeItem type="string" contents="**item**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items) or an [Item Tag](https://minecraft.wiki/w/Item_tag_(Java_Edition)) beginning with `#`" />
-        <JsonTreeItem type="integer" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
+        <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="array" contents="**blocks** *(optional)*: Nearby block requirements. Defaults to an empty list.">
-      <JsonTreeItem type="object" contents="A block requirement.">
-        <JsonTreeItem type="string" contents="**block**: A block ID or a block tag beginning with #." />
-        <JsonTreeItem type="integer" contents="**count** *(optional)*: A level-based value. Defaults to 1." />
+    <JsonTreeItem type="array" contents="**blocks** *(optional)*: Required Blocks to be placed around the enchantment table in a 2 block range in all directions.">
+      <JsonTreeItem type="object" contents="">
+        <JsonTreeItem type="string" contents="**block**: [Block ID](https://minecraft.wiki/w/Java_Edition_data_values#Blocks) or a [Block Tag](https://minecraft.wiki/w/Block_tag_(Java_Edition)) beginning with `#`" />
+        <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="integer" contents="**level**: A level-based value defining the experience levels consumed." />
-    <JsonTreeItem type="string" contents="**enchantment**: The ID of the enchantment to apply." />
+    <JsonTreeItem type="integer, object" contents="**level** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). The amount of levels to be consumed when enchanting." />
+    <JsonTreeItem type="string" contents="**enchantment**: [Enchantment ID](https://minecraft.wiki/w/Java_Edition_data_values#Enchantments). The resulting enchantment to apply." />
   </JsonTreeItem>
 </JsonTree>
 
-The icon only controls recipe book display. Supported items, maximum levels, and incompatible enchantments come from the enchantment definition and are enforced automatically.
+-# The icon only controls recipe book display. Supported items, maximum levels, and incompatible enchantments come from the enchantment definition and are automatically carried over.
+-# Other value types supported by Minecraft are accepted. Results are rounded down. Item counts are clamped to valid stack sizes, block counts have a minimum of 1, and experience costs have a minimum of 0.
 
 The old **level_multiplier** field is rejected. Use **level** instead.
-
-### Category values
-
-| Value | Recipe book tab |
-| --- | --- |
-| weapons | Weapons such as swords, bows, and tridents |
-| tools | Pickaxes, axes, shovels, and similar tools |
-| armor | Armor and wearable equipment |
-| util | General-purpose enchantments |
-
-The category does not affect which items accept the enchantment.
-
-### Level-based values
-
-The **material count**, each **ingredient count**, each **block count**, and **level** accept a Minecraft level-based value.
-
-<JsonTree>
-  <JsonTreeItem type="number" contents="**Constant value**: A number which stays the same at every target enchantment level." />
-  <JsonTreeItem type="object" contents="**Linear value**: A value which increases with the target enchantment level.">
-    <JsonTreeItem type="string" contents="**type**: minecraft:linear" />
-    <JsonTreeItem type="number" contents="**base**: Value at enchantment level I." />
-    <JsonTreeItem type="number" contents="**per_level_above_first**: Amount added for every level above I." />
-  </JsonTreeItem>
-</JsonTree>
-
-A linear value with a base of 2 and 3 per level produces:
-
-| Target level | Result |
-| --- | ---: |
-| I | 2 |
-| II | 5 |
-| III | 8 |
-
-Other value types supported by Minecraft are accepted. Results are rounded down. Item counts are clamped to valid stack sizes, block counts have a minimum of 1, and experience costs have a minimum of 0.
 
 ## Creating a custom recipe
 
@@ -138,7 +105,7 @@ Use an existing enchantment ID or one supplied by another data pack or mod. The 
 
 ### 2. Load and test it
 
-Run **/reload**. Invalid recipes are skipped and reported in the server log.
+Run `/reload` or rejoin your world. Invalid recipes are skipped and reported in the server log.
 
 Grant the recipe for testing:
 
@@ -148,16 +115,6 @@ Grant the recipe for testing:
 
 Open an enchanting table with compatible boots and verify the ingredients, nearby blocks, cost, and upgrades.
 
-### 3. Add it to recipe-book loot
+### 3. Add it to your own loot table
 
-Without a recipe tag, the recipe can only be obtained through commands. To add it to the default Enchanting Recipe Book pool, create **data/vsq/tags/recipe/default.json**:
-
-```json
-{
-  "values": [
-    "example:frost_walker"
-  ]
-}
-```
-
-For more controlled distribution, use a specific Vanilla Squared recipe tag such as **vsq:fishing**, **vsq:ancient_city_chest**, or **vsq:villager/librarian/snow**. Entries must be direct recipe IDs; nested tag references are not supported.
+# Enchanting Recipe Tags will soon undergo a remake, generalizing them more. This is not yet easily possible in the current version of the mod, please be patient.

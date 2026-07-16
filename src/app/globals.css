@@ -603,6 +603,13 @@ body {
   gap: 0.3rem;
 }
 
+.json-type-icons {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.125rem;
+}
+
 .json-type-icon {
   display: inline-grid;
   width: 1rem;

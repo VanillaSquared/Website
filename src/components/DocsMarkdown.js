@@ -6,6 +6,7 @@ import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 
 import { docsComponents } from "@/docs/components";
+import { remarkEmDashes } from "@/markdown/emDash";
 
 const SUBHEADER_MARKER = "VSQ_SUBHEADER:";
 
@@ -159,7 +160,7 @@ export default async function DocsMarkdown({ source, basePath = "/docs" }) {
     components: docsComponents,
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm, rejectModuleSyntax, formatSubheaders, formatBlockSpacing(preparedSource), resolveLocalLinks(basePath), resolveAssetImages()],
+        remarkPlugins: [remarkGfm, remarkEmDashes, rejectModuleSyntax, formatSubheaders, formatBlockSpacing(preparedSource), resolveLocalLinks(basePath), resolveAssetImages()],
         rehypePlugins: [rehypeSlug],
       },
     },
