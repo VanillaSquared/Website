@@ -106,6 +106,13 @@
   --vsq-category-label-border: #484848;
   --vsq-docs-table-stripe: #1a1a1a;
   --vsq-docs-quote-bg: #1b181b;
+  --vsq-json-tree-line: #555963;
+  --vsq-json-icon-text: #ffffff;
+  --vsq-json-icon-object: #64748b;
+  --vsq-json-icon-array: #ea8a00;
+  --vsq-json-icon-string: #727780;
+  --vsq-json-icon-number: #4146ba;
+  --vsq-json-icon-boolean: #16856f;
 
   --vsq-button-primary: #bd72bd;
   --vsq-button-primary-hover: #a966a9;
@@ -520,9 +527,6 @@ body {
 }
 
 .docs-content table {
-  display: block;
-  width: 100%;
-  overflow-x: auto;
   border-collapse: collapse;
 }
 
@@ -539,6 +543,80 @@ body {
 .docs-content tbody tr:nth-child(even) {
   background: var(--vsq-docs-table-stripe);
 }
+
+.docs-content .json-tree,
+.docs-content .json-tree-children {
+  list-style: none;
+}
+
+.docs-content .json-tree {
+  margin: 0;
+  padding: 0;
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.docs-content .json-tree-children {
+  margin: 0 0 0 0.45rem;
+  padding: 0 0 0 1rem;
+  border-left: 1px solid var(--vsq-json-tree-line);
+}
+
+.json-tree-item {
+  position: relative;
+}
+
+.docs-content .json-tree-item + .json-tree-item {
+  margin-top: 0;
+}
+
+.json-tree-children > .json-tree-item::before {
+  position: absolute;
+  z-index: 1;
+  top: 0.675rem;
+  left: -1rem;
+  width: 0.75rem;
+  border-top: 1px solid var(--vsq-json-tree-line);
+  content: "";
+}
+
+.json-tree-children > .json-tree-item:last-child::after {
+  position: absolute;
+  top: calc(0.675rem + 1px);
+  bottom: 0;
+  left: calc(-1rem - 1px);
+  width: 3px;
+  background: var(--background);
+  content: "";
+}
+
+.json-tree-row {
+  display: flex;
+  min-height: 1.35rem;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.json-type-icon {
+  display: inline-flex;
+  width: 0.95rem;
+  height: 0.95rem;
+  flex: 0 0 0.95rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in srgb, currentColor 65%, var(--vsq-json-icon-text));
+  color: var(--vsq-json-icon-text);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.json-type-icon-object { background: var(--vsq-json-icon-object); font-size: 0.48rem; }
+.json-type-icon-array { background: var(--vsq-json-icon-array); font-size: 0.8rem; }
+.json-type-icon-string { background: var(--vsq-json-icon-string); }
+.json-type-icon-number { background: var(--vsq-json-icon-number); }
+.json-type-icon-boolean { background: var(--vsq-json-icon-boolean); }
 
 .docs-content hr {
   border-color: var(--vsq-border-divider);

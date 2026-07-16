@@ -4,102 +4,72 @@ description: The enchanting recipe JSON format and how to add custom recipes.
 order: 3
 ---
 
-Enchanting recipes are data-driven and can be added or replaced by data packs.
-
-Recipe files belong in `data/<namespace>/recipe/<path>.json`. The file path becomes the recipe ID. For example, `data/example/recipe/frost_walker.json` defines `example:frost_walker`.
+Enchanting recipes are loaded from data packs. Place them at **data/namespace/recipe/path.json**. The namespace and path become the recipe ID.
 
 ## JSON format
 
-- **Root object**
-  - **`type`**: String. Required. Must be `vsq:enchanting`.
-  - **`category`**: String. Required. The recipe book tab: `weapons`, `tools`, `armor`, or `util`.
-  - **`group`**: String. Optional. Recipes with the same non-empty group are grouped in the recipe book. Defaults to an empty string.
-  - **`description`**: [Text component](https://minecraft.wiki/w/Raw_JSON_text_format). Required. Text shown in the recipe tooltip. A plain string, `text` object, or `translate` object can be used.
-  - **`icon`**: Object. Required. Controls how the recipe appears in the recipe book.
-    - **`id`**: Item ID. Required. Must be one item, not an item tag.
-    - **`components`**: Data component patch. Required, but may be `{}`. Components such as `minecraft:item_name`, `minecraft:lore`, and `minecraft:enchantment_glint_override` can customize the icon.
-  - **`material`**: Ingredient object. Required. The ingredient placed in the material slot, normally lapis lazuli.
-    - **`item`**: Item ID or item tag. Required unless `fabric:type` is used. Prefix tags with `#`.
-    - **`fabric:type`**: Fabric custom ingredient type. Optional alternative to `item`. Other fields depend on that ingredient type.
-    - **`count`**: Level-based value. Optional; defaults to `1`.
-  - **`ingredients`**: Array. Required. Must contain exactly four ingredient objects. They are matched without regard to order.
-    - **Ingredient object**
-      - **`item`**: Item ID or item tag. Required unless `fabric:type` is used.
-      - **`fabric:type`**: Fabric custom ingredient type. Optional alternative to `item`.
-      - **`count`**: Level-based value. Optional; defaults to `1`.
-  - **`blocks`**: Array. Optional. Nearby block requirements. Defaults to an empty array.
-    - **Block requirement object**
-      - **`block`**: Block ID or block tag. Required. Prefix tags with `#`.
-      - **`count`**: Level-based value. Optional; defaults to `1`.
-  - **`level`**: Level-based value. Required. Experience levels consumed when applying the enchantment.
-  - **`enchantment`**: Enchantment ID. Required. The enchantment applied by the recipe.
+<JsonTree>
+  <JsonTreeItem type="object" contents="The root object.">
+    <JsonTreeItem type="string" contents="**type**: In this case, it's `vsq:enchanting`." />
+    <JsonTreeItem type="string" contents="**category**: one of ``" />
+    <JsonTreeItem type="string" contents="**group** (optional): Groups related recipes in the recipe book. Defaults to an empty string." />
+    <JsonTreeItem type="object" contents="**description**: A Minecraft text component shown in the recipe tooltip. Plain text is also accepted." />
+    <JsonTreeItem type="object" contents="**icon**: The recipe book icon.">
+      <JsonTreeItem type="string" contents="**id**: One item ID. Item tags are not accepted." />
+      <JsonTreeItem type="object" contents="**components**: A data component patch; may be empty. Item name, lore, glint, and other item components are supported." />
+    </JsonTreeItem>
+    <JsonTreeItem type="object" contents="**material**: The ingredient placed in the material slot.">
+      <JsonTreeItem type="string" contents="**item**: An item ID or an item tag beginning with #. Required unless fabric:type is present." />
+      <JsonTreeItem type="string" contents="**fabric:type** (optional): A Fabric custom ingredient type. Used instead of item." />
+      <JsonTreeItem type="number" contents="**count** (optional): A level-based value. Defaults to 1." />
+    </JsonTreeItem>
+    <JsonTreeItem type="array" contents="**ingredients**: Exactly four ingredient objects. Their order does not matter.">
+      <JsonTreeItem type="object" contents="A cross-slot ingredient.">
+        <JsonTreeItem type="string" contents="**item**: An item ID or an item tag beginning with #. Required unless fabric:type is present." />
+        <JsonTreeItem type="string" contents="**fabric:type** (optional): A Fabric custom ingredient type. Other fields depend on that type." />
+        <JsonTreeItem type="number" contents="**count** (optional): A level-based value. Defaults to 1." />
+      </JsonTreeItem>
+    </JsonTreeItem>
+    <JsonTreeItem type="array" contents="**blocks** (optional): Nearby block requirements. Defaults to an empty list.">
+      <JsonTreeItem type="object" contents="A block requirement.">
+        <JsonTreeItem type="string" contents="**block**: A block ID or a block tag beginning with #." />
+        <JsonTreeItem type="number" contents="**count** (optional): A level-based value. Defaults to 1." />
+      </JsonTreeItem>
+    </JsonTreeItem>
+    <JsonTreeItem type="number" contents="**level**: A level-based value defining the experience levels consumed." />
+    <JsonTreeItem type="string" contents="**enchantment**: The ID of the enchantment to apply." />
+  </JsonTreeItem>
+</JsonTree>
 
-The icon does not decide which items can be enchanted. Supported items, maximum levels, and incompatible enchantments come from the enchantment's own definition and are enforced automatically.
+The icon only controls recipe book display. Supported items, maximum levels, and incompatible enchantments come from the enchantment definition and are enforced automatically.
 
-`level_multiplier` is obsolete and causes the recipe to fail. Use `level` instead.
+The old **level_multiplier** field is rejected. Use **level** instead.
 
-### Categories
+### Category values
 
-| Value | Intended recipes |
+| Value | Recipe book tab |
 | --- | --- |
-| `weapons` | Swords, bows, tridents, and other weapons |
-| `tools` | Pickaxes, axes, shovels, and similar tools |
-| `armor` | Armor and wearable equipment |
-| `util` | General-purpose enchantments |
+| weapons | Weapons such as swords, bows, and tridents |
+| tools | Pickaxes, axes, shovels, and similar tools |
+| armor | Armor and wearable equipment |
+| util | General-purpose enchantments |
 
-The category only controls recipe book organization. It does not change which items accept the enchantment.
-
-### Ingredient objects
-
-An exact item:
-
-```json
-{
-  "item": "minecraft:diamond",
-  "count": 2
-}
-```
-
-Any item in a tag:
-
-```json
-{
-  "item": "#minecraft:coals"
-}
-```
-
-Omitting `count` uses one item. The material and all four cross ingredients use this same format.
-
-### Block requirement objects
-
-```json
-{
-  "block": "#vsq:enchantment_blocks",
-  "count": 6
-}
-```
-
-For a block tag, all matching nearby blocks count toward the requirement. Multiple entries in `blocks` are separate requirements and must all be met.
+The category does not affect which items accept the enchantment.
 
 ### Level-based values
 
-`material.count`, `ingredients[].count`, `blocks[].count`, and `level` use Minecraft's `LevelBasedValue` format.
+The **material count**, each **ingredient count**, each **block count**, and **level** accept a Minecraft level-based value.
 
-A number stays constant:
+<JsonTree>
+  <JsonTreeItem type="number" contents="**Constant value**: A number which stays the same at every target enchantment level." />
+  <JsonTreeItem type="object" contents="**Linear value**: A value which increases with the target enchantment level.">
+    <JsonTreeItem type="string" contents="**type**: minecraft:linear" />
+    <JsonTreeItem type="number" contents="**base**: Value at enchantment level I." />
+    <JsonTreeItem type="number" contents="**per_level_above_first**: Amount added for every level above I." />
+  </JsonTreeItem>
+</JsonTree>
 
-```json
-"count": 3
-```
-
-A linear value scales with the enchantment level being applied:
-
-```json
-"count": {
-  "type": "minecraft:linear",
-  "base": 2,
-  "per_level_above_first": 3
-}
-```
+A linear value with a base of 2 and 3 per level produces:
 
 | Target level | Result |
 | --- | ---: |
@@ -107,15 +77,13 @@ A linear value scales with the enchantment level being applied:
 | II | 5 |
 | III | 8 |
 
-Other value types supported by Minecraft's `LevelBasedValue` codec can also be used. Results are rounded down. Item counts are clamped to valid stack sizes, block counts have a minimum of `1`, and experience costs have a minimum of `0`.
+Other value types supported by Minecraft are accepted. Results are rounded down. Item counts are clamped to valid stack sizes, block counts have a minimum of 1, and experience costs have a minimum of 0.
 
 ## Creating a custom recipe
 
-This example adds a Frost Walker recipe.
+### 1. Create the file
 
-### 1. Create the recipe file
-
-Create `data/example/recipe/frost_walker.json` in your data pack:
+Create **data/example/recipe/frost_walker.json** in your data pack. This defines the recipe ID **example:frost_walker**.
 
 ```json
 {
@@ -135,11 +103,7 @@ Create `data/example/recipe/frost_walker.json` in your data pack:
   },
   "material": {
     "item": "minecraft:lapis_lazuli",
-    "count": {
-      "type": "minecraft:linear",
-      "base": 3,
-      "per_level_above_first": 2
-    }
+    "count": 3
   },
   "ingredients": [
     {
@@ -171,23 +135,23 @@ Create `data/example/recipe/frost_walker.json` in your data pack:
 }
 ```
 
-Use an existing enchantment ID, or the ID of a custom enchantment supplied by your data pack or mod. Keep exactly four entries in `ingredients`.
+Use an existing enchantment ID or one supplied by another data pack or mod. The ingredients array must always contain four entries.
 
 ### 2. Load and test it
 
-Run `/reload`. Invalid recipes are skipped and an error is written to the server log.
+Run **/reload**. Invalid recipes are skipped and reported in the server log.
 
-Unlock the recipe for yourself:
+Grant the recipe for testing:
 
 ```mcfunction
 /recipe give @s example:frost_walker
 ```
 
-Open an enchanting table with compatible boots and verify its ingredients, block requirement, level cost, and upgrades.
+Open an enchanting table with compatible boots and verify the ingredients, nearby blocks, cost, and upgrades.
 
 ### 3. Add it to recipe-book loot
 
-The recipe works without a loot tag, but players will only get it through commands. To include it in the default Enchanting Recipe Book pool, create `data/vsq/tags/recipe/default.json`:
+Without a recipe tag, the recipe can only be obtained through commands. To add it to the default Enchanting Recipe Book pool, create **data/vsq/tags/recipe/default.json**:
 
 ```json
 {
@@ -197,4 +161,4 @@ The recipe works without a loot tag, but players will only get it through comman
 }
 ```
 
-For more controlled distribution, add it to a specific Vanilla Squared recipe tag such as `vsq:fishing`, `vsq:ancient_city_chest`, or `vsq:villager/librarian/snow`. Entries must be direct recipe IDs; nested `#tag` references are not supported.
+For more controlled distribution, use a specific Vanilla Squared recipe tag such as **vsq:fishing**, **vsq:ancient_city_chest**, or **vsq:villager/librarian/snow**. Entries must be direct recipe IDs; nested tag references are not supported.

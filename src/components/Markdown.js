@@ -128,6 +128,11 @@ function renderText(text, keyPrefix) {
   return blocks;
 }
 
+export function MarkdownInline({ children, value, className = "" }) {
+  const markdown = String(value ?? children ?? "");
+  return <span className={className}>{renderInline(markdown, "markdown-inline")}</span>;
+}
+
 export default function Markdown({ children, value, className = "" }) {
   const markdown = String(value ?? children ?? "");
   const blocks = [];
