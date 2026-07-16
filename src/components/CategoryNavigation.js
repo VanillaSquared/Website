@@ -11,7 +11,7 @@ function containsSelected(node, selectedId) {
 
 function initialOpen(nodes, selectedId, result = []) {
   for (const node of nodes) {
-    if (node.children?.length && (node.defaultOpen !== false || containsSelected(node, selectedId))) result.push(node.id);
+    if (node.children?.length && (node.defaultOpen === true || containsSelected(node, selectedId))) result.push(node.id);
     if (node.children) initialOpen(node.children, selectedId, result);
   }
   return result;

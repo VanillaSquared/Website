@@ -17,7 +17,7 @@ export default function CodeBlock({ children, code, language, className = "" }) 
   }
 
   return (
-    <div className={`group relative overflow-hidden rounded-lg border border-code-border bg-code ${className}`}>
+    <div className={`group relative w-fit max-w-full overflow-hidden rounded-lg border border-code-border bg-code ${className}`}>
       <pre className="overflow-x-auto px-5 py-4 font-mono text-sm leading-6 text-code-text"><code className={language ? `language-${language}` : undefined}>{contents}</code></pre>
       <button
         type="button"
