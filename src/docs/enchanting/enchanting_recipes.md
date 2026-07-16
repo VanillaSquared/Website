@@ -1,55 +1,57 @@
 ---
 title: Enchanting Recipes
-description: The enchanting recipe JSON format and how to add custom recipes.
+description: The enchanting recipe format and how to distribute custom recipes as loot.
 order: 3
 ---
 
-Enchanting recipes are loaded from data packs. Place them at **data/namespace/recipe/path.json**. The namespace and path become the recipe ID.
+Enchanting recipes are data-pack recipes. Place them at:
+
+```text
+data/<namespace>/recipe/<path>.json
+```
+
+The file `data/example/recipe/frost_walker.json` has the recipe ID `example:frost_walker`.
 
 ## JSON format
 
 <JsonTree>
-  <JsonTreeItem type="object" contents="The root object.">
-    <JsonTreeItem type="string" contents="**type**: In this case, it's `vsq:enchanting`." />
-    <JsonTreeItem type="string" contents="**category**: one of `armor`, `weapons`, `tools`, `util` -- category in the enchanting tables recipe book" />
-    <JsonTreeItem type="string" contents="**group** *(optional)*: Group multiple recipes with the same group id together, this will display them as one in the recipe book" />
-    <JsonTreeItem type="object" contents="**description**: [Text Component](https://minecraft.wiki/w/Text_component_format) -- the text shown when hovering over the enchant book in the UI" />
-    <JsonTreeItem type="object" contents="**icon**: The icon in the recipe book.">
-      <JsonTreeItem type="string" contents="**id**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items), Item Tags are not accepted." />
-      <JsonTreeItem type="object" contents="**components**: [Data Components](https://minecraft.wiki/w/Data_component_format) which are applied to the icon in the recipe book." />
+  <JsonTreeItem type="object" contents="The recipe object.">
+    <JsonTreeItem type="string" contents="**type**: Must be `vsq:enchanting`." />
+    <JsonTreeItem type="string" contents="**category**: `armor`, `weapons`, `tools`, or `util`. Controls the recipe-book tab." />
+    <JsonTreeItem type="string" contents="**group** *(optional)*: Groups similar recipes into one recipe-book entry." />
+    <JsonTreeItem type="text component" contents="**description**: Text shown when the recipe is hovered." />
+    <JsonTreeItem type="object" contents="**icon**: Recipe-book icon. This does not control which items can be enchanted.">
+      <JsonTreeItem type="string" contents="**id**: An item ID. Item tags are not accepted." />
+      <JsonTreeItem type="object" contents="**components** *(optional)*: Data components applied to the icon." />
     </JsonTreeItem>
-    <JsonTreeItem type="boolean" contents="**show_notification** *(optional)*: Determines if a notification is shown when unlocking the recipe. Defaults to `true`." />
-    <JsonTreeItem type="object" contents="**material**: The material which is placed in the middle slot of the cross.">
-      <JsonTreeItem type="string" contents="**item**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items) or an [Item Tag](https://minecraft.wiki/w/Item_tag_(Java_Edition)) beginning with `#`." />
-      <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
+    <JsonTreeItem type="object" contents="**material**: The ingredient in the middle material slot.">
+      <JsonTreeItem type="string" contents="**item**: An item ID or item tag beginning with `#`." />
+      <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A level-based value. Defaults to `1`." />
     </JsonTreeItem>
-    <JsonTreeItem type="array" contents="**ingredients**: Requires Exactly 4 Ingredients, only 1 out of the 4 is shown here. The order does not matter. They are the 4 cross slots around the middle slot where the lapis usually goes.">
-      <JsonTreeItem type="object" contents="">
-        <JsonTreeItem type="string" contents="**item**: [Item ID](https://minecraft.wiki/w/Java_Edition_data_values#Items) or an [Item Tag](https://minecraft.wiki/w/Item_tag_(Java_Edition)) beginning with `#`" />
-        <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
+    <JsonTreeItem type="array" contents="**ingredients**: Exactly four ingredients for the four outer slots. Their order does not matter.">
+      <JsonTreeItem type="object" contents="An ingredient.">
+        <JsonTreeItem type="string" contents="**item**: An item ID or item tag beginning with `#`." />
+        <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A level-based value. Defaults to `1`." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="array" contents="**blocks** *(optional)*: Required Blocks to be placed around the enchantment table in a 2 block range in all directions.">
-      <JsonTreeItem type="object" contents="">
-        <JsonTreeItem type="string" contents="**block**: [Block ID](https://minecraft.wiki/w/Java_Edition_data_values#Blocks) or a [Block Tag](https://minecraft.wiki/w/Block_tag_(Java_Edition)) beginning with `#`" />
-        <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to 1." />
+    <JsonTreeItem type="array" contents="**blocks** *(optional)*: Blocks required within two blocks of the enchanting table.">
+      <JsonTreeItem type="object" contents="A block requirement.">
+        <JsonTreeItem type="string" contents="**block**: A block ID or block tag beginning with `#`." />
+        <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A level-based value. Defaults to `1`." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="integer, object" contents="**level** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). The amount of levels to be consumed when enchanting." />
-    <JsonTreeItem type="string" contents="**enchantment**: [Enchantment ID](https://minecraft.wiki/w/Java_Edition_data_values#Enchantments). The resulting enchantment to apply." />
+    <JsonTreeItem type="integer or object" contents="**level**: A level-based value for the number of experience levels consumed." />
+    <JsonTreeItem type="string" contents="**enchantment**: The enchantment applied by the recipe." />
   </JsonTreeItem>
 </JsonTree>
 
--# The icon only controls recipe book display. Supported items, maximum levels, and incompatible enchantments come from the enchantment definition and are automatically carried over.
--# Other value types supported by Minecraft are accepted. Results are rounded down. Item counts are clamped to valid stack sizes, block counts have a minimum of 1, and experience costs have a minimum of 0.
+Counts and the level cost are evaluated against the enchantment level being applied. Results are rounded down. Item counts are clamped to valid stack sizes, block counts have a minimum of 1, and level costs have a minimum of 0.
 
-The old **level_multiplier** field is rejected. Use **level** instead.
+The old `level_multiplier` field is not supported. Use `level` instead.
 
-## Creating a custom recipe
+## Example recipe
 
-### 1. Create the file
-
-Create **data/example/recipe/frost_walker.json** in your data pack. This defines the recipe ID **example:frost_walker**.
+Create `data/example/recipe/frost_walker.json`:
 
 ```json
 {
@@ -101,26 +103,55 @@ Create **data/example/recipe/frost_walker.json** in your data pack. This defines
 }
 ```
 
-Use an existing enchantment ID or one supplied by another data pack or mod. The ingredients array must always contain four entries.
+Use an existing enchantment ID or one added by another data pack or mod. Supported items, maximum levels, and incompatibilities come from that enchantment's definition.
 
-### 2. Load and test it
-
-Run `/reload` or rejoin your world. Invalid recipes are skipped and reported in the server log.
-
-Grant the recipe for testing:
+Run `/reload`, then grant the recipe for testing:
 
 ```mcfunction
 /recipe give @s example:frost_walker
 ```
 
-Open an enchanting table with compatible boots and verify the ingredients, nearby blocks, cost, and upgrades.
+Invalid recipes are skipped and reported in the server log.
 
-### 3. Add it to your own loot table
+## Add the recipe to loot
 
-You can add your own enchantment recipe to loot tables of structures.
+Vanilla Squared replaces enchanted-book loot with Enchanting Recipe Books. Each loot source selects a recipe from a [recipe tag](/docs/technical/recipe_tags).
 
-## Enchanting Recipe Book
+To add the example recipe to ancient city chests, create:
 
-`vsq:enchant_recipe` only unlocks recipes registered as `vsq:enchanting`.
+```text
+data/vsq/tags/recipe/ancient_city_chest.json
+```
 
-Although generic recipe tags and `vsq:randomize_recipes` support every recipe type, placing a crafting, smelting, or other non-enchanting recipe on an Enchanting Recipe Book causes the item to reject it without unlocking or consuming the book.
+```json
+{
+  "replace": false,
+  "values": [
+    "example:frost_walker"
+  ]
+}
+```
+
+Using the `vsq` namespace here intentionally adds to Vanilla Squared's existing tag. Do not set `replace` to `true` unless you want to remove its default recipes.
+
+Common distribution tags are:
+
+| Loot source | Recipe tag |
+| --- | --- |
+| Unmapped loot tables | `vsq:default` |
+| Ancient city | `vsq:ancient_city_chest` |
+| Mineshaft | `vsq:mineshaft_chest` |
+| Monster room | `vsq:monster_room_chest` |
+| Stronghold library | `vsq:stronghold_library_chest` |
+| Trial chamber rewards | `vsq:trial_chamber_vault` |
+| Fishing treasure | `vsq:fishing` |
+| Piglin bartering | `vsq:piglin_bartering` |
+| Librarian fallback | `vsq:villager/librarian/default` |
+
+Other built-in tags can be found under `data/vsq/tags/recipe` in the mod file. All valid recipes in a tag have an equal chance of being selected.
+
+For a new loot-table entry, use the [`vsq:randomize_recipes` loot function](/docs/technical/randomize_recipes_loot_function) instead.
+
+## Enchanting Recipe Books
+
+The `vsq:enchant_recipe` item only unlocks recipes of type `vsq:enchanting`. Recipe tags and `vsq:randomize_recipes` can contain any recipe type, but a non-enchanting recipe on this item is rejected and the book is not consumed.
