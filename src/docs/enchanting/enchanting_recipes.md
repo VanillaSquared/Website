@@ -152,6 +152,6 @@ Other built-in tags can be found under `data/vsq/tags/recipe` in the mod file. A
 
 For a new loot-table entry, use the [`vsq:randomize_recipes` loot function](/docs/technical/randomize_recipes_loot_function) instead.
 
-## Enchanting Recipe Books
+### Enchanting Recipe Books
 
 The `vsq:enchant_recipe` item only unlocks recipes of type `vsq:enchanting`. Recipe tags and `vsq:randomize_recipes` can contain any recipe type, but a non-enchanting recipe on this item is rejected and the book is not consumed.
