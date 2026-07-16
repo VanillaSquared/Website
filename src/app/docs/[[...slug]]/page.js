@@ -35,13 +35,13 @@ export default async function DocsPage({ params }) {
   return (
     <DefaultTemplatePage>
       <DocsLayout navigation={(
-        <aside className="hidden bg-category lg:block">
+        <aside key="navigation" className="hidden bg-category lg:block">
           <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto">
             <CategoryNavigation items={navigation} selectedId={document.path} />
           </div>
         </aside>
       )} content={(
-        <main className="min-w-0 px-5 py-8 lg:px-8 xl:px-10">
+        <main key="content" className="min-w-0 px-5 py-8 lg:px-8 xl:px-10">
           <details className="mb-6 border-b border-category-line bg-category p-2 lg:hidden">
             <summary className="cursor-pointer px-2 py-1 font-semibold text-heading">Documentation navigation</summary>
             <CategoryNavigation items={navigation} selectedId={document.path} className="mt-2" />
@@ -73,7 +73,7 @@ export default async function DocsPage({ params }) {
           <DocsMarkdown source={document.source} basePath={document.linkBase} />
         </main>
       )} sidebar={(
-        <aside className="hidden bg-category px-6 py-8 xl:block">
+        <aside key="sidebar" className="hidden bg-category px-6 py-8 xl:block">
           <div className="sticky top-24 max-h-[calc(100vh-7rem)] space-y-8 overflow-y-auto">
             {document.sidebarCard ? (
               <Card

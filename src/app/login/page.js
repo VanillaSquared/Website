@@ -24,7 +24,7 @@ export default async function LoginPage({ searchParams }) {
         error={error}
         footer={(
           <>
-            Need an account? <a href={`/signup?returnTo=${encodeURIComponent(returnTo)}`} className="font-semibold text-accent">Sign up</a>
+            Need an account? <a href={`/signup?returnTo=${encodeURIComponent(returnTo)}`} className="font-semibold text-accent underline-offset-2 hover:underline">Sign up</a>
           </>
         )}
       >

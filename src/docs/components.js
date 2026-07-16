@@ -12,6 +12,7 @@ import MultiSelect from "@/components/MultiSelect";
 import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
+import Table from "@/components/Table";
 import Tag from "@/components/Tag";
 import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
@@ -43,8 +44,10 @@ export const docsComponents = {
   ProfilePicture,
   SearchBar,
   Separator,
+  Table,
   Tag,
   Tabs,
+  table: Table,
   TextInput,
   Toggle,
   hr: Separator,

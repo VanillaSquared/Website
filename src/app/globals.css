@@ -494,8 +494,12 @@ body {
 
 .docs-content :where(p, li, blockquote) a {
   color: var(--vsq-accent);
-  text-decoration: underline;
+  text-decoration: none;
   text-underline-offset: 0.2em;
+}
+
+.docs-content :where(p, li, blockquote) a:hover {
+  text-decoration: underline;
 }
 
 .docs-content :not(pre) > code {
