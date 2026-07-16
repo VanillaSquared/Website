@@ -2,6 +2,12 @@
 title: Enchanting System
 description: How to find recipes, use the enchanting table, and manage enchantment slots.
 order: 2
+sidebarCard:
+  enabled: true
+  title: Enchanting Table
+  image: "@/assets/docs/enchantment_table.png"
+  imageAlt: Enchanting Table UI
+  description: New Enchanting Table UI.
 ---
 
 Vanilla Squared replaces the random enchanting table with a recipe-based system. You choose the enchantment you want, supply its materials, and pay the listed level cost.
