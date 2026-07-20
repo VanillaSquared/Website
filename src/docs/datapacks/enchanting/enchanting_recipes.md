@@ -24,26 +24,26 @@ The file `data/example/recipe/frost_walker.json` has the recipe ID `example:fros
     <JsonTreeItem type="string" contents="**group** *(optional)*: Groups similar recipes into one recipe-book entry." />
     <JsonTreeItem type="text component" contents="**description**: Text shown when the recipe is hovered." />
     <JsonTreeItem type="object" contents="**icon**: Recipe-book icon. This does not control which items can be enchanted.">
-      <JsonTreeItem type="string" contents="**id**: An item ID. Item tags are not accepted." />
+      <JsonTreeItem type="string" contents="**id**: An [item ID](https://minecraft.wiki/w/Item). Item Tags are not accepted." />
       <JsonTreeItem type="object" contents="**components** *(optional)*: Data components applied to the icon." />
     </JsonTreeItem>
     <JsonTreeItem type="object" contents="**material**: The ingredient in the middle material slot.">
-      <JsonTreeItem type="string" contents="**item**: An item ID or item tag beginning with `#`." />
-      <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A level-based value. Defaults to `1`." />
+      <JsonTreeItem type="string" contents="**item**: An [item ID](https://minecraft.wiki/w/Item) or item tag beginning with `#`." />
+      <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to `1`." />
     </JsonTreeItem>
     <JsonTreeItem type="array" contents="**ingredients**: Exactly four ingredients for the four outer slots. Their order does not matter.">
       <JsonTreeItem type="object" contents="An ingredient.">
-        <JsonTreeItem type="string" contents="**item**: An item ID or item tag beginning with `#`." />
-        <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A level-based value. Defaults to `1`." />
+        <JsonTreeItem type="string" contents="**item**: An [item ID](https://minecraft.wiki/w/Item) or item tag beginning with `#`." />
+        <JsonTreeItem type="integer, object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to `1`." />
       </JsonTreeItem>
     </JsonTreeItem>
     <JsonTreeItem type="array" contents="**blocks** *(optional)*: Blocks required within two blocks of the enchanting table.">
       <JsonTreeItem type="object" contents="A block requirement.">
         <JsonTreeItem type="string" contents="**block**: A block ID or block tag beginning with `#`." />
-        <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A level-based value. Defaults to `1`." />
+        <JsonTreeItem type="integer or object" contents="**count** *(optional)*: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value). Defaults to `1`." />
       </JsonTreeItem>
     </JsonTreeItem>
-    <JsonTreeItem type="integer or object" contents="**level**: A level-based value for the number of experience levels consumed." />
+    <JsonTreeItem type="integer or object" contents="**level**: A [level-based value](https://minecraft.wiki/w/Enchantment_definition#Level-based_value) for the number of experience levels consumed." />
     <JsonTreeItem type="string" contents="**enchantment**: The enchantment applied by the recipe." />
   </JsonTreeItem>
 </JsonTree>
