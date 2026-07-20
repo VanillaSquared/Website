@@ -3,7 +3,7 @@ title: Introduction
 description: Introductory to Vanilla Squared.
 order: 1
 ---
--# The vsq wiki is updated to version -2.12.0-snapshot.4 as of 14/07/2026
+-# The vsq wiki is updated to -2.12.1 *(in development)*.
 
 ## Overview
 ---
