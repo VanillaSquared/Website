@@ -1,7 +1,7 @@
 ---
 title: Recipe Tags
 description: Data-pack tags used to group recipes for loot generation.
-order: 4
+order: 6
 ---
 
 Recipe tags are Vanilla Squared data-pack files that group recipe IDs. They work with all recipe types, including crafting, smelting, smithing, and `vsq:enchanting`.
@@ -56,7 +56,7 @@ data/vsq/tags/recipe/ancient_city_chest.json
 }
 ```
 
-An unknown or unloaded recipe ID can remain in the tag, but [`vsq:randomize_recipes`](/docs/technical/randomize_recipes_loot_function) skips it when selecting loot.
+An unknown or unloaded recipe ID can remain in the tag, but [`vsq:randomize_recipes`](/docs/datapacks/randomize_recipes_loot_function) skips it when selecting loot.
 
 ## Recipe item component
 

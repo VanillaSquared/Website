@@ -4,6 +4,9 @@ description: The enchanting recipe format and how to distribute custom recipes a
 order: 3
 ---
 
+With the help of Datapacks, you are able to create your own custom recipe for the enchanting table.
+Custom enchanting recipes allow you to define things like block requirements, item requirements, level requirements and the rewarding enchantment. You could use this for its intended purposes, aka enchanting, but especially with the ability to easily include block and level requirements, you can probably create a lot of cool things.
+
 Enchanting recipes are data-pack recipes. Place them at:
 
 ```text
@@ -115,7 +118,7 @@ Invalid recipes are skipped and reported in the server log.
 
 ## Add the recipe to loot
 
-Vanilla Squared replaces enchanted-book loot with Enchanting Recipe Books. Each loot source selects a recipe from a [recipe tag](/docs/technical/recipe_tags).
+Vanilla Squared replaces enchanted-book loot with Enchanting Recipe Books. Each loot source selects a recipe from a [recipe tag](/docs/datapacks/recipe_tags).
 
 To add the example recipe to ancient city chests, create:
 
@@ -150,7 +153,7 @@ Common distribution tags are:
 
 Other built-in tags can be found under `data/vsq/tags/recipe` in the mod file. All valid recipes in a tag have an equal chance of being selected.
 
-For a new loot-table entry, use the [`vsq:randomize_recipes` loot function](/docs/technical/randomize_recipes_loot_function) instead.
+For a new loot-table entry, use the [`vsq:randomize_recipes` loot function](/docs/datapacks/randomize_recipes_loot_function) instead.
 
 ### Enchanting Recipe Books
 
