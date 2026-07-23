@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import ConsoleCommands from "@/commands/ConsoleCommands";
 import ScrollbarVisibility from "@/components/ScrollbarVisibility";
+import TestExperimentPopup from "@/components/TestExperimentPopup";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col">
         <ScrollbarVisibility />
         <ConsoleCommands />
+        <TestExperimentPopup />
         {children}
       </body>
     </html>

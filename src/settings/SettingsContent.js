@@ -5,6 +5,7 @@ import AuditLogSettings from "@/settings/AuditLogSettings";
 import BugPanelSettings from "@/settings/BugPanelSettings";
 import DesignTestSettings from "@/settings/DesignTestSettings";
 import DevOptionsSettings from "@/settings/DevOptionsSettings";
+import ExperimentsSettings from "@/settings/ExperimentsSettings";
 import LanguageTimeSettings from "@/settings/LanguageTimeSettings";
 import PrivacySettings from "@/settings/PrivacySettings";
 import UserManagementSettings from "@/settings/UserManagementSettings";
@@ -20,6 +21,7 @@ const settingComponents = {
   "Design Test": DesignTestSettings,
   "User&Role Management": UserManagementSettings,
   "Audit Log": AuditLogSettings,
+  Experiments: ExperimentsSettings,
 };
 
 export default function SettingsContent({ activeItem, permissions, children }) {

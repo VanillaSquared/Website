@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getAuthSubject, getTokenCookies } from "@/app/auth";
 import { PERMISSIONS, getUserPermissions, hasResolvedPermission } from "@/auth/permissions";
+import { getEffectiveExperimentTreatments } from "@/experiments";
 
 export const dynamic = "force-dynamic";
 
@@ -61,8 +62,11 @@ export async function GET(request) {
     email: subject.properties?.email,
   } : null;
 
-  const permissions = await getUserPermissions(user);
-  const body = { authenticated, user, permissions };
+  const [permissions, experiments] = await Promise.all([
+    getUserPermissions(user),
+    getEffectiveExperimentTreatments(user),
+  ]);
+  const body = { authenticated, user, permissions, experiments };
 
   if (includeTokens && hasResolvedPermission(permissions, PERMISSIONS.DEV_OPTIONS)) {
     const tokens = await getTokenCookies();

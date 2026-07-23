@@ -126,6 +126,7 @@ const settingsCategories = [
       { label: "Design Test", permission: "design_test" },
       { label: "User&Role Management", permissions: ["user_management", "manage_roles"] },
       { label: "Audit Log", permission: "audit_log" },
+      { label: "Experiments", permission: "experiments" },
     ],
   },
 ];
@@ -141,6 +142,7 @@ const settingsItemIcons = {
   "Design Test": beakerIcon,
   "User&Role Management": userManagementIcon,
   "Audit Log": auditLogIcon,
+  Experiments: beakerIcon,
 };
 
 function canViewSettingsItem(item, permissions) {
@@ -250,7 +252,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
           <Button size="icon" variant="tertiary" icon={closeIcon} aria-label="Close settings" onClick={onClose} />
         </header>
 
-        <div className={["User&Role Management", "Audit Log"].includes(activeItem) ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
+        <div className={["User&Role Management", "Audit Log", "Experiments"].includes(activeItem) ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
           <SettingsContent activeItem={activeItem} permissions={permissions}>{children}</SettingsContent>
         </div>
       </section>

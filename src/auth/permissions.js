@@ -14,6 +14,7 @@ export const PERMISSIONS = Object.freeze({
   DEV_OPTIONS: "dev_options",
   USER_MANAGEMENT: "user_management",
   AUDIT_LOG: "audit_log",
+  EXPERIMENTS: "experiments",
   MANAGE_ROLES: "manage_roles",
   DELETE_USER: "delete_user",
   MANAGE_USER: "manage_user",

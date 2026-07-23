@@ -17,7 +17,7 @@ import Tag from "@/components/Tag";
 import TextInput from "@/components/TextInput";
 import useRetainedModalValue from "@/settings/useRetainedModalValue";
 
-const ALL_PERMISSIONS = ["bug_panel", "lockdown", "design_test", "dev_options", "user_management", "audit_log", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "edit_bugs", "manage_bugs", "write_comments", "manage_comments", "bypass_limits"];
+const ALL_PERMISSIONS = ["bug_panel", "lockdown", "design_test", "dev_options", "user_management", "audit_log", "experiments", "manage_roles", "delete_user", "manage_user", "create_bugs", "view_bugs", "edit_bugs", "manage_bugs", "write_comments", "manage_comments", "bypass_limits"];
 const PROTECTED_ROLE_NAMES = new Set(["not_signed_in", "owner", "developer", "support", "default"]);
 const rolePriority = ["owner", "developer", "dev", "support", "default", "not_signed_in"];
 const ROLE_OPTION_PREFIX = "role:";
