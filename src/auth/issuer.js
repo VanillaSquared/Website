@@ -1,7 +1,4 @@
-import { mkdirSync } from "fs";
-
 import { issuer } from "@openauthjs/openauth";
-import { MemoryStorage } from "@openauthjs/openauth/storage/memory";
 
 import { createAuditLog } from "@/audit/logs";
 
@@ -17,16 +14,15 @@ import {
   verifyEmailCodeClaim,
 } from "./openAuth";
 import { createUser, getUserByEmail, getUserByUsername } from "./openSQL";
+import { MySQLStorage } from "./mysqlStorage";
 import { subjects } from "./subjects";
 
 export const PENDING_LOGIN_EMAIL_COOKIE = "pending_login_email";
 export const PENDING_SIGNUP_USERNAME_COOKIE = "pending_signup_username";
 
-mkdirSync(".data", { recursive: true });
-
 export const authIssuer = issuer({
   subjects,
-  storage: MemoryStorage({ persist: ".data/openauth-storage.json" }),
+  storage: MySQLStorage(),
   providers: {
     internal_email: InternalEmailProvider(),
     code: BypassableCodeProvider({
