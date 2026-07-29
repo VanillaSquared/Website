@@ -153,7 +153,7 @@ Common distribution tags are:
 
 Other built-in tags can be found under `data/vsq/tags/recipe` in the mod file. All valid recipes in a tag have an equal chance of being selected.
 
-For a new loot-table entry, use the [`vsq:randomize_recipes` loot function](/docs/datapacks/lootfunctions/randomize_recipes_loot_function) instead.
+For a new loot-table entry, use the [`vsq:randomize_recipes` loot function](/docs/datapacks/loot-functions/randomize_recipes_loot_function) instead.
 
 ### Enchanting Recipe Books
 
