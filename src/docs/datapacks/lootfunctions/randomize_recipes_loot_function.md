@@ -1,7 +1,7 @@
 ---
 title: Randomize Recipes Loot Function
 description: Select a random recipe from a recipe tag and store it on generated loot.
-order: 5
+order: 6
 ---
 
 Vanilla Squared also adds a new loot function which allows you to randomize recipes in the recipe book. This can be neatly used for datapacks that have custom unlockable features hidden in custom/vanilla structures. When implementing this I imagined that you can use this to make every recipe in the game hidden in a structure, requiring the player to explore the world and progress their way through the game to obtain the items required to beat the game. However I assume you might have something else on your mind.

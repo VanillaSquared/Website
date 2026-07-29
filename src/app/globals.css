@@ -574,6 +574,11 @@ body {
   padding: 0 0 0 1rem;
 }
 
+.json-tree:has(> .json-tree-item + .json-tree-item),
+.docs-content .json-tree:has(> .json-tree-item + .json-tree-item) {
+  padding-left: 1rem;
+}
+
 .json-tree-item {
   position: relative;
 }
@@ -583,7 +588,8 @@ body {
   margin-top: 0;
 }
 
-.json-tree-children > .json-tree-item::before {
+.json-tree-children > .json-tree-item::before,
+.json-tree:has(> .json-tree-item + .json-tree-item) > .json-tree-item::before {
   position: absolute;
   z-index: 1;
   top: 0.675rem;
@@ -593,7 +599,8 @@ body {
   content: "";
 }
 
-.json-tree-children > .json-tree-item::after {
+.json-tree-children > .json-tree-item::after,
+.json-tree:has(> .json-tree-item + .json-tree-item) > .json-tree-item::after {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -602,7 +609,8 @@ body {
   content: "";
 }
 
-.json-tree-children > .json-tree-item:last-child::after {
+.json-tree-children > .json-tree-item:last-child::after,
+.json-tree:has(> .json-tree-item + .json-tree-item) > .json-tree-item:last-child::after {
   bottom: auto;
   height: 0.675rem;
 }

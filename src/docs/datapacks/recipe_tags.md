@@ -56,7 +56,7 @@ data/vsq/tags/recipe/ancient_city_chest.json
 }
 ```
 
-An unknown or unloaded recipe ID can remain in the tag, but [`vsq:randomize_recipes`](/docs/datapacks/randomize_recipes_loot_function) skips it when selecting loot.
+An unknown or unloaded recipe ID can remain in the tag, but [`vsq:randomize_recipes`](/docs/datapacks/lootfunctions/randomize_recipes_loot_function) skips it when selecting loot.
 
 ## Recipe item component
 
