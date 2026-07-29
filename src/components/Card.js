@@ -27,6 +27,13 @@ const presets = {
     contentClassName: "m-0",
     hoverAccent: false,
   },
+  news: {
+    size: "p-0",
+    className: "block overflow-hidden rounded-xl !border border-news-card bg-news-card-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+    titleClassName: "px-4 pb-2 pt-3 text-base font-semibold leading-snug text-heading",
+    contentClassName: "px-4 pb-4",
+    hoverAccent: true,
+  },
 };
 
 export default function Card({
@@ -56,20 +63,28 @@ export default function Card({
   const shouldHoverAccent = hoverAccent ?? presetConfig.hoverAccent ?? true;
   const hoverClass = shouldHoverAccent ? "hover:border-accent" : "";
   const isInfoCard = preset === "info";
+  const isNewsCard = preset === "news";
+  const titleContent = title ? (
+    <TitleComponent className={`${presetConfig.titleClassName ?? ""} ${titleClassName}`}>
+      {title}
+    </TitleComponent>
+  ) : null;
+  const mediaContent = media ? (
+    <div
+      className={`flex justify-center ${isInfoCard ? "" : isNewsCard ? "aspect-[16/9] overflow-hidden bg-news-image [&>img]:h-full [&>img]:w-full [&>img]:object-cover" : "bg-category p-4"}`}
+      aria-label={mediaAlt || undefined}
+    >
+      {media}
+    </div>
+  ) : null;
 
   return (
     <Component
       className={`border-2 bg-card transition-colors ${sizes[selectedSize] ?? selectedSize} ${hoverClass} ${presetConfig.className ?? ""} ${className}`}
       {...props}
     >
-      {title ? (
-        <TitleComponent className={`${presetConfig.titleClassName ?? ""} ${titleClassName}`}>
-          {title}
-        </TitleComponent>
-      ) : null}
-      {media ? (
-        <div className={`flex justify-center ${isInfoCard ? "" : "bg-category p-4"}`} aria-label={mediaAlt || undefined}>{media}</div>
-      ) : null}
+      {isNewsCard ? mediaContent : titleContent}
+      {isNewsCard ? titleContent : mediaContent}
       {description ? (
         <p className={`${isInfoCard ? "border-t border-category-card-border px-4 py-3" : "mt-2"} text-sm text-muted ${descriptionClassName}`}>{description}</p>
       ) : null}

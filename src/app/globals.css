@@ -11,6 +11,8 @@
   --vsq-text-inverse: #ffffff;
 
   --vsq-surface-card: #1e1e1e;
+  --vsq-surface-news-card: #1e1e1e;
+  --vsq-surface-news-image: #141414;
   --vsq-surface-header: rgb(23 23 23 / 0.75);
   --vsq-surface-modal: #1b1b1b;
   --vsq-surface-tag: #2d2d2d;
@@ -55,6 +57,7 @@
   --vsq-surface-input-focus: #2a2a2a;
   --vsq-surface-error: #3b1f28;
   --vsq-border-divider: #262626;
+  --vsq-border-news-card: #303030;
   --vsq-border-header: rgb(38 38 38 / 0.7);
   --vsq-border-separator: #343434;
   --vsq-border-modal: #383838;
@@ -174,6 +177,8 @@
   --color-subtle: var(--vsq-text-subtle);
   --color-inverse: var(--vsq-text-inverse);
   --color-card: var(--vsq-surface-card);
+  --color-news-card-surface: var(--vsq-surface-news-card);
+  --color-news-image: var(--vsq-surface-news-image);
   --color-modal: var(--vsq-surface-modal);
   --color-tag: var(--vsq-surface-tag);
   --color-search: var(--vsq-surface-search);
@@ -183,6 +188,7 @@
   --color-input-focus: var(--vsq-surface-input-focus);
   --color-error-surface: var(--vsq-surface-error);
   --color-divider: var(--vsq-border-divider);
+  --color-news-card: var(--vsq-border-news-card);
   --color-separator: var(--vsq-border-separator);
   --color-modal-border: var(--vsq-border-modal);
   --color-search-border: var(--vsq-border-search);

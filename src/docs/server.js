@@ -3,38 +3,18 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 
-import GithubSlugger from "github-slugger";
 import matter from "gray-matter";
-import { toString } from "mdast-util-to-string";
-import remarkParse from "remark-parse";
-import { unified } from "unified";
+
+import {
+  extractMarkdownDetails,
+  isSafeRouteSegments,
+  markdownRouteSegments,
+  resolveAssetDataUrl,
+  scanMarkdownFiles,
+  titleFromSegment,
+} from "@/markdown/server";
 
 const DOCS_DIRECTORY = path.resolve(process.cwd(), "src", "docs");
-const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-const ASSET_MIME_TYPES = {
-  ".gif": "image/gif",
-  ".jpeg": "image/jpeg",
-  ".jpg": "image/jpeg",
-  ".png": "image/png",
-  ".svg": "image/svg+xml",
-  ".webp": "image/webp",
-};
-const parser = unified().use(remarkParse);
-
-function titleFromSegment(segment) {
-  return segment
-    .replace(/[-_]+/g, " ")
-    .replace(/\b\w/g, (character) => character.toUpperCase());
-}
-
-function resolveAssetDataUrl(source) {
-  if (!String(source).startsWith("@/assets/")) return null;
-  const assetsDirectory = path.resolve(process.cwd(), "src/assets");
-  const assetPath = path.resolve(process.cwd(), "src", String(source).slice(2));
-  const mimeType = ASSET_MIME_TYPES[path.extname(assetPath).toLowerCase()];
-  if (!assetPath.startsWith(`${assetsDirectory}${path.sep}`) || !mimeType || !fs.existsSync(assetPath)) return null;
-  return `data:${mimeType};base64,${fs.readFileSync(assetPath).toString("base64")}`;
-}
 
 function normalizeSidebarCard(value) {
   if (!value || typeof value !== "object" || value.enabled === false) return null;
@@ -63,47 +43,6 @@ function normalizeFrontmatter(data, fallbackSegment) {
   };
 }
 
-function routeSegments(relativeFile) {
-  const parsed = path.parse(relativeFile);
-  const directories = parsed.dir ? parsed.dir.split(path.sep) : [];
-  if (parsed.name === "index" && !directories.length) return [];
-  if (directories.length && parsed.name === directories.at(-1)) return directories;
-  if (parsed.name === "index") return directories;
-  return [...directories, parsed.name];
-}
-
-function extractDocumentDetails(body) {
-  const tree = parser.parse(body);
-  const slugger = new GithubSlugger();
-  const headings = [];
-
-  for (const node of tree.children) {
-    if (node.type !== "heading") continue;
-    const title = toString(node).trim();
-    if (!title) continue;
-    const id = slugger.slug(title);
-    if (node.depth >= 2 && node.depth <= 3) headings.push({ id, title, level: node.depth });
-  }
-
-  return {
-    headings,
-    text: toString(tree).replace(/\s+/g, " ").trim(),
-  };
-}
-
-function scanMarkdownFiles(directory, relativeDirectory = "") {
-  if (!fs.existsSync(directory)) return [];
-
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    if (entry.isSymbolicLink()) return [];
-    const relative = path.join(relativeDirectory, entry.name);
-    const absolute = path.resolve(DOCS_DIRECTORY, relative);
-    if (absolute !== DOCS_DIRECTORY && !absolute.startsWith(`${DOCS_DIRECTORY}${path.sep}`)) return [];
-    if (entry.isDirectory()) return scanMarkdownFiles(absolute, relative);
-    if (!entry.isFile() || path.extname(entry.name).toLowerCase() !== ".md") return [];
-    return [relative];
-  });
-}
 
 function compareNodes(left, right) {
   return left.order - right.order || left.label.localeCompare(right.label);
@@ -180,8 +119,8 @@ function makeNavigation(documents) {
 export function getDocsData() {
   const documents = scanMarkdownFiles(DOCS_DIRECTORY).map((relativeFile) => {
     const absoluteFile = path.resolve(DOCS_DIRECTORY, relativeFile);
-    const segments = routeSegments(relativeFile);
-    if (!segments.every((segment) => SAFE_SEGMENT.test(segment))) {
+    const segments = markdownRouteSegments(relativeFile, { collapseIndex: true });
+    if (!isSafeRouteSegments(segments)) {
       throw new Error(`Unsafe documentation path: ${relativeFile}`);
     }
 
@@ -189,7 +128,7 @@ export function getDocsData() {
     const parsed = matter(source);
     const fallbackSegment = segments.at(-1) || "docs";
     const metadata = normalizeFrontmatter(parsed.data, fallbackSegment);
-    const details = extractDocumentDetails(parsed.content);
+    const details = extractMarkdownDetails(parsed.content);
     const parentDirectory = path.basename(path.dirname(relativeFile));
     const categoryDocument = segments.length > 0 && path.parse(relativeFile).name === parentDirectory;
     const pathname = segments.length ? `/docs/${segments.join("/")}` : "/docs";
@@ -221,7 +160,7 @@ export function getDocsData() {
 
 export function getDocument(slug = []) {
   const segments = Array.isArray(slug) ? slug : [];
-  if (!segments.every((segment) => SAFE_SEGMENT.test(segment))) return null;
+  if (!isSafeRouteSegments(segments)) return null;
   const pathname = segments.length ? `/docs/${segments.join("/")}` : "/docs";
   return getDocsData().documents.find((document) => document.path === pathname) ?? null;
 }
