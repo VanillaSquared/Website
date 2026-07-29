@@ -107,6 +107,9 @@
   --vsq-docs-table-stripe: #1a1a1a;
   --vsq-docs-quote-bg: #1b181b;
   --vsq-json-tree-line: #555963;
+  --vsq-json-tree-toggle-bg: #202020;
+  --vsq-json-tree-toggle-hover: #292929;
+  --vsq-json-tree-toggle-border: #484848;
   --vsq-json-icon-text: #ffffff;
   --vsq-json-icon-object: #64748b;
   --vsq-json-icon-array: #ea8a00;
@@ -550,11 +553,14 @@ body {
   background: var(--vsq-docs-table-stripe);
 }
 
+.json-tree,
+.json-tree-children,
 .docs-content .json-tree,
 .docs-content .json-tree-children {
   list-style: none;
 }
 
+.json-tree,
 .docs-content .json-tree {
   margin: 0;
   padding: 0;
@@ -562,16 +568,17 @@ body {
   line-height: 1.35rem;
 }
 
+.json-tree-children,
 .docs-content .json-tree-children {
   margin: 0 0 0 0.45rem;
   padding: 0 0 0 1rem;
-  border-left: 1px solid var(--vsq-json-tree-line);
 }
 
 .json-tree-item {
   position: relative;
 }
 
+.json-tree-item + .json-tree-item,
 .docs-content .json-tree-item + .json-tree-item {
   margin-top: 0;
 }
@@ -586,14 +593,18 @@ body {
   content: "";
 }
 
-.json-tree-children > .json-tree-item:last-child::after {
+.json-tree-children > .json-tree-item::after {
   position: absolute;
-  top: calc(0.675rem + 1px);
+  top: 0;
   bottom: 0;
-  left: calc(-1rem - 1px);
-  width: 3px;
-  background: var(--background);
+  left: -1rem;
+  border-left: 1px solid var(--vsq-json-tree-line);
   content: "";
+}
+
+.json-tree-children > .json-tree-item:last-child::after {
+  bottom: auto;
+  height: 0.675rem;
 }
 
 .json-tree-row {
@@ -601,6 +612,65 @@ body {
   min-height: 1.35rem;
   align-items: center;
   gap: 0.3rem;
+}
+
+.json-tree-item-collapsible > details {
+  position: relative;
+}
+
+.json-tree-item-collapsible > details::before {
+  position: absolute;
+  top: -0.175rem;
+  left: 0.45rem;
+  width: 0.85rem;
+  height: 0.95rem;
+  border-bottom: 1px solid var(--vsq-json-tree-line);
+  border-left: 1px solid var(--vsq-json-tree-line);
+  content: "";
+}
+
+.json-tree-item-collapsible > details > .json-tree-children,
+.docs-content .json-tree-item-collapsible > details > .json-tree-children {
+  margin-left: 1.3rem;
+}
+
+.json-tree-summary {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: 1.35rem;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.1rem 0 0 1.3rem;
+  border: 1px solid var(--vsq-json-tree-toggle-border);
+  background: var(--vsq-json-tree-toggle-bg);
+  padding: 0.05rem 0.35rem;
+  cursor: pointer;
+  font-size: 0.8125rem;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.json-tree-summary::-webkit-details-marker {
+  display: none;
+}
+
+.json-tree-summary:hover {
+  border-color: var(--vsq-json-tree-line);
+  background: var(--vsq-json-tree-toggle-hover);
+}
+
+.json-tree-summary:focus-visible {
+  outline: 2px solid var(--vsq-control-focus);
+  outline-offset: 2px;
+}
+
+.json-tree-disclosure-chevron {
+  margin-left: auto;
+  color: var(--vsq-text-muted);
+}
+
+.json-tree-item-collapsible details[open] > .json-tree-summary .json-tree-disclosure-chevron {
+  rotate: 45deg;
 }
 
 .json-type-icons {

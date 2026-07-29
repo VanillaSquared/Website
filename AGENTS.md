@@ -10,6 +10,7 @@
 ## Development Workflow
 
 - Always start the website with `npm run build` to check for errors.
+- NEVER use the browser unless I explicitly tell you to use the browser.
 
 ## Code Quality
 

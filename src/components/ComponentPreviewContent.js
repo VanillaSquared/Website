@@ -16,6 +16,7 @@ import ColorPicker from "@/components/ColorPicker";
 import EmojiPicker from "@/components/EmojiPicker";
 import FileTree from "@/components/FileTree";
 import FileUpload from "@/components/FileUpload";
+import JsonTree, { JsonTreeItem } from "@/components/JsonTree";
 import Markdown from "@/components/Markdown";
 import MessageComposer from "@/components/MessageComposer";
 import ModalShowcase from "@/components/ModalShowcase";
@@ -222,6 +223,27 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">File tree</h2>
             <FileTree nodes={fileTreeNodes} />
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-2xl font-semibold text-heading">JSON tree</h2>
+            <p className="text-sm text-muted">Select a bordered branch to show or hide its nested fields.</p>
+            <Card title="Collapsible JSON schema" size="md" hoverAccent={false}>
+              <JsonTree>
+                <JsonTreeItem type="object" contents="**notification**: The notification configuration." collapsible="Notification fields" defaultOpen>
+                  <JsonTreeItem type="boolean" contents="**enabled**: Whether notifications are sent." />
+                  <JsonTreeItem type="object" contents="**delivery**: Delivery channel settings." collapsible="Delivery fields">
+                    <JsonTreeItem type="string" contents="**channel**: `release-updates`" />
+                    <JsonTreeItem type="boolean" contents="**mention_team**: Notify all maintainers." />
+                  </JsonTreeItem>
+                  <JsonTreeItem type="array" contents="**events**: Events that trigger a notification." collapsible="Event values" defaultOpen>
+                    <JsonTreeItem type="string" contents="`deployment.started`" />
+                    <JsonTreeItem type="string" contents="`deployment.finished`" />
+                  </JsonTreeItem>
+                </JsonTreeItem>
+                <JsonTreeItem type="string" contents="**environment**: `production`" />
+              </JsonTree>
+            </Card>
           </section>
 
           <section className="space-y-4">
