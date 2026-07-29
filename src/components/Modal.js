@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import accountIcon from "@/assets/icons/settings/account.svg";
@@ -21,6 +21,7 @@ import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import SettingsContent from "@/settings/SettingsContent";
+import { getSettingsView, prepareSettingsView } from "@/settings/settingsRegistry";
 
 const MODAL_ANIMATIONS = {
   none: {
@@ -173,15 +174,58 @@ function getVisibleSettingsCategories(permissions, query = "") {
 function SettingsModalContent({ user, permissions, onClose, onLogout, children }) {
   const [searchQuery, setSearchQuery] = useState("");
   const visibleCategories = getVisibleSettingsCategories(permissions, searchQuery);
-  const [activeItem, setActiveItem] = useState(visibleCategories[0]?.items[0]?.label ?? "Account");
+  const initialItem = visibleCategories[0]?.items[0]?.label ?? "Account";
+  const [activeItem, setActiveItem] = useState(initialItem);
+  const [preparedView, setPreparedView] = useState(() => getSettingsView(initialItem));
+  const preparationCache = useRef(new Map());
+  const selectionId = useRef(0);
+  const mounted = useRef(true);
   const username = user?.username || "VanillaSquared User";
   const email = user?.email || "Manage your account";
 
   useEffect(() => {
-    if (!visibleCategories.some((category) => category.items.some((item) => item.label === activeItem))) {
-      setActiveItem(visibleCategories[0]?.items[0]?.label ?? "Account");
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      selectionId.current += 1;
+    };
+  }, []);
+
+  const prepareItem = useCallback((item) => prepareSettingsView(item, preparationCache.current), []);
+
+  const updatePreparedData = useCallback((item, update) => {
+    setPreparedView((currentView) => {
+      if (currentView.name !== item) return currentView;
+      const nextView = { ...currentView, data: update(currentView.data) };
+      preparationCache.current.set(item, Promise.resolve(nextView));
+      return nextView;
+    });
+  }, []);
+
+  const selectItem = useCallback(async (item) => {
+    const requestId = selectionId.current + 1;
+    selectionId.current = requestId;
+
+    try {
+      const view = await prepareItem(item);
+      if (!mounted.current || selectionId.current !== requestId) return;
+      setPreparedView(view);
+      setActiveItem(view.name);
+    } catch {
+      // Keep the current setting visible when preparation fails.
     }
-  }, [activeItem, visibleCategories]);
+  }, [prepareItem]);
+
+  const fallbackItem = visibleCategories[0]?.items[0]?.label ?? "Account";
+  const activeItemIsVisible = visibleCategories.some((category) => category.items.some((item) => item.label === activeItem));
+
+  useEffect(() => {
+    if (!activeItemIsVisible) selectItem(fallbackItem);
+  }, [activeItemIsVisible, fallbackItem, selectItem]);
+
+  function prefetchItem(item) {
+    prepareItem(item).catch(() => {});
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-modal text-soft md:flex-row">
@@ -217,7 +261,9 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
                     icon={settingsItemIcons[item.label]}
                     iconClassName="h-[18px] w-[18px] self-center"
                     className={`h-8 w-full !justify-start rounded-lg px-2.5 py-1.5 text-sm leading-none ${activeItem === item.label ? "bg-button-tertiary-hover text-heading" : "bg-transparent text-muted hover:text-soft"}`}
-                    onClick={() => setActiveItem(item.label)}
+                    onClick={() => selectItem(item.label)}
+                    onMouseEnter={() => prefetchItem(item.label)}
+                    onFocus={() => prefetchItem(item.label)}
                   >
                     <span className="inline-flex items-center leading-none">{item.label}</span>
                   </Button>
@@ -253,7 +299,7 @@ function SettingsModalContent({ user, permissions, onClose, onLogout, children }
         </header>
 
         <div className={["User&Role Management", "Audit Log", "Experiments"].includes(activeItem) ? "min-h-0 flex-1 overflow-hidden px-6 pt-8 md:px-12" : "min-h-0 flex-1 overflow-y-auto px-6 py-8 md:px-12"}>
-          <SettingsContent activeItem={activeItem} permissions={permissions}>{children}</SettingsContent>
+          <SettingsContent activeItem={activeItem} preparedView={preparedView} permissions={permissions} onPreparedDataChange={updatePreparedData}>{children}</SettingsContent>
         </div>
       </section>
     </div>

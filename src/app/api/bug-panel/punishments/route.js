@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { createAuditLog } from "@/audit/logs";
 import { PERMISSIONS } from "@/auth/permissions";
 import { canManageUserByHierarchy, getMutableTargetUser, jsonError, requireApiPermission } from "@/auth/userManagement";
-import { createBugPunishments, listBugPanelUsers, listBugPunishments, PUNISHMENT_TYPE_OPTIONS } from "@/bugs/limits";
+import { createBugPunishments, listBugPanelUsers, listBugPunishments } from "@/bugs/limits";
 import { guardSameOriginRequest } from "@/security/requestGuards";
 
 export const dynamic = "force-dynamic";
@@ -19,8 +19,6 @@ export async function GET() {
   const manageableIds = new Set(manageableUsers.map((user) => user.id));
   return NextResponse.json({
     punishments: punishments.filter((punishment) => manageableIds.has(punishment.userId)),
-    users: manageableUsers,
-    types: PUNISHMENT_TYPE_OPTIONS,
   }, { headers: { "Cache-Control": "no-store" } });
 }
 

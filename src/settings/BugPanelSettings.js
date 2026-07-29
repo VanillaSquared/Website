@@ -144,19 +144,19 @@ function UserPunishmentRow({ user, records, onOpen }) {
   );
 }
 
-export default function BugPanelSettings({ permissions }) {
+export default function BugPanelSettings({ permissions, preparedData = {}, onPreparedDataChange }) {
   const [tab, setTab] = useState("config");
-  const [config, setConfig] = useState(() => configState());
-  const [savedConfig, setSavedConfig] = useState(() => configState());
-  const [users, setUsers] = useState([]);
+  const [config, setConfig] = useState(() => configState(preparedData.config));
+  const [savedConfig, setSavedConfig] = useState(() => configState(preparedData.config));
+  const [users] = useState(() => preparedData.users ?? []);
   const [punishments, setPunishments] = useState([]);
-  const [types, setTypes] = useState([]);
+  const [types] = useState(() => preparedData.types ?? []);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [duration, setDuration] = useState("");
   const [reason, setReason] = useState("");
   const [lockdownConfirmation, setLockdownConfirmation] = useState(null);
-  const [status, setStatus] = useState("Loading...");
+  const [punishmentsStatus, setPunishmentsStatus] = useState("idle");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [historyUser, setHistoryUser] = useState(null);
@@ -166,23 +166,26 @@ export default function BugPanelSettings({ permissions }) {
     const next = configState(data.config);
     setConfig(next);
     setSavedConfig(next);
-  }, []);
+    onPreparedDataChange?.((current) => ({ ...current, config: data.config }));
+  }, [onPreparedDataChange]);
 
   const loadPunishments = useCallback(async () => {
-    const data = await api("/api/bug-panel/punishments");
-    setPunishments(Array.isArray(data.punishments) ? data.punishments : []);
-    setUsers(Array.isArray(data.users) ? data.users : []);
-    setTypes(Array.isArray(data.types) ? data.types : []);
+    setPunishmentsStatus("loading");
+    setError("");
+    try {
+      const data = await api("/api/bug-panel/punishments");
+      setPunishments(Array.isArray(data.punishments) ? data.punishments : []);
+      setPunishmentsStatus("loaded");
+    } catch (cause) {
+      setPunishmentsStatus("error");
+      setError(cause.message || "Could not load punishment history.");
+      throw cause;
+    }
   }, []);
 
-  const load = useCallback(async () => {
-    setStatus("Loading...");
-    setError("");
-    await Promise.all([loadConfig(), loadPunishments()]);
-    setStatus("");
-  }, [loadConfig, loadPunishments]);
-
-  useEffect(() => { load().catch((cause) => { setStatus(""); setError(cause.message || "Could not load bug panel."); }); }, [load]);
+  useEffect(() => {
+    if (tab === "users" && punishmentsStatus === "idle") loadPunishments().catch(() => {});
+  }, [loadPunishments, punishmentsStatus, tab]);
 
   const usersWithHistory = useMemo(() => users
     .map((user) => ({ user, records: punishments.filter((record) => record.userId === user.id) }))
@@ -200,6 +203,7 @@ export default function BugPanelSettings({ permissions }) {
       const next = configState(data.config);
       setConfig(next);
       setSavedConfig(next);
+      onPreparedDataChange?.((current) => ({ ...current, config: data.config }));
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
 
@@ -212,7 +216,7 @@ export default function BugPanelSettings({ permissions }) {
       setSelectedTypes([]);
       setDuration("");
       setReason("");
-      await loadPunishments();
+      setPunishmentsStatus("idle");
       setTab("users");
     } catch (cause) { setError(cause.message); } finally { setBusy(false); }
   }
@@ -220,10 +224,9 @@ export default function BugPanelSettings({ permissions }) {
   return (
     <div className="flex min-h-full flex-col gap-5 pb-8">
       <Tabs tabs={[{ label: "Config", value: "config" }, { label: "Moderation", value: "moderation" }, { label: "Punishments", value: "users" }]} value={tab} onChange={setTab} line="full" />
-      {status ? <p className="text-sm text-muted">{status}</p> : null}
       <ErrorText>{error}</ErrorText>
 
-      {!status && tab === "config" ? (
+      {tab === "config" ? (
         <div className="max-w-2xl space-y-5 pb-4">
           <h2 className="text-base font-semibold text-heading">Bug creation limit</h2>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -259,7 +262,7 @@ export default function BugPanelSettings({ permissions }) {
         </div>
       ) : null}
 
-      {!status && tab === "moderation" ? (
+      {tab === "moderation" ? (
         <div className="max-w-2xl space-y-5">
           <UserMultiSelect users={users} value={selectedUsers} onChange={setSelectedUsers} placeholder="Select users to punish" />
           <MultiSelect label="Punishment types" options={types} value={selectedTypes} onChange={setSelectedTypes} placeholder="Select punishment types" />
@@ -270,17 +273,20 @@ export default function BugPanelSettings({ permissions }) {
         </div>
       ) : null}
 
-      {!status && tab === "users" ? (
+      {tab === "users" ? (
         <div className="relative min-h-64 flex-1 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
-          <div className="h-full overflow-y-auto">
-            {usersWithHistory.map((entry, index) => (
-              <div key={entry.user.id}>
-                {index > 0 ? <Separator /> : null}
-                <UserPunishmentRow {...entry} onOpen={() => setHistoryUser(entry.user)} />
-              </div>
-            ))}
-          </div>
-          {!usersWithHistory.length ? <p className="absolute inset-0 flex items-center justify-center text-sm italic text-muted">No punishment history.</p> : null}
+          {punishmentsStatus === "loading" ? <p className="absolute inset-0 flex items-center justify-center text-sm text-muted">Loading punishment history...</p> : null}
+          {punishmentsStatus === "loaded" ? (
+            <div className="h-full overflow-y-auto">
+              {usersWithHistory.map((entry, index) => (
+                <div key={entry.user.id}>
+                  {index > 0 ? <Separator /> : null}
+                  <UserPunishmentRow {...entry} onOpen={() => setHistoryUser(entry.user)} />
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {punishmentsStatus === "loaded" && !usersWithHistory.length ? <p className="absolute inset-0 flex items-center justify-center text-sm italic text-muted">No punishment history.</p> : null}
         </div>
       ) : null}
 

@@ -3,8 +3,11 @@
 import Toggle from "@/components/Toggle";
 import useDeveloperMode from "@/hooks/useDeveloperMode";
 
-export default function DevOptionsSettings() {
-  const [developerMode, setDeveloperMode] = useDeveloperMode();
+export default function DevOptionsSettings({ preparedData, onPreparedDataChange }) {
+  const [developerMode, setDeveloperMode] = useDeveloperMode(
+    preparedData?.developerMode,
+    (next) => onPreparedDataChange?.((current) => ({ ...current, developerMode: next }))
+  );
 
   return (
     <div className="max-w-2xl space-y-4">

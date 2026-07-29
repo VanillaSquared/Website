@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 
 import { DEVELOPER_MODE_EVENT } from "@/utils/developerMode";
 
-export default function useDeveloperMode() {
-  const [enabled, setEnabled] = useState(false);
+export default function useDeveloperMode(initialDeveloperMode, onSynchronized) {
+  const [enabled, setEnabled] = useState(() => Boolean(initialDeveloperMode));
 
   useEffect(() => {
     let cancelled = false;
@@ -25,18 +25,19 @@ export default function useDeveloperMode() {
       setEnabled(Boolean(event.detail));
     }
 
-    load();
+    if (typeof initialDeveloperMode !== "boolean") load();
     window.addEventListener(DEVELOPER_MODE_EVENT, sync);
     return () => {
       cancelled = true;
       window.removeEventListener(DEVELOPER_MODE_EVENT, sync);
     };
-  }, []);
+  }, [initialDeveloperMode]);
 
   async function update(nextEnabled) {
     const next = Boolean(nextEnabled);
     const previous = enabled;
     setEnabled(next);
+    onSynchronized?.(next);
     window.dispatchEvent(new CustomEvent(DEVELOPER_MODE_EVENT, { detail: next }));
     try {
       const response = await fetch("/api/auth/preferences", {
@@ -48,6 +49,7 @@ export default function useDeveloperMode() {
       if (!response.ok) throw new Error("Could not update developer mode.");
     } catch {
       setEnabled(previous);
+      onSynchronized?.(previous);
       window.dispatchEvent(new CustomEvent(DEVELOPER_MODE_EVENT, { detail: previous }));
     }
   }
