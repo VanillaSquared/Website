@@ -41,4 +41,4 @@ Hover over an item to see its slot usage. Hold **Left Alt**, then use the arrow 
 
 Special enchantments are active abilities rather than passive bonuses. Hold the item in your main hand and press the **Enchantment Hotkey** to use its ability. The default key is **Left Alt** which can be changed in Controls.
 
-Special abilities have a cooldown shown above the hotbar. Only one special enchantment fits on standard weapons. Current special enchantments include **Dash** and **Swirling**.
+Special abilities have a cooldown shown above the hotbar. Only one special enchantment fits on standard weapons. Read the [Dash](/docs/enchanting/dash) and [Swirling](/docs/enchanting/swirling) pages for their exact effects.
