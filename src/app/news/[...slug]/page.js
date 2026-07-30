@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 
-import NewsAuthorCard from "@/components/NewsAuthorCard";
+import { NewsCard } from "@/components/Card";
 import Tag from "@/components/Tag";
 import MarkdownContent from "@/markdown/MarkdownContent";
 import { getVisibleNewsArticles } from "@/news/server";
@@ -47,7 +47,7 @@ export default async function NewsArticlePage({ params }) {
           {article.author ? (
             <div className="lg:grid lg:grid-cols-[8rem_minmax(0,1fr)] lg:gap-8">
               <aside className="mb-6 lg:mb-0" aria-label="Article author">
-                <NewsAuthorCard author={article.author} authorImage={article.authorImage} publishedAt={article.publishedAt} />
+                <NewsCard author={article.author} authorImage={article.authorImage} publishedAt={article.publishedAt} />
               </aside>
               <MarkdownContent source={article.source} basePath={article.linkBase} />
             </div>

@@ -12,8 +12,8 @@ import Checkmark from "@/components/Checkmark";
 import CodeBlock from "@/components/CodeBlock";
 import CollapsibleCategory from "@/components/CollapsibleCategory";
 import ColorPicker from "@/components/ColorPicker";
+import File from "@/components/File";
 import FileTree from "@/components/FileTree";
-import FileUpload from "@/components/FileUpload";
 import JsonTree, { JsonTreeItem } from "@/components/JsonTree";
 import Markdown from "@/components/Markdown";
 import ModalShowcase from "@/components/ModalShowcase";
@@ -402,21 +402,10 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-heading">File upload</h2>
-            <FileUpload
-              label="Mod pack"
-              description="Drop up to 3 zip or jar files here, or browse from your computer."
-              fileTypes={[".zip", ".jar"]}
-              maxFiles={3}
-              maxFileSize={10 * 1024 * 1024}
-              multiple
-            />
-            <FileUpload
-              locked
-              label="Locked upload"
-              description="Uploads are locked for this example."
-              fileTypes={[".zip", ".jar"]}
-              maxFiles={1}
+            <h2 className="text-2xl font-semibold text-heading">Embedded file</h2>
+            <File
+              href="https://github.com/VanillaSquared/Website/archive/refs/heads/main.zip"
+              name="VanillaSquared-Website.zip"
             />
           </section>
         </div>

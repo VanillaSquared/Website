@@ -1,3 +1,5 @@
+import { formatEuropeanDateTime } from "@/utils/dateTime";
+
 const sizes = {
   sm: "p-4",
   md: "p-6",
@@ -35,6 +37,30 @@ const presets = {
     hoverAccent: true,
   },
 };
+
+export function NewsCard({ author, authorImage, publishedAt, className = "", ...props }) {
+  if (!author) return null;
+
+  const publishedDate = formatEuropeanDateTime(publishedAt, { dateStyle: "medium", timeZone: "UTC" }, "Unknown");
+
+  return (
+    <Card
+      {...props}
+      preset="news"
+      title="Written By"
+      titleAs="p"
+      titleClassName="!px-2 !pb-0 !pt-3 text-center !text-sm"
+      media={authorImage ? <img src={authorImage} alt={`${author} author portrait`} /> : null}
+      hoverAccent={false}
+      className={`w-32 shrink-0 ${className}`}
+      contentClassName="!px-2 !pb-3 text-center"
+    >
+      <p className="break-words text-xs leading-tight text-muted">{author}</p>
+      <p className="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>
+      <time dateTime={publishedAt} className="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
+    </Card>
+  );
+}
 
 export default function Card({
   title,

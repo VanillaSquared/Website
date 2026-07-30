@@ -70,6 +70,15 @@ You can use the website components directly in Markdown. Component names are cas
 </Button>
 ```
 
+`File` embeds a file download in docs, news articles and bug reports. `href` links to the file. `name`, `type`, `size` and `description` are optional. The file type is taken from the filename when `type` is not set.
+
+```mdx
+<File
+  href="https://github.com/VanillaSquared/Website/archive/refs/heads/main.zip"
+  name="VanillaSquared-Website.zip"
+/>
+```
+
 `Tag` displays a small label. Its variants are `default`, `subtle`, `accent`, `low`, `medium`, `high`, `codeRed` and `locked`.
 
 ```mdx
@@ -136,7 +145,6 @@ The following components are also available, although they are mainly useful for
 - `Checkmark`: a check, cross or unconfirmed mark. The useful fields are `checked`, `defaultChecked`, `interactive`, `size`, `variant` and `icon`.
 - `CollapsibleCategory`: collapsible content with `title`, `id`, `icon` and `defaultOpen`.
 - `ColorPicker`: a color input with `label`, `defaultValue`, `locked` and `disabled`.
-- `FileUpload`: a file input with `label`, `description`, `fileTypes`, `maxFileSize`, `maxFiles`, `multiple`, `compact` and `locked`.
 - `MultiSelect`: a multiple choice input with `label`, `options`, `defaultValue`, `min`, `max` and `locked`.
 - `SearchBar`: a search input with `placeholder`, `defaultValue`, `action`, `showPreview`, `variant` and `locked`.
 - `Tabs`: a tab bar with `tabs`, `value`, `line` and `inset`. Changing tabs requires page code, so docs should only use this for a static example.
