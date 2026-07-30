@@ -3,18 +3,11 @@ import {
   BUG_REPORT_PRIORITIES,
   BUG_REPORT_STATUSES,
   listBugReports,
-} from "@/bugs/reporter";
-import { getAuthSubject } from "@/app/auth";
-import { getAuthorizationForUser, hasResolvedPermission, PERMISSIONS } from "@/auth/permissions";
-import { checkBugCreationAllowed, getBugLimitConfig } from "@/bugs/limits";
+} from "@/bugs/server";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
-import BugCreateButton from "./BugCreateButton";
-import BugReportSuccessNotice from "./BugReportSuccessNotice";
 import BugFilterSidebar from "./BugFilterSidebar";
 import BugList from "./BugList";
-
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "Bugs | Vanilla²",
@@ -40,20 +33,7 @@ export default async function BugsPage({ searchParams }) {
     priority: getSearchParamValues(params, "priority"),
     status: getSearchParamValues(params, "status"),
   };
-  const [bugs, subject, bugConfig] = await Promise.all([
-    listBugReports(filters),
-    getAuthSubject({ updateTokens: false }),
-    getBugLimitConfig(),
-  ]);
-  const creatorUser = subject?.properties ?? null;
-  const authorization = creatorUser?.id ? await getAuthorizationForUser(creatorUser) : null;
-  const canCreateBugs = authorization ? hasResolvedPermission(authorization, PERMISSIONS.CREATE_BUGS) : false;
-  const creationAvailability = creatorUser?.id && canCreateBugs
-    ? await checkBugCreationAllowed(creatorUser.id, {
-      bypassLimits: hasResolvedPermission(authorization, PERMISSIONS.BYPASS_LIMITS),
-      bypassLockdown: hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL),
-    })
-    : { allowed: canCreateBugs, error: creatorUser?.id ? "You do not have permission to create bug reports." : "Log in to submit bug reports." };
+  const bugs = listBugReports(filters);
   const searchHiddenFields = {
     category: filters.category,
     priority: filters.priority,
@@ -74,16 +54,6 @@ export default async function BugsPage({ searchParams }) {
   return (
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { placeholder: "Search documentation" } }}
-      notice={<BugReportSuccessNotice />}
-      leadingActions={(
-        <BugCreateButton
-          categories={BUG_REPORT_CATEGORY_CONFIGS}
-          versions={bugConfig.affectedVersions}
-          authenticated={Boolean(creatorUser?.id)}
-          creatorUser={creatorUser}
-          creationAvailability={creationAvailability}
-        />
-      )}
       actions={(
         <BugFilterSidebar
           categories={BUG_REPORT_CATEGORY_CONFIGS}

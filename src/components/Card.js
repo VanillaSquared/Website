@@ -12,7 +12,7 @@ const presets = {
     titleClassName: "text-lg font-semibold text-accent",
     hoverAccent: true,
   },
-  auth: {
+  details: {
     size: "popup",
     titleAs: "h1",
     className: "rounded-2xl border-divider",

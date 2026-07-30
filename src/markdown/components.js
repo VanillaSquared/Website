@@ -11,7 +11,6 @@ import JsonTree, { JsonTreeItem } from "@/components/JsonTree";
 import JsonTypeIcon from "@/components/JsonTypeIcon";
 import Markdown from "@/components/Markdown";
 import MultiSelect from "@/components/MultiSelect";
-import ProfilePicture from "@/components/ProfilePicture";
 import SearchBar from "@/components/SearchBar";
 import Separator from "@/components/Separator";
 import Table from "@/components/Table";
@@ -43,7 +42,6 @@ export const markdownComponents = {
   JsonTypeIcon,
   Markdown,
   MultiSelect,
-  ProfilePicture,
   SearchBar,
   Separator,
   Table,

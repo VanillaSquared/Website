@@ -17,14 +17,6 @@ const variants = {
     hover: "hover:bg-[#25262a]/90 focus:bg-[#25262a]/90",
     clear: "hover:bg-[#2b2c30]/90 hover:text-heading",
   },
-  settings: {
-    form: "max-w-none",
-    input: "h-11 rounded-xl py-2 text-base",
-    filled: "bg-search-hover",
-    empty: "bg-search",
-    hover: "hover:bg-search-hover focus:bg-search-hover",
-    clear: "hover:bg-button-tertiary-hover hover:text-heading",
-  },
   large: {
     form: "max-w-none",
     input: "h-12 rounded-xl py-2.5 text-base",

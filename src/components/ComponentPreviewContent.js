@@ -4,8 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 import enchantingTableImage from "@/assets/docs/enchantment_table.png";
-import settingsIcon from "@/assets/icons/settings.svg";
-import HeaderAuthButton from "@/components/AuthButton";
+import editIcon from "@/assets/icons/edit.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import CategoryNavigation from "@/components/CategoryNavigation";
@@ -13,25 +12,18 @@ import Checkmark from "@/components/Checkmark";
 import CodeBlock from "@/components/CodeBlock";
 import CollapsibleCategory from "@/components/CollapsibleCategory";
 import ColorPicker from "@/components/ColorPicker";
-import EmojiPicker from "@/components/EmojiPicker";
 import FileTree from "@/components/FileTree";
 import FileUpload from "@/components/FileUpload";
 import JsonTree, { JsonTreeItem } from "@/components/JsonTree";
 import Markdown from "@/components/Markdown";
-import MessageComposer from "@/components/MessageComposer";
 import ModalShowcase from "@/components/ModalShowcase";
 import MultiSelect from "@/components/MultiSelect";
-import ProfilePicture from "@/components/ProfilePicture";
 import SaveConfirmation from "@/components/SaveConfirmation";
 import SearchBar from "@/components/SearchBar";
 import Tag from "@/components/Tag";
 import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
-import ThreadRow from "@/components/ThreadRow";
 import Toggle from "@/components/Toggle";
-import UserMultiSelect from "@/components/UserMultiSelect";
-
-const previewCommentCreatedAt = "2026-07-14T14:23:20.000Z";
 
 const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple", "green", "red"];
 const buttonSizes = ["sm", "md", "icon", "iconButton"];
@@ -47,13 +39,6 @@ const customCheckmarkCycleStates = [
   { checked: true, variant: "green", icon: "check" },
   { checked: false, variant: "red", icon: "x" },
   { checked: true, variant: "default", icon: "check" },
-];
-
-const previewUsers = [
-  { id: "00000000-0000-4000-8000-000000000001", username: "Alex", email: "alex@example.com" },
-  { id: "00000000-0000-4000-8000-000000000002", username: "VanillaUser", email: "vanilla@example.com" },
-  { id: "00000000-0000-4000-8000-000000000003", username: "SupportFox", email: "support@example.com" },
-  { id: "00000000-0000-4000-8000-000000000004", username: "BugHunter", email: "bugs@example.com" },
 ];
 
 const selectOptions = [
@@ -96,7 +81,7 @@ const categoryItems = [
             ],
           },
           { id: "publishing", label: "Publishing", icon: "🚀" },
-          { id: "permissions", label: "Permissions", icon: "🔐" },
+          { id: "sharing", label: "Sharing", icon: "🔗" },
           { id: "history", label: "History", icon: "🕘" },
         ],
       },
@@ -115,8 +100,8 @@ const fileTreeNodes = [
     label: "workspace",
     children: [
       {
-        id: "settings-folder",
-        label: "settings",
+        id: "configuration-folder",
+        label: "configuration",
         children: [
           {
             id: "profiles-folder",
@@ -149,24 +134,6 @@ const initialMarkdown = [
   "A wrapped sentence never becomes a heading without a newline character.",
   "## # Stacked header markers remain regular text",
 ].join("\n");
-
-const groupedSelectOptions = [
-  {
-    label: "Permissions",
-    options: [
-      { label: "manage_roles", value: "manage_roles" },
-      { label: "user_management", value: "user_management" },
-      { label: "audit_log", value: "audit_log" },
-    ],
-  },
-  {
-    label: "Roles",
-    options: [
-      { label: "support", value: "role:support" },
-      { label: "moderator", value: "role:moderator" },
-    ],
-  },
-];
 
 export default function ComponentPreviewContent({ embedded = false } = {}) {
   const [designTab, setDesignTab] = useState("buttons");
@@ -295,7 +262,7 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
                   key={variant}
                   href="#"
                   variant={variant}
-                  icon={variant === "iconButton" ? settingsIcon : null}
+                  icon={variant === "iconButton" ? editIcon : null}
                   aria-label={variant === "iconButton" ? "iconButton" : undefined}
                 >
                   {variant === "iconButton" ? null : variant}
@@ -309,7 +276,7 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {buttonSizes.map((size) => (
-                <Button key={size} href="#" size={size} icon={size === "icon" || size === "iconButton" ? settingsIcon : null} aria-label={`Button ${size}`}>
+                <Button key={size} href="#" size={size} icon={size === "icon" || size === "iconButton" ? editIcon : null} aria-label={`Button ${size}`}>
                   {size === "icon" || size === "iconButton" ? null : size}
                 </Button>
               ))}
@@ -321,71 +288,13 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
             <SaveConfirmation onReset={() => {}} onSave={() => {}} />
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-heading">Auth button</h2>
-            <div className="flex flex-wrap items-center gap-3">
-              <HeaderAuthButton />
-              <HeaderAuthButton initialLoggedIn />
-            </div>
-            <p className="text-sm text-muted">
-              Shows the login state and the settings state used in the header.
-            </p>
-          </section>
-
           <ModalShowcase />
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-heading">Comments</h2>
-            <Card title="Comment message" size="md">
-              <ThreadRow
-                message={{ creatorUsername: "BugHunter", content: "Hover this message to reveal its reaction, edit, and delete actions.", createdAt: previewCommentCreatedAt, reactions: [{ emoji: "🐛", count: 12, reacted: true }, { emoji: "👍", count: 4, reacted: false }] }}
-                canChange
-                canReact
-                onReact={() => {}}
-                onEdit={() => {}}
-                onDelete={() => {}}
-              />
-            </Card>
-            <div className="grid gap-4 md:grid-cols-2">
-              <Card title="Comment input" size="md">
-                <MessageComposer onSubmit={async () => {}} />
-              </Card>
-              <Card title="Locked comment inputs" size="md" className="space-y-3">
-                <MessageComposer disabled disabledMessage="Comments are disabled for this bug report." />
-                <MessageComposer disabled disabledMessage="Log in to comment." disabledHref="/login?returnTo=/components" />
-              </Card>
-            </div>
-            <Card title="Emoji picker" size="md" className="flex justify-end">
-              <EmojiPicker onSelect={() => {}} />
-            </Card>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-2xl font-semibold text-heading">Profile pictures</h2>
-            <div className="flex flex-wrap items-center gap-4">
-              <ProfilePicture username="Alex" email="alex@example.com" />
-              <ProfilePicture size="sm" username="Vanilla User" email="user@example.com" />
-              <ProfilePicture
-                username="Image User"
-                src="https://github.com/vercel.png"
-                alt="Example profile picture"
-              />
-            </div>
-          </section>
 
           <section className="space-y-4">
             <h2 className="text-2xl font-semibold text-heading">Cards</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <Card title="Homepage preset" preset="homepage">
                 <p className="text-sm text-muted">Default homepage card with hover accent.</p>
-              </Card>
-              <Card
-                title="Auth preset"
-                preset="auth"
-                description="Popup-sized card with auth styling."
-                footer="Footer content"
-              >
-                <TextInput label="Username" name="preview-username" sampleText="Steve" />
               </Card>
               <Card
                 title="Enchanting Table"
@@ -483,14 +392,8 @@ export default function ComponentPreviewContent({ embedded = false } = {}) {
               <Card title="Multi select" size="md" className="overflow-visible">
                 <MultiSelect label="Targets" options={selectOptions} defaultValue={["vanilla", "fabric"]} min={1} max={4} />
               </Card>
-              <Card title="Grouped multi select" size="md" className="overflow-visible">
-                <MultiSelect label="Permissions" options={groupedSelectOptions} defaultValue={["manage_roles", "role:support"]} />
-              </Card>
               <Card title="Limited multi select" size="md" className="overflow-visible">
                 <MultiSelect label="Server software" options={selectOptions} defaultValue={["paper"]} max={2} />
-              </Card>
-              <Card title="User multi select" size="md" className="overflow-visible">
-                <UserMultiSelect users={previewUsers} defaultValue={[previewUsers[0].id, previewUsers[2].id]} max={3} placeholder="Select users" />
               </Card>
               <Card title="Locked multi select" size="md" className="overflow-visible">
                 <MultiSelect locked label="Locked targets" options={selectOptions} defaultValue={["vanilla", "fabric"]} />

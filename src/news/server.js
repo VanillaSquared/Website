@@ -5,7 +5,6 @@ import path from "node:path";
 
 import matter from "gray-matter";
 
-import { getUserByUsername } from "@/auth/openSQL";
 import {
   isSafeRouteSegments,
   markdownRouteSegments,
@@ -50,6 +49,12 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     throw new Error(`Invalid news image "${imageSource}" in ${relativeFile}. News images must exist under src/assets/news/.`);
   }
 
+  const authorImageSource = data.authorImage ? String(data.authorImage).trim() : "";
+  const authorImage = authorImageSource ? resolveAssetDataUrl(authorImageSource, "news") : null;
+  if (authorImageSource && !authorImage) {
+    throw new Error(`Invalid author image "${authorImageSource}" in ${relativeFile}. Author images must exist under src/assets/news/.`);
+  }
+
   const title = String(data.title || "").trim() || titleFromSegment(fallbackSegment);
 
   return {
@@ -58,8 +63,9 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     imageAlt: String(data.imageAlt || "").trim(),
     showImageOnPage: data.showImageOnPage ?? true,
     tags,
-    authorUsername: typeof data.author === "string" ? data.author.trim() : "",
-    privateRequested: data.private === true,
+    author: typeof data.author === "string" ? data.author.trim() : "",
+    authorImage,
+    private: data.private === true,
   };
 }
 
@@ -96,20 +102,8 @@ export function getNewsArticles() {
   return articles.sort((left, right) => right.createdAtMs - left.createdAtMs || left.title.localeCompare(right.title));
 }
 
-export async function getVisibleNewsArticles(viewer = null) {
-  const articles = getNewsArticles();
-  const usernames = [...new Set(articles.map((article) => article.authorUsername).filter(Boolean))];
-  const users = await Promise.all(usernames.map((username) => getUserByUsername(username)));
-  const usersByUsername = new Map(usernames.map((username, index) => [username, users[index]]));
-
-  return articles.map((article) => {
-    const author = usersByUsername.get(article.authorUsername) ?? null;
-    return {
-      ...article,
-      author,
-      private: Boolean(article.privateRequested && author),
-    };
-  }).filter((article) => !article.private || article.author.id === viewer?.id);
+export function getVisibleNewsArticles() {
+  return getNewsArticles().filter((article) => !article.private);
 }
 
 export function getNewsArticle(slug = []) {
