@@ -53,12 +53,8 @@ export default function Home() {
           <Button href="/docs" variant="blue">
             Docs
           </Button>
-          <Button
-            href="https://github.com/VanillaSquared/Mod/issues/new"
-            variant="purple"
-            external
-          >
-            Report a Bug
+          <Button href="/bugs" variant="purple">
+            Bug Reporter
           </Button>
           <Button href="/news" variant="secondary">
             News
