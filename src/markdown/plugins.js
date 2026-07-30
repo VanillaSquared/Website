@@ -6,7 +6,7 @@ const SUBHEADER_MARKER = "VSQ_SUBHEADER:";
 
 export function prepareSubheaders(source) {
   let fenceCharacter = null;
-  const lines = String(source).split("\n");
+  const lines = String(source).split(/\r\n?|\n/);
   const prepared = [];
 
   lines.forEach((line, index) => {
