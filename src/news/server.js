@@ -5,6 +5,7 @@ import path from "node:path";
 
 import matter from "gray-matter";
 
+import { getUserByUsername } from "@/auth/openSQL";
 import {
   isSafeRouteSegments,
   markdownRouteSegments,
@@ -57,6 +58,8 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     imageAlt: String(data.imageAlt || "").trim(),
     showImageOnPage: data.showImageOnPage ?? true,
     tags,
+    authorUsername: typeof data.author === "string" ? data.author.trim() : "",
+    privateRequested: data.private === true,
   };
 }
 
@@ -65,7 +68,9 @@ export function getNewsArticles() {
     const segments = markdownRouteSegments(relativeFile);
     if (!isSafeRouteSegments(segments)) throw new Error(`Unsafe news article path: ${relativeFile}`);
 
-    const source = fs.readFileSync(path.resolve(NEWS_DIRECTORY, relativeFile), "utf8");
+    const absoluteFile = path.resolve(NEWS_DIRECTORY, relativeFile);
+    const source = fs.readFileSync(absoluteFile, "utf8");
+    const stats = fs.statSync(absoluteFile);
     const parsed = matter(source);
     const metadata = normalizeFrontmatter(parsed.data, relativeFile, segments.at(-1));
     const pathname = `/news/${segments.join("/")}`;
@@ -78,6 +83,7 @@ export function getNewsArticles() {
       segments,
       path: pathname,
       linkBase,
+      createdAtMs: stats.birthtimeMs || stats.ctimeMs,
     };
   });
 
@@ -87,7 +93,23 @@ export function getNewsArticles() {
     seen.add(article.path);
   }
 
-  return articles.sort((left, right) => left.title.localeCompare(right.title) || left.path.localeCompare(right.path));
+  return articles.sort((left, right) => right.createdAtMs - left.createdAtMs || left.title.localeCompare(right.title));
+}
+
+export async function getVisibleNewsArticles(viewer = null) {
+  const articles = getNewsArticles();
+  const usernames = [...new Set(articles.map((article) => article.authorUsername).filter(Boolean))];
+  const users = await Promise.all(usernames.map((username) => getUserByUsername(username)));
+  const usersByUsername = new Map(usernames.map((username, index) => [username, users[index]]));
+
+  return articles.map((article) => {
+    const author = usersByUsername.get(article.authorUsername) ?? null;
+    return {
+      ...article,
+      author,
+      private: Boolean(article.privateRequested && author),
+    };
+  }).filter((article) => !article.private || article.author.id === viewer?.id);
 }
 
 export function getNewsArticle(slug = []) {

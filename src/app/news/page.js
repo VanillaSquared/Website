@@ -1,8 +1,9 @@
 import Link from "next/link";
 
+import { getAuthSubject } from "@/app/auth";
 import Card from "@/components/Card";
 import Tag from "@/components/Tag";
-import { getNewsArticles } from "@/news/server";
+import { getVisibleNewsArticles } from "@/news/server";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export const metadata = {
@@ -10,8 +11,9 @@ export const metadata = {
   description: "News and updates from Vanilla².",
 };
 
-export default function NewsPage() {
-  const articles = getNewsArticles();
+export default async function NewsPage() {
+  const subject = await getAuthSubject({ updateTokens: false });
+  const articles = await getVisibleNewsArticles(subject?.properties ?? null);
 
   return (
     <DefaultTemplatePage>

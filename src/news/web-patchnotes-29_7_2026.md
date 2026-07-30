@@ -3,6 +3,8 @@ title: Website Patchnotes 29/07/2026
 tag: patchnotes
 image: "@/assets/news/generic_website_image.png"
 showImageOnPage: false
+author: PainterFlow11
+private: true
 ---
 
 This update mainly adds the new /news page. But it also upgrades performance and adds a new doc page.
