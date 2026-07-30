@@ -1,5 +1,5 @@
 ---
-title: Enchanting System
+title: Enchanting
 description: How to find recipes, use the enchanting table, and manage enchantment slots.
 order: 2
 sidebarCard:
