@@ -1,6 +1,6 @@
 ---
 id: web-4
-title: iPad chrome, the right side of the /docs page doesnt display
+title: iPad chrome, the right side of the /docs page doesn't display
 author: PainterFlow11
 created_date: 30/07/2026
 category: website

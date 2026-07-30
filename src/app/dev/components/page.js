@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function ComponentPreviewPage() {
   return (
-    <DefaultTemplatePage search={{ placeholder: "Search components..." }}>
+    <DefaultTemplatePage>
       <ComponentPreviewContent />
     </DefaultTemplatePage>
   );

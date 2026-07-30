@@ -1,6 +1,6 @@
 ---
 id: web-3
-title: iPad chrome(/news), labels of checkmarks don’t display
+title: iPad chrome(/news), labels of checkmarks don't display
 author: PainterFlow11
 created_date: 30/07/2026
 category: website
@@ -12,5 +12,5 @@ affectedVersions:
 fixedVersion: null
 ---
 
-The labels of the checkmarks in the header in the /news page don’t display, you can only see the checkmarks. 
+The labels of the checkmarks in the header in the /news page don't display, you can only see the checkmarks. 
 This issue might also exist on iphone, although its not yet tested.
