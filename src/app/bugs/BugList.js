@@ -66,7 +66,7 @@ export default function BugList({ bugs }) {
         onScroll={handleScroll}
       >
         {bugs.map((bug, index) => (
-          <div key={bug.id}>
+          <div key={bug.publicId}>
             {index > 0 ? <Separator /> : null}
             <Link
               href={`/bugs/${bug.publicId}`}

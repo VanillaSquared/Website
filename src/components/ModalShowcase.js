@@ -80,16 +80,6 @@ const modalExamples = [
     closeAnimation: "none",
     content: "fullscreen",
   },
-  {
-    id: "settingsScrollTest",
-    title: "Settings scroll test",
-    button: "Settings · scrolling test",
-    variant: "settings",
-    background: "dim",
-    openAnimation: "fade+pop",
-    closeAnimation: "fade+pop",
-    content: "settingsScroll",
-  },
 ];
 
 function ModalContent({ type, title, onClose }) {
@@ -157,7 +147,7 @@ function ModalContent({ type, title, onClose }) {
         </div>
         <SearchBar placeholder="Search from a drawer..." className="max-w-none" />
         <div className="grid gap-3">
-          {["Profile tools", "Project settings", "Quick actions"].map((item) => (
+          {["Workspace tools", "Project options", "Quick actions"].map((item) => (
             <Card key={item} title={item} size="sm">
               <p className="text-sm text-muted">Reusable content inside a drawer modal.</p>
             </Card>
@@ -239,7 +229,7 @@ function ModalContent({ type, title, onClose }) {
         <Modal
           open={nestedModal === "confirm"}
           onClose={() => setNestedModal(null)}
-          variant="settings"
+          variant="wide"
           background="dim"
           openAnimation="none"
           closeAnimation="fade+pop"
@@ -256,36 +246,6 @@ function ModalContent({ type, title, onClose }) {
             </div>
           </div>
         </Modal>
-      </div>
-    );
-  }
-
-  if (type === "settingsScroll") {
-    return (
-      <div className="space-y-6">
-        <div>
-          <Tag>Settings variant</Tag>
-          <h3 className="mt-3 text-2xl font-bold text-heading">{title}</h3>
-          <p className="mt-2 text-sm text-muted">
-            Lots of sample content for testing the settings modal scroll area while the profile and search stay locked.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          {Array.from({ length: 24 }, (_, index) => (
-            <Card key={index} title={`Settings test block ${index + 1}`} size="sm" hoverAccent={false}>
-              <p className="text-sm text-muted">
-                This is placeholder settings content for scroll testing. Open this modal and scroll the content area to verify the sidebar header remains in place.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <Tag>Option {index + 1}</Tag>
-                <Tag>Preview</Tag>
-              </div>
-            </Card>
-          ))}
-        </div>
-        <div className="flex justify-end">
-          <Button variant="tertiary" onClick={onClose}>Close settings test</Button>
-        </div>
       </div>
     );
   }

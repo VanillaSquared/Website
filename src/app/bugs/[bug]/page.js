@@ -1,22 +1,12 @@
 import { notFound } from "next/navigation";
 
-import { getAuthSubject } from "@/app/auth";
-import { PERMISSIONS, getAuthorizationForUser, hasResolvedPermission } from "@/auth/permissions";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
-import { listComments } from "@/bugs/comments";
-import { getBugLimitConfig } from "@/bugs/limits";
-import { BUG_REPORT_CATEGORY_CONFIGS, BUG_REPORT_PRIORITIES, BUG_REPORT_STATUSES, getBugReportByPublicId } from "@/bugs/reporter";
-import AttachmentList from "@/components/AttachmentList";
-import AttachmentText from "@/components/AttachmentText";
+import { getBugReportByPublicId, getBugReports } from "@/bugs/server";
 import Checkmark from "@/components/Checkmark";
-import CommentThread from "@/components/CommentThread";
+import MarkdownContent from "@/markdown/MarkdownContent";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
-
-import BugReportActions from "./BugReportActions";
-
-export const dynamic = "force-dynamic";
 
 const categoryLabels = {
   "vanilla-squared": "Vanilla Squared",
@@ -49,129 +39,62 @@ const statusDetailColors = {
 };
 
 function formatDate(value) {
-  return formatEuropeanDateTime(value, { dateStyle: "medium", timeStyle: "short" }, "Unknown");
+  return formatEuropeanDateTime(value, { dateStyle: "medium", timeZone: "UTC" }, "Unknown");
+}
+
+export function generateStaticParams() {
+  return getBugReports().map((bug) => ({ bug: bug.publicId }));
 }
 
 export async function generateMetadata({ params }) {
   const { bug: bugParam } = await params;
-  const bug = await getBugReportByPublicId(decodeURIComponent(bugParam));
-
-  if (!bug) {
-    return {
-      title: "Bug not found | Vanilla²",
-    };
-  }
+  const bug = getBugReportByPublicId(decodeURIComponent(bugParam));
+  if (!bug) return { title: "Bug not found | Vanilla²" };
 
   return {
-    title: `${bug.publicId?.toLowerCase()} | Vanilla² Bugs`,
+    title: `${bug.publicId} | Vanilla² Bugs`,
     description: bug.title,
   };
 }
 
 export default async function BugViewPage({ params }) {
   const { bug: bugParam } = await params;
-  const [bug, subject, bugConfig] = await Promise.all([
-    getBugReportByPublicId(decodeURIComponent(bugParam)),
-    getAuthSubject({ updateTokens: false }),
-    getBugLimitConfig(),
-  ]);
+  const bug = getBugReportByPublicId(decodeURIComponent(bugParam));
+  if (!bug) notFound();
 
-  if (!bug) {
-    notFound();
-  }
-
-  const user = subject?.properties ?? null;
-  const authorization = user?.id ? await getAuthorizationForUser(user) : null;
-  const canManage = authorization ? hasResolvedPermission(authorization, PERMISSIONS.MANAGE_BUGS) : false;
-  const canUseBugPanel = authorization ? hasResolvedPermission(authorization, PERMISSIONS.BUG_PANEL) : false;
-  const canUseSupportPanel = canUseBugPanel;
-  const lockdownBlocked = bugConfig.lockdownEnabled && !canUseBugPanel;
-  const reportLocked = bug.locked && !canUseSupportPanel;
-  const canEdit = !lockdownBlocked && !reportLocked && (canManage || canUseBugPanel || Boolean(
-    authorization
-    && bug.creatorUserId === user.id
-    && hasResolvedPermission(authorization, PERMISSIONS.EDIT_BUGS)
-  ));
-  const canToggleComments = Boolean(!lockdownBlocked && !reportLocked && authorization && (
-    bug.creatorUserId === user.id
-    || canUseSupportPanel
-  ));
-  const comments = await listComments(bug.publicId, user?.id ?? null);
-  const canWriteComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.WRITE_COMMENTS));
-  const canManageComments = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.MANAGE_COMMENTS));
-  const canUseDeveloperTools = Boolean(authorization && hasResolvedPermission(authorization, PERMISSIONS.DEV_OPTIONS));
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
-  const affectedVersions = bug.affectedVersions?.length ? bug.affectedVersions.join(", ") : "Unknown";
-  const editableVersions = [...new Set([...bugConfig.affectedVersions, ...(bug.affectedVersions ?? []), ...(bug.fixedVersion ? [bug.fixedVersion] : [])])];
-  const bugStatusCheckmark = getBugStatusCheckmarkProps(bug);
+  const affectedVersions = bug.affectedVersions.length ? bug.affectedVersions.join(", ") : "Unknown";
 
   return (
     <ElementViewTemplatePage
       backHref="/bugs"
       backLabel="All bugs"
       className="py-8"
-      eyebrow={bug.publicId?.toLowerCase()}
+      eyebrow={bug.publicId}
       title={(
         <span className="flex items-start gap-3">
-          <Checkmark {...bugStatusCheckmark} size="lg" className="mt-1" />
+          <Checkmark {...getBugStatusCheckmarkProps(bug)} size="lg" className="mt-1" />
           <span>{bug.title}</span>
         </span>
       )}
       meta={[
-        { label: "Reporter", value: bug.creatorUsername ?? "Unknown", className: "text-soft" },
+        { label: "Reporter", value: bug.creatorUsername, className: "text-soft" },
         { label: "Category", value: categoryLabel, className: "text-accent" },
         { label: "Priority", value: bug.priority, className: priorityDetailColors[bug.priority] ?? "text-muted" },
         { label: "Status", value: bug.status, className: statusDetailColors[bug.status] ?? "text-heading" },
         { label: "Affected versions", value: affectedVersions, className: "text-soft" },
         { label: "Fixed version", value: bug.fixedVersion ?? (bug.fixed ? "Unknown" : "Not fixed"), className: bug.fixed || bug.fixedVersion ? "text-[var(--vsq-filter-status-fixed)]" : "text-muted" },
         { label: "Created", value: formatDate(bug.createdAt), className: "text-muted" },
-        { label: "Updated", value: formatDate(bug.updatedAt), className: "text-muted" },
       ]}
     >
       <section className="flex flex-col gap-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            <Tag variant="subtle">{categoryLabel}</Tag>
-            <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
-            <Tag variant="accent">{bug.status}</Tag>
-          </div>
-          {canEdit || canManage || canToggleComments || canUseSupportPanel ? (
-            <BugReportActions
-              report={bug}
-              categories={BUG_REPORT_CATEGORY_CONFIGS}
-              versions={editableVersions}
-              priorities={BUG_REPORT_PRIORITIES}
-              statuses={BUG_REPORT_STATUSES}
-              creatorUser={user}
-              canEdit={canEdit}
-              canEditState={canUseBugPanel}
-              canDelete={canManage}
-              canToggleComments={canToggleComments}
-              canLock={canUseSupportPanel}
-            />
-          ) : null}
+        <div className="flex flex-wrap gap-2">
+          <Tag variant="subtle">{categoryLabel}</Tag>
+          <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
+          <Tag variant="accent">{bug.status}</Tag>
         </div>
-        <AttachmentText
-          value={bug.description}
-          files={bug.files}
-          getHref={(file) => `/api/bugs/${encodeURIComponent(bug.publicId)}/files/${encodeURIComponent(file.id)}`}
-          className="text-base leading-6"
-        />
         <div className="-mx-5 h-px bg-divider sm:-mx-7" />
-        <AttachmentList files={bug.files} bugPublicId={bug.publicId} />
-        <div className="-mx-5 h-px bg-divider sm:-mx-7" />
-        <CommentThread
-          publicId={bug.publicId}
-          initialComments={comments}
-          currentUserId={user?.id ?? null}
-          canWrite={canWriteComments && !lockdownBlocked && !reportLocked}
-          canManage={canManageComments && !reportLocked}
-          canUseDeveloperTools={canUseDeveloperTools}
-          allowComments={bug.allowComments}
-          interactionLocked={lockdownBlocked || reportLocked}
-          interactionLockedMessage={reportLocked ? "This bug report is locked." : "The bug panel is currently in lockdown."}
-          commentCharacterLimit={bugConfig.commentCharacterLimit}
-        />
+        <MarkdownContent source={bug.source} basePath="/bugs" />
       </section>
     </ElementViewTemplatePage>
   );

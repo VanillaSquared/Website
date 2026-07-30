@@ -5,10 +5,10 @@ import path from "node:path";
 
 import matter from "gray-matter";
 
-import { getUserByUsername } from "@/auth/openSQL";
 import {
   isSafeRouteSegments,
   markdownRouteSegments,
+  parseFrontmatterDate,
   resolveAssetDataUrl,
   scanMarkdownFiles,
   titleFromSegment,
@@ -40,6 +40,7 @@ function normalizeTags(value, relativeFile) {
 
 function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
   const tags = normalizeTags(data.tag, relativeFile);
+  const publishedDate = parseFrontmatterDate(data.published_date, "published_date", relativeFile);
   if (data.showImageOnPage !== undefined && typeof data.showImageOnPage !== "boolean") {
     throw new Error(`Invalid showImageOnPage value in ${relativeFile}. Expected true or false.`);
   }
@@ -50,6 +51,12 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     throw new Error(`Invalid news image "${imageSource}" in ${relativeFile}. News images must exist under src/assets/news/.`);
   }
 
+  const authorImageSource = data.authorImage ? String(data.authorImage).trim() : "";
+  const authorImage = authorImageSource ? resolveAssetDataUrl(authorImageSource, "news") : null;
+  if (authorImageSource && !authorImage) {
+    throw new Error(`Invalid author image "${authorImageSource}" in ${relativeFile}. Author images must exist under src/assets/news/.`);
+  }
+
   const title = String(data.title || "").trim() || titleFromSegment(fallbackSegment);
 
   return {
@@ -58,8 +65,11 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     imageAlt: String(data.imageAlt || "").trim(),
     showImageOnPage: data.showImageOnPage ?? true,
     tags,
-    authorUsername: typeof data.author === "string" ? data.author.trim() : "",
-    privateRequested: data.private === true,
+    author: typeof data.author === "string" ? data.author.trim() : "",
+    authorImage,
+    publishedAt: publishedDate.iso,
+    publishedAtMs: publishedDate.timestamp,
+    private: data.private === true,
   };
 }
 
@@ -70,7 +80,6 @@ export function getNewsArticles() {
 
     const absoluteFile = path.resolve(NEWS_DIRECTORY, relativeFile);
     const source = fs.readFileSync(absoluteFile, "utf8");
-    const stats = fs.statSync(absoluteFile);
     const parsed = matter(source);
     const metadata = normalizeFrontmatter(parsed.data, relativeFile, segments.at(-1));
     const pathname = `/news/${segments.join("/")}`;
@@ -83,7 +92,6 @@ export function getNewsArticles() {
       segments,
       path: pathname,
       linkBase,
-      createdAtMs: stats.birthtimeMs || stats.ctimeMs,
     };
   });
 
@@ -93,23 +101,11 @@ export function getNewsArticles() {
     seen.add(article.path);
   }
 
-  return articles.sort((left, right) => right.createdAtMs - left.createdAtMs || left.title.localeCompare(right.title));
+  return articles.sort((left, right) => right.publishedAtMs - left.publishedAtMs || left.title.localeCompare(right.title));
 }
 
-export async function getVisibleNewsArticles(viewer = null) {
-  const articles = getNewsArticles();
-  const usernames = [...new Set(articles.map((article) => article.authorUsername).filter(Boolean))];
-  const users = await Promise.all(usernames.map((username) => getUserByUsername(username)));
-  const usersByUsername = new Map(usernames.map((username, index) => [username, users[index]]));
-
-  return articles.map((article) => {
-    const author = usersByUsername.get(article.authorUsername) ?? null;
-    return {
-      ...article,
-      author,
-      private: Boolean(article.privateRequested && author),
-    };
-  }).filter((article) => !article.private || article.author.id === viewer?.id);
+export function getVisibleNewsArticles() {
+  return getNewsArticles().filter((article) => !article.private);
 }
 
 export function getNewsArticle(slug = []) {
