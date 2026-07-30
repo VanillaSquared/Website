@@ -30,3 +30,6 @@ The reason for this is because I noticed that I could just reuse the system used
 
 ## Other
 - removed some components which were only there because of the login system
+
+
+*Developers note: ignore my profile picture, I will fix it*
