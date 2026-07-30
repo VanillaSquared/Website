@@ -1,6 +1,6 @@
 ---
 id: web-5
-title: components page header searchbar says: searching for components
+title: components page header searchbar incorrect placeholder text
 author: PainterFlow11
 created_date: 30/07/2026
 category: website
