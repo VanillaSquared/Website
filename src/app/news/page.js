@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getAuthSubject } from "@/app/auth";
 import Card from "@/components/Card";
 import Tag from "@/components/Tag";
-import { getVisibleNewsArticles } from "@/news/server";
+import { getVisibleNewsArticles, NEWS_TAGS } from "@/news/server";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export const metadata = {
@@ -11,16 +11,28 @@ export const metadata = {
   description: "News and updates from Vanilla².",
 };
 
-export default async function NewsPage() {
+export default async function NewsPage({ searchParams }) {
   const subject = await getAuthSubject({ updateTokens: false });
   const articles = await getVisibleNewsArticles(subject?.properties ?? null);
+  const { tag } = await searchParams;
+  const requestedTags = Array.isArray(tag) ? tag : tag ? [tag] : [];
+  const selectedTags = [...new Set(requestedTags)].filter((name) => Object.hasOwn(NEWS_TAGS, name));
+  const filteredArticles = selectedTags.length
+    ? articles.filter((article) => article.tags.some(({ name }) => selectedTags.includes(name)))
+    : articles;
+  const tagOptions = Object.entries(NEWS_TAGS).map(([value, { label }]) => ({ value, label }));
 
   return (
-    <DefaultTemplatePage>
+    <DefaultTemplatePage
+      header={{
+        variant: "news",
+        newsTagFilter: { options: tagOptions, value: selectedTags },
+      }}
+    >
       <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
-        {articles.length ? (
+        {filteredArticles.length ? (
           <section aria-label="News articles" className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6">
-            {articles.map((article) => (
+            {filteredArticles.map((article) => (
               <article key={article.path}>
                 <Card
                   as={Link}
@@ -39,8 +51,10 @@ export default async function NewsPage() {
           </section>
         ) : (
           <div className="py-10 text-center">
-            <h2 className="text-lg font-semibold text-heading">No news yet</h2>
-            <p className="mt-2 text-sm text-muted">Check back later for Vanilla² updates.</p>
+            <h2 className="text-lg font-semibold text-heading">{selectedTags.length ? "No matching news" : "No news yet"}</h2>
+            <p className="mt-2 text-sm text-muted">
+              {selectedTags.length ? "Choose different tags to see more articles." : "Check back later for Vanilla² updates."}
+            </p>
           </div>
         )}
       </main>

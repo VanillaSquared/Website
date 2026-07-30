@@ -4,9 +4,10 @@ import Link from "next/link";
 import { getAuthSubject } from "@/app/auth";
 import vsqLogo from "@/assets/VSQLogo_circle.png";
 import HeaderAuthButton from "@/components/AuthButton";
+import NewsTagFilter from "@/components/NewsTagFilter";
 import SearchBar from "@/components/SearchBar";
 
-export default async function TopBar({ search = {} }) {
+export default async function TopBar({ newsTagFilter, search = {}, variant = "default" }) {
   const searchProps = {
     action: "/docs",
     placeholder: "Search documentation",
@@ -35,6 +36,7 @@ export default async function TopBar({ search = {} }) {
           />
           <span>Vanilla²</span>
         </Link>
+        {variant === "news" ? <NewsTagFilter {...newsTagFilter} /> : null}
         <div className="ml-auto flex min-w-0 flex-1 items-center justify-end gap-2">
           <div className="w-full max-w-44 sm:max-w-64 md:max-w-80">
             <SearchBar {...searchProps} />

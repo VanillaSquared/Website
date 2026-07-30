@@ -94,7 +94,7 @@ export default function Checkmark({
       className={`${sizes[size] ?? sizes.md} relative inline-flex shrink-0 items-center justify-center rounded-full border transition-colors ${
         isInteractive && !disabled ? "cursor-pointer" : ""
       } ${
-        disabled ? "cursor-not-allowed opacity-60" : ""
+        disabled ? "cursor-not-allowed" : ""
       } ${
         isChecked ? selectedVariant.checked : selectedVariant.unchecked
       } ${className}`}
