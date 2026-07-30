@@ -4,6 +4,7 @@ import {
   BUG_REPORT_STATUSES,
   listBugReports,
 } from "@/bugs/server";
+import Button from "@/components/Button";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugFilterSidebar from "./BugFilterSidebar";
@@ -55,11 +56,20 @@ export default async function BugsPage({ searchParams }) {
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { placeholder: "Search documentation" } }}
       actions={(
-        <BugFilterSidebar
-          categories={BUG_REPORT_CATEGORY_CONFIGS}
-          priorities={BUG_REPORT_PRIORITIES}
-          statuses={BUG_REPORT_STATUSES}
-        />
+        <>
+          <Button
+            href="https://github.com/VanillaSquared/Mod/issues/new"
+            variant="purple"
+            external
+          >
+            Report a Bug
+          </Button>
+          <BugFilterSidebar
+            categories={BUG_REPORT_CATEGORY_CONFIGS}
+            priorities={BUG_REPORT_PRIORITIES}
+            statuses={BUG_REPORT_STATUSES}
+          />
+        </>
       )}
     >
       <BugList bugs={bugs} />
