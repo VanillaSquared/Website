@@ -1,10 +1,10 @@
 import Card from "@/components/Card";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
 
-export default function NewsAuthorCard({ author, authorImage, createdAt }) {
+export default function NewsAuthorCard({ author, authorImage, publishedAt }) {
   if (!author) return null;
 
-  const publishedDate = formatEuropeanDateTime(createdAt, { dateStyle: "medium" }, "Unknown");
+  const publishedDate = formatEuropeanDateTime(publishedAt, { dateStyle: "medium", timeZone: "UTC" }, "Unknown");
 
   return (
     <Card
@@ -19,7 +19,7 @@ export default function NewsAuthorCard({ author, authorImage, createdAt }) {
     >
       <p className="break-words text-xs leading-tight text-muted">{author}</p>
       <p className="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>
-      <time dateTime={new Date(createdAt).toISOString()} className="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
+      <time dateTime={publishedAt} className="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
     </Card>
   );
 }

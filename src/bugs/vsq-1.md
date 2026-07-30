@@ -2,6 +2,7 @@
 id: vsq-1
 title: Enchanting table block list tooltip weird spaces.
 author: PainterFlow11
+created_date: 30/07/2026
 category: vanilla-squared
 priority: Low
 status: Unfixable

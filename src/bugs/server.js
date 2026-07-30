@@ -5,7 +5,7 @@ import path from "node:path";
 
 import matter from "gray-matter";
 
-import { extractMarkdownDetails, scanMarkdownFiles, titleFromSegment } from "@/markdown/server";
+import { extractMarkdownDetails, parseFrontmatterDate, scanMarkdownFiles, titleFromSegment } from "@/markdown/server";
 
 const BUGS_DIRECTORY = path.resolve(process.cwd(), "src", "bugs");
 
@@ -30,7 +30,7 @@ function normalizeChoice(value, choices, fallback, field, relativeFile) {
   return match;
 }
 
-function normalizeFrontmatter(data, relativeFile, fallbackId, stats, source) {
+function normalizeFrontmatter(data, relativeFile, fallbackId, source) {
   const publicId = String(data.id || fallbackId).trim().toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]{1,31}$/.test(publicId)) throw new Error(`Invalid bug id "${publicId}" in ${relativeFile}.`);
 
@@ -39,7 +39,7 @@ function normalizeFrontmatter(data, relativeFile, fallbackId, stats, source) {
 
   const status = normalizeChoice(data.status, BUG_REPORT_STATUSES, "Unconfirmed", "status", relativeFile);
   const details = extractMarkdownDetails(source);
-  const createdAt = new Date(stats.birthtimeMs || stats.ctimeMs).toISOString();
+  const createdAt = parseFrontmatterDate(data.created_date, "created_date", relativeFile).iso;
 
   return {
     publicId,
@@ -63,8 +63,7 @@ export function getBugReports() {
     const parsedPath = path.parse(relativeFile);
     const source = fs.readFileSync(absoluteFile, "utf8");
     const parsed = matter(source);
-    const stats = fs.statSync(absoluteFile);
-    return normalizeFrontmatter(parsed.data, relativeFile, parsedPath.name, stats, parsed.content);
+    return normalizeFrontmatter(parsed.data, relativeFile, parsedPath.name, parsed.content);
   });
 
   const seen = new Set();

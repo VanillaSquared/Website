@@ -32,11 +32,12 @@ imageAlt: Description of the article image
 showImageOnPage: false
 author: Author name
 authorImage: "@/assets/news/author-image.svg"
+published_date: 30/07/2026
 private: false
 ---
 ```
 
-`private: true` excludes the article from every news listing and route. Images must be stored under `src/assets/news/`.
+`published_date` is required and must use `dd/mm/yyyy`. It controls the article's displayed publication date and newest-first ordering. `private: true` excludes the article from every news listing and route. Images must be stored under `src/assets/news/`.
 
 ### Bug reports
 
@@ -47,6 +48,7 @@ Add Markdown files under `src/bugs/`. The filename is used as the bug ID unless 
 id: vsq-1
 title: Short issue summary
 author: Reporter name
+created_date: 30/07/2026
 category: vanilla-squared
 priority: Medium
 status: Confirmed
@@ -59,7 +61,7 @@ fixedVersion: null
 Describe the issue and reproduction steps here.
 ```
 
-Supported categories are `vanilla-squared` and `website`. Supported priorities are `Low`, `Medium`, `High`, `Code Red`, and `unset`. Supported statuses are `Fixed`, `Unfixable`, `Unconfirmed`, `Confirmed`, `Works as intended`, and `Vanilla bug`.
+`created_date` is required and must use `dd/mm/yyyy`. Supported categories are `vanilla-squared` and `website`. Supported priorities are `Low`, `Medium`, `High`, `Code Red`, and `unset`. Supported statuses are `Fixed`, `Unfixable`, `Unconfirmed`, `Confirmed`, `Works as intended`, and `Vanilla bug`.
 
 ## Development
 

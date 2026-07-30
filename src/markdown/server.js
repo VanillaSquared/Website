@@ -25,6 +25,28 @@ export function titleFromSegment(segment) {
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
+export function parseFrontmatterDate(value, field, relativeFile) {
+  const normalized = String(value ?? "").trim();
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(normalized);
+  if (!match) throw new Error(`Invalid ${field} "${normalized}" in ${relativeFile}. Expected dd/mm/yyyy.`);
+
+  const [, day, month, year] = match;
+  const timestamp = Date.UTC(Number(year), Number(month) - 1, Number(day));
+  const parsed = new Date(timestamp);
+  if (
+    parsed.getUTCFullYear() !== Number(year)
+    || parsed.getUTCMonth() !== Number(month) - 1
+    || parsed.getUTCDate() !== Number(day)
+  ) {
+    throw new Error(`Invalid ${field} "${normalized}" in ${relativeFile}. Expected a valid calendar date.`);
+  }
+
+  return {
+    iso: `${year}-${month}-${day}T00:00:00.000Z`,
+    timestamp,
+  };
+}
+
 export function isSafeRouteSegments(segments) {
   return Array.isArray(segments) && segments.every((segment) => SAFE_SEGMENT.test(segment));
 }

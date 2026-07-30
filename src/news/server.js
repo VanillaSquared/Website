@@ -8,6 +8,7 @@ import matter from "gray-matter";
 import {
   isSafeRouteSegments,
   markdownRouteSegments,
+  parseFrontmatterDate,
   resolveAssetDataUrl,
   scanMarkdownFiles,
   titleFromSegment,
@@ -39,6 +40,7 @@ function normalizeTags(value, relativeFile) {
 
 function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
   const tags = normalizeTags(data.tag, relativeFile);
+  const publishedDate = parseFrontmatterDate(data.published_date, "published_date", relativeFile);
   if (data.showImageOnPage !== undefined && typeof data.showImageOnPage !== "boolean") {
     throw new Error(`Invalid showImageOnPage value in ${relativeFile}. Expected true or false.`);
   }
@@ -65,6 +67,8 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     tags,
     author: typeof data.author === "string" ? data.author.trim() : "",
     authorImage,
+    publishedAt: publishedDate.iso,
+    publishedAtMs: publishedDate.timestamp,
     private: data.private === true,
   };
 }
@@ -76,7 +80,6 @@ export function getNewsArticles() {
 
     const absoluteFile = path.resolve(NEWS_DIRECTORY, relativeFile);
     const source = fs.readFileSync(absoluteFile, "utf8");
-    const stats = fs.statSync(absoluteFile);
     const parsed = matter(source);
     const metadata = normalizeFrontmatter(parsed.data, relativeFile, segments.at(-1));
     const pathname = `/news/${segments.join("/")}`;
@@ -89,7 +92,6 @@ export function getNewsArticles() {
       segments,
       path: pathname,
       linkBase,
-      createdAtMs: stats.birthtimeMs || stats.ctimeMs,
     };
   });
 
@@ -99,7 +101,7 @@ export function getNewsArticles() {
     seen.add(article.path);
   }
 
-  return articles.sort((left, right) => right.createdAtMs - left.createdAtMs || left.title.localeCompare(right.title));
+  return articles.sort((left, right) => right.publishedAtMs - left.publishedAtMs || left.title.localeCompare(right.title));
 }
 
 export function getVisibleNewsArticles() {

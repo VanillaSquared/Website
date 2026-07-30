@@ -39,7 +39,7 @@ const statusDetailColors = {
 };
 
 function formatDate(value) {
-  return formatEuropeanDateTime(value, { dateStyle: "medium", timeStyle: "short" }, "Unknown");
+  return formatEuropeanDateTime(value, { dateStyle: "medium", timeZone: "UTC" }, "Unknown");
 }
 
 export function generateStaticParams() {

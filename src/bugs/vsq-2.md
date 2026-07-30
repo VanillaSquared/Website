@@ -2,6 +2,7 @@
 id: vsq-2
 title: Sulfur Cube redstone flickering
 author: PainterFlow11
+created_date: 30/07/2026
 category: vanilla-squared
 priority: Medium
 status: Confirmed
