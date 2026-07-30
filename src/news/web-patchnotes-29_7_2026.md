@@ -15,6 +15,7 @@ This update mainly adds the new /news page. But it also upgrades performance and
 # /news
 - added new page
 - /news displays any .md file in `src/news/`. [Check the GitHub for examples](https://github.com/VanillaSquared/Website)
+
 *Developers Note: I will add sorting, filters and a searchbar soon, but for now I only got this rough beta. The process of posting the changelogs of the mod will also be automated.*
 
 # /docs
