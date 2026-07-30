@@ -4,6 +4,8 @@ import {
   BUG_REPORT_STATUSES,
   listBugReports,
 } from "@/bugs/server";
+import plusIcon from "@/assets/icons/plus.svg";
+import Button from "@/components/Button";
 import SearchListTemplatePage from "@/template-pages/SearchListTemplatePage";
 
 import BugFilterSidebar from "./BugFilterSidebar";
@@ -54,6 +56,18 @@ export default async function BugsPage({ searchParams }) {
   return (
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { placeholder: "Search documentation" } }}
+      leadingActions={(
+        <Button
+          href="https://github.com/VanillaSquared/Website"
+          variant="iconButton"
+          size="iconButton"
+          icon={plusIcon}
+          iconClassName="h-5 w-5"
+          external
+          aria-label="Create bug report"
+          title="Create a bug report"
+        />
+      )}
       actions={(
         <BugFilterSidebar
           categories={BUG_REPORT_CATEGORY_CONFIGS}
