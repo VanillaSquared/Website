@@ -30,7 +30,7 @@ Because Sulfur Cubes can be bred with Sulfur Goo, the item is renewable as long 
 
 ### Sulfur Cubes
 
-Holding Sulfur Goo attracts adult Sulfur Cubes. Feeding one piece to 2 adults puts them into love mode. They move together and create a baby Sulfur Cube after about 3 seconds.
+Holding Sulfur Goo attracts adult Sulfur Cubes. Feeding sulfur goo to 2 adults puts them into love mode. They move together and create a baby Sulfur Cube after about 3 seconds.
 
 The parents cannot breed again for 5 minutes. Feeding Sulfur Goo to a baby instead shortens the time it takes to grow up. The item is not consumed in Creative Mode.
 
