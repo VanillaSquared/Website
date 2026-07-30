@@ -79,7 +79,15 @@ export default async function DocsPage({ params }) {
               <Card
                 title={document.sidebarCard.title}
                 preset="info"
-                media={document.sidebarCard.image ? <img src={document.sidebarCard.image} alt={document.sidebarCard.imageAlt} className="h-auto w-full object-contain" /> : null}
+                media={document.sidebarCard.image ? (
+                  <img
+                    src={document.sidebarCard.image}
+                    alt={document.sidebarCard.imageAlt}
+                    className={document.sidebarCard.imageDisplay === "item"
+                      ? "my-6 h-32 w-32 object-contain [image-rendering:pixelated]"
+                      : "h-auto w-full object-contain"}
+                  />
+                ) : null}
                 description={document.sidebarCard.description}
                 details={document.sidebarCard.details}
               />

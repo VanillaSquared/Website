@@ -15,10 +15,46 @@ sidebarCard:
       value: Riptide
 ---
 
-Channeling is not a new enchantment, but Vanilla Squared completely changes how it works. It no longer needs a thunderstorm to do something.
+Channeling is a Vanilla enchantment completely rewritten by Vanilla Squared. Instead of summoning a lightning bolt during thunderstorms, every hit deals lightning damage and chains it into nearby targets.
 
-Hitting a mob deals lightning damage and sends the lightning through up to 3 nearby mobs. The chain can travel up to 8 blocks through blocks included in the Channeling block tag.
+## Obtaining
 
-Bows and Crossbows deal 6 to 8 lightning damage to the first target and 5 to 6 to every chained target. Swords, Axes and Tridents deal 4 to 6 to the first target and 3 to every chained target.
+The Channeling Enchanting Recipe can be obtained from fishing, Big Ocean Ruin chests, Trial Chamber vaults and Swamp Librarian trades.
 
-Channeling only has one level and is incompatible with Riptide.
+### Enchanting recipe
+
+| Lapis | Books | Gold Ingots | Gold Nuggets | Golden Apples | Chiseled Bookshelves | Levels |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 4 | 4 | 4 | 6 | 3 | 9 | 12 |
+
+## Usage
+
+A hit starts a lightning chain at the target and searches for up to 3 nearby living entities. The chain can pass through up to 8 blocks included in the `vsq:channeling` block tag.
+
+Channeling has separate damage values for melee and ranged weapons:
+
+| Weapon | First target | Each chained target |
+| --- | ---: | ---: |
+| Sword, Axe or Trident | 4-6 | 3 |
+| Bow or Crossbow | 6-8 | 5-6 |
+
+The lightning damage is added on top of the weapons normal hit. It uses the `minecraft:lightning_bolt` damage type, but it does not spawn a Vanilla lightning-bolt entity. This means it does not need rain, open sky or a thunderstorm and does not transform mobs as a normal lightning strike would.
+
+Blocks outside the Channeling tag stop a path through them. The built-in tag contains blocks selected for the effect, and data packs can add more blocks without replacing the enchantment.
+
+## Supported items
+
+Channeling can be applied to Swords, Axes, Tridents, Bows and Crossbows. It uses one Damage slot and has only one level.
+
+Channeling is incompatible with Riptide.
+
+## Data values
+
+| Property | Value |
+| --- | --- |
+| Enchantment ID | `minecraft:channeling` |
+| Recipe ID | `vsq:channeling` |
+| Maximum level | I |
+| Enchantment slot | Damage |
+| Maximum chained targets | 3 |
+| Maximum block path | 8 |

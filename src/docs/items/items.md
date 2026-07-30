@@ -5,8 +5,6 @@ order: 3
 sidebarCard:
   enabled: true
   title: Items
-  image: "@/assets/docs/items/swords.png"
-  imageAlt: Diamond Sword
   description: New items and all changes made to Vanilla items.
   details:
     - label: New items
@@ -19,8 +17,23 @@ Vanilla Squared adds 2 new items and changes quite a few Vanilla items. This pag
 
 ## New items
 
-- [Enchanting Recipe Book](/docs/items/enchanting_recipe_book)
-- [Sulfur Goo](/docs/items/sulfur_goo)
+- [Enchanting Recipe Book](/docs/items/enchanting_recipe_book): Stores a recipe for the new enchanting table.
+- [Sulfur Goo](/docs/items/sulfur_goo): Dropped by Sulfur Cubes and used for breeding and Gunpowder.
+
+## Changed items
+
+| Item group | Main changes |
+| --- | --- |
+| Armor | Armor points, durability and material-specific protection |
+| Axes | Damage, speed, reach and shield disabling |
+| Enchanted Books | Removed from normal progression |
+| Fishing Rods | Durability, hook damage and enchantment effects |
+| Potions | Increased stack sizes |
+| Shields | Support for enchantment slots |
+| Spears | Damage, speed, reach and durability |
+| Swords | Attacks pass through small plants |
+| Tools | Material durability and durability cost |
+| Tridents | Melee damage, speed and reach |
 
 ## Armor
 
@@ -62,7 +75,7 @@ Some materials protect against damage which normally ignores regular armor:
 - Diamond Armor keeps 2 armor toughness per piece.
 - Netherite Armor gives 3 armor toughness per piece. Its helmet, chestplate and boots each give 10% knockback resistance.
 
-Protection from multiple pieces is added together and capped at 100%.
+Protection from multiple pieces is added together and capped at 100%. Regular armor and enchantment protection are calculated separately. Armor values above 20 still work and are shown as additional rows above the hotbar.
 
 ## Axes
 
@@ -78,13 +91,17 @@ Axes keep their place as slow and heavy weapons, but their combat stats now depe
 | Diamond | 10 | 1.0 | -0.5 |
 | Netherite | 11 | 1.0 | -0.5 |
 
-Hitting a blocking shield disables it for 5 seconds. An axe loses 1 durability when used for an attack.
+The damage and speed values in the table are the final player attributes shown in the item tooltip. The range change is applied to the players normal interaction range.
+
+Hitting a blocking shield disables it for 5 seconds. An axe loses 1 durability when used for an attack. Its mining speed and effective blocks are unchanged.
 
 ## Enchanted Books
 
 Enchanted Books are no longer part of normal progression. Vanilla Squared replaces enchanted book loot and librarian trades with [Enchanting Recipe Books](/docs/items/enchanting_recipe_book).
 
-Stored enchantments are removed from Enchanted Books and they cannot be used to apply enchantments in an anvil. They are also hidden from the Creative inventory.
+Stored enchantments are removed from Enchanted Books and they cannot be used to apply enchantments in an anvil. They are also hidden from the Creative inventory. Enchanted Books loaded from an old world are stripped of their stored enchantments.
+
+The replacement only changes Enchanted Books. Normal Books are still used by several enchanting recipes.
 
 ## Fishing Rods
 
@@ -94,11 +111,19 @@ Damage, knockback and post-attack enchantment effects on the Fishing Rod are app
 
 You can keep a normal weapon in the other hand. When that weapon is an axe, hooking a player who is blocking with a shield damages the shield by 5 durability and disables it for 5 seconds.
 
+The hook uses the custom `vsq:fished` damage type. Its base damage is only 0.5 damage, or a quarter of a heart, so most of its combat value comes from knockback and enchantments.
+
 ## Potions
 
 Normal Potions now stack up to 16. Splash Potions and Lingering Potions stack up to 8.
 
-Every potion in a stack must have the same type and effects, just like any other item with components.
+| Potion type | Maximum stack size |
+| --- | ---: |
+| Potion | 16 |
+| Splash Potion | 8 |
+| Lingering Potion | 8 |
+
+Every potion in a stack must have the same type and effects, just like any other item with components. Drinking or throwing one potion removes a single item from the stack.
 
 ## Shields
 
@@ -120,11 +145,15 @@ Every spear is changed to use Vanilla Squareds material stats. Spears require a 
 | Diamond | 5 | 2.45 |
 | Netherite | 6 | 2.4 |
 
-A spear can attack from 2 to 4.5 blocks away, with its kinetic attack reaching between 2 and 6.5 blocks. It loses 1 durability per attack.
+The listed damage and speed values are the final player attributes. Spears require a fully charged attack before they can deal damage.
+
+A spear can attack from 2 to 4.5 blocks away, with its kinetic attack reaching between 2 and 6.5 blocks. A spear loses 1 durability per attack.
 
 ## Swords
 
 Sword attacks pass through small plants instead of breaking the plant and missing the mob behind it. This includes grass, ferns, bushes, flowers, petals and sugar cane.
+
+The pass-through list includes short and tall grass, dry grass, ferns, bushes, all small and tall flowers, Pink Petals, Wildflowers and Sugar Cane. Cobwebs and solid blocks are still hit normally.
 
 Swords mine Cobwebs at a speed of 15 and lose 1 durability per attack.
 
@@ -148,6 +177,21 @@ Pickaxes, Shovels and Hoes lose 2 durability when used as a weapon and 1 durabil
 
 Tridents deal 9 melee damage, have an attack speed of 1.125 and reach half a block farther than normal.
 
-Their thrown behavior is unchanged, but they support the expanded weapon enchantment selection and the new enchantment slots.
+Their thrown behavior is unchanged. Loyalty, Riptide, Impaling and Channeling still work when the Trident is thrown, but they use Vanilla Squareds rewritten enchantment definitions.
 
-All enchantable items also use the new [enchantment slot system](/docs/enchanting#enchantment-slots). The sections here only go over changes specific to the item itself.
+## Enchantment slots
+
+All enchantable items use the new [enchantment slot system](/docs/enchanting#enchantment-slots). One enchantment takes one slot regardless of its level.
+
+| Item group | Damage | Defense | Secondary | Utility | Special | Curse |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Armor | 0 | 3 | 3 | 3 | 0 | 2 |
+| Shield | 0 | 0 | 2 | 2 | 0 | 1 |
+| Sword, Axe, Spear, Trident, Mace, Bow and Crossbow | 3 | 0 | 2 | 3 | 1 | 1 |
+| Pickaxe, Shovel, Hoe, Shears and Flint and Steel | 0 | 0 | 4 | 3 | 0 | 1 |
+| Fishing Rod | 0 | 0 | 4 | 3 | 0 | 1 |
+| Elytra | 0 | 2 | 3 | 2 | 0 | 1 |
+
+Other enchantable items receive 1 or 2 Utility slots based on their enchantability value and 1 Curse slot.
+
+Loot can randomize these capacities, so equipment found in chests or dropped by mobs may not match the standard values above. Existing enchantments are never removed when a capacity is randomized.

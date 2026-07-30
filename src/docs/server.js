@@ -29,6 +29,7 @@ function normalizeSidebarCard(value) {
     description: value.description ? String(value.description) : "",
     image: value.image ? resolveAssetDataUrl(value.image) : null,
     imageAlt: value.imageAlt ? String(value.imageAlt) : "",
+    imageDisplay: value.imageDisplay === "item" ? "item" : "default",
     details,
   };
 }
