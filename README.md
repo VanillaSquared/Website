@@ -4,7 +4,7 @@
 
 ## Overview
 
-The site contains the Vanilla² landing page, news, documentation, a markdown-backed bug tracker, and reusable UI templates. News articles, documentation, and bug reports are stored in the repository and rendered from Markdown without accounts or a database.
+The site contains the Vanilla² landing page, news, documentation, a markdown-backed bug tracker, and reusable UI templates. News articles, documentation, and bug reports are stored in the repository and rendered directly from Markdown.
 
 ## Tech stack
 
