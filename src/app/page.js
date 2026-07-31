@@ -1,10 +1,14 @@
+import Link from "next/link";
+
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
 import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
 import Tag from "@/components/Tag";
+import { getVisibleNewsArticles } from "@/news/server";
 
 export default function Home() {
+  const latestNews = getVisibleNewsArticles().slice(0, 6);
   const features = [
     "Rebalanced armor, tools and weapons.",
     "New Redstone Sulfur Cube.",
@@ -16,7 +20,6 @@ export default function Home() {
 
   const enchantments = [
     { name: "Dash", desc: "Burst forward and strike entities caught in the lunge." },
-    { name: "Fractured", desc: "Mine multiple blocks asynchronously through manual clicks." },
     { name: "Ruthless", desc: "Greatly increases attack damage at a self-damage cost." },
     { name: "Swirling", desc: "Spin with your weapon and repeatedly strike nearby enemies." },
     { name: "Void Strike", desc: "Applies the Voided effect to targets." },
@@ -84,7 +87,7 @@ export default function Home() {
       </section>
 
       {/* Enchanting Overhaul */}
-      <section className="px-6 py-20 bg-background">
+      <section className="bg-background px-6 py-18">
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold text-heading">
             Enchanting Overhaul
@@ -104,6 +107,35 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Latest News */}
+      {latestNews.length ? (
+        <section className="mt-1 bg-background px-6 py-20">
+          <div className="mx-auto max-w-5xl">
+            <h2 className="text-center text-3xl font-bold text-heading">Latest News</h2>
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {latestNews.map((article) => (
+                <article key={article.path}>
+                  <Card
+                    as={Link}
+                    href={article.path}
+                    preset="news"
+                    title={article.title}
+                    media={article.image ? <img src={article.image} alt={article.imageAlt} /> : null}
+                    className="h-full"
+                  >
+                    <div className="flex flex-wrap gap-2">
+                      {article.tags.map((articleTag) => (
+                        <Tag key={articleTag.name} variant="accent">{articleTag.label}</Tag>
+                      ))}
+                    </div>
+                  </Card>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <Footer />
     </div>
