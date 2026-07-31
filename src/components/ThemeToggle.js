@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import moonIcon from "@/assets/icons/moon.svg";
 import sunIcon from "@/assets/icons/sun.svg";
 import Toggle from "@/components/Toggle";
+import { setConsentedCookie } from "@/utils/cookieConsent";
 
 const THEME_COOKIE_NAME = "vsq-theme";
 const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
@@ -24,7 +25,11 @@ export default function ThemeToggle() {
     }
 
     const secure = window.location.protocol === "https:" ? "; Secure" : "";
-    document.cookie = `${THEME_COOKIE_NAME}=${nextIsLight ? "light" : "dark"}; Path=/; Max-Age=${THEME_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+    setConsentedCookie(
+      THEME_COOKIE_NAME,
+      nextIsLight ? "light" : "dark",
+      `Path=/; Max-Age=${THEME_COOKIE_MAX_AGE}; SameSite=Lax${secure}`
+    );
     setIsLight(nextIsLight);
   }
 

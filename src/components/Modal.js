@@ -26,6 +26,7 @@ const MODAL_ANIMATIONS = {
 const variants = {
   default: { overlay: "items-center justify-center overflow-y-auto p-4", card: "w-full max-w-lg min-h-24", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   compact: { overlay: "items-center justify-center overflow-y-auto p-4", card: "w-full max-w-sm min-h-24", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
+  corner: { overlay: "pointer-events-none items-end justify-end p-4", card: "w-full max-w-sm min-h-0", lockBodyScroll: false, modal: false, openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   wide: { overlay: "items-center justify-center overflow-y-auto p-4", card: "w-full max-w-3xl min-h-40", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   drawer: { overlay: "items-stretch justify-end overflow-hidden", card: "h-full w-full max-w-md rounded-none !border-y-0 !border-r-0", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   filterSidebar: { root: "top-16 right-0 bottom-0 left-0", overlay: "items-stretch justify-end overflow-hidden p-4", card: "h-full w-full max-w-sm rounded-2xl", content: "h-full min-h-0", openAnimation: "slide-right", closeAnimation: "slide-right" },
@@ -87,6 +88,8 @@ export default function Modal({
   closeAnimation,
   popupAnimation,
   closeOnOutsideClick = true,
+  ariaLabelledBy,
+  ariaDescribedBy,
   className = "",
 }) {
   const variantConfig = variants[variant] ?? variants.default;
@@ -112,24 +115,30 @@ export default function Modal({
 
   useEffect(() => {
     if (!shouldRender) return undefined;
-    const unlockBodyScroll = lockBodyScroll();
+    const unlockBodyScroll = variantConfig.lockBodyScroll === false ? null : lockBodyScroll();
     const handleKeyDown = (event) => { if (event.key === "Escape") onClose?.(); };
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      unlockBodyScroll();
+      unlockBodyScroll?.();
     };
-  }, [shouldRender, onClose]);
+  }, [shouldRender, onClose, variantConfig.lockBodyScroll]);
 
   if (!shouldRender || typeof document === "undefined") return null;
 
   const activeAnimation = MODAL_ANIMATIONS[open ? resolvedOpenAnimation : resolvedCloseAnimation];
   return createPortal(
-    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay} ${closeOnOutsideClick ? "" : "pointer-events-none"}`}>
-      {closeOnOutsideClick ? <button type="button" className={`absolute inset-0 ${backdropBackground} ${open ? activeAnimation.backdropEnter : activeAnimation.backdropExit}`} aria-label="Close modal" onClick={onClose} /> : null}
+    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`}>
+      {closeOnOutsideClick ? (
+        <button type="button" className={`absolute inset-0 ${backdropBackground} ${open ? activeAnimation.backdropEnter : activeAnimation.backdropExit}`} aria-label="Close modal" onClick={onClose} />
+      ) : (
+        <div className={`absolute inset-0 ${backdropBackground} ${open ? activeAnimation.backdropEnter : activeAnimation.backdropExit}`} aria-hidden="true" />
+      )}
       <Card
         role="dialog"
-        aria-modal="true"
+        aria-modal={variantConfig.modal === false ? undefined : "true"}
+        aria-labelledby={ariaLabelledBy}
+        aria-describedby={ariaDescribedBy}
         preset="homepage"
         hoverAccent={false}
         className={`pointer-events-auto relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${open ? activeAnimation.popupEnter : activeAnimation.popupExit} ${className}`}

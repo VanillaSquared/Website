@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 
+import CookieConsentModal from "@/components/CookieConsentModal";
 import ScrollbarVisibility from "@/components/ScrollbarVisibility";
+import { COOKIE_CONSENT_STORAGE_KEY } from "@/utils/cookieConsent";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const themeInitializer = `try{const theme=document.cookie.split("; ").find((cookie)=>cookie.startsWith("vsq-theme="))?.split("=")[1];if(theme==="light"){document.documentElement.dataset.theme="light"}}catch{}`;
+const themeInitializer = `try{if(localStorage.getItem(${JSON.stringify(COOKIE_CONSENT_STORAGE_KEY)})==="accepted"){const theme=document.cookie.split("; ").find((cookie)=>cookie.startsWith("vsq-theme="))?.split("=")[1];if(theme==="light"){document.documentElement.dataset.theme="light"}}}catch{}`;
 
 export const metadata = {
   title: "Vanilla² - Minecraft Fabric Mod",
@@ -32,6 +34,7 @@ export default function RootLayout({ children }) {
       </head>
       <body className="min-h-full flex flex-col">
         <ScrollbarVisibility />
+        <CookieConsentModal />
         {children}
       </body>
     </html>

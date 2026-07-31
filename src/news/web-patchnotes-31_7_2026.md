@@ -8,11 +8,7 @@ authorImage: "@/assets/news/painterflow11.png"
 published_date: 31/07/2026
 ---
 
-This Update revamps the front page(as previously announced). But thats not all, [the_jan_craft](https://github.com/pxlarified) remade the entire UI of the bug reporter to match its UI with the rest of the website.
-
-## Added Light/Dark mode
-- light/dark mode can be toggled in the header and is saved in cookies on the client.
-- default is dark mode
+This Update revamps the front page(as previously announced). But thats not all, [the_jan_craft](https://github.com/pxlarified) remade the entire UI of the bug reporter to match its UI with the rest of the website. I also added ~~flashbang~~ light mode.
 
 ## Front Page
 - no longer includes false/outdated information.
@@ -32,7 +28,19 @@ This Update revamps the front page(as previously announced). But thats not all, 
 ## Header
 - added a discord invite link to the official vsq discord server
 
+## Added Light/Dark mode
+- light/dark mode can be toggled in the header and is saved in cookies on the client.
+- default is dark mode
+
+## Added Cookies modal
+- accepting cookies is optional.
+- currently cookies are only used for the theme.
+*Developers Note: I might use cookies for more things in the future, but for now they will only be used to store the theme.*
+
 ## Other Changes
 - the Cards component got some updates
+- added 2 new console commands:
+    - displayCookieModal(); - displays the cookie consent modal
+    - toggleCookies(boolean); - toggles cookies
 - removed database ([the_jan_craft](https://github.com/pxlarified))
 - removed borders from all variants of the Tags components ([the_jan_craft](https://github.com/pxlarified))
