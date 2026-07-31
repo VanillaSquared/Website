@@ -6,12 +6,12 @@ import Tag from "@/components/Tag";
 
 export default function Home() {
   const features = [
-    "Rebalanced combat for swords, axes, spears, maces, shields, and fishing rods",
-    "Expanded armor & protection scaling beyond vanilla limits",
-    "New attributes and damage types for deeper combat interactions",
-    "Fishing rods as combat tools with hook damage & enchantments",
-    "Extended armor HUD for values above 20",
-    "Custom Sulfur Cube entity with new loot & food items",
+    "Rebalanced armor & all weapons.",
+    "New Redstone Sulfur Cube.",
+    "New Enchantments.",
+    "Remade enchantment system.",
+    "Sulfur Goo & craftable gunpowder.",
+    "Lots of new Datapack features.",
   ];
 
   const enchantments = [
