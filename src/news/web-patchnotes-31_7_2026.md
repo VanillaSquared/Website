@@ -6,7 +6,6 @@ showImageOnPage: false
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 published_date: 31/07/2026
-private: true
 ---
 
 This Update revamps the front page(as previously announced). But thats not all, [the_jan_craft](https://github.com/pxlarified) remade the entire UI of the bug reporter to match its UI with the rest of the website.
