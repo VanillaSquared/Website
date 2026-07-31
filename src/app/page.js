@@ -6,7 +6,7 @@ import Tag from "@/components/Tag";
 
 export default function Home() {
   const features = [
-    "Rebalanced armor & all weapons.",
+    "Rebalanced armor, tools and weapons.",
     "New Redstone Sulfur Cube.",
     "New Enchantments.",
     "Remade enchantment system.",
