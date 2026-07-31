@@ -93,13 +93,6 @@ export default function Home() {
           <Button href="/news" variant="secondary">
             News
           </Button>
-          <Button
-            href="https://github.com/VanillaSquared/"
-            variant="secondary"
-            external
-          >
-            GitHub
-          </Button>
         </div>
       </section>
 
