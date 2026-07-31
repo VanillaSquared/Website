@@ -27,7 +27,7 @@ export default async function NewsPage({ searchParams }) {
           <section aria-label="News articles" className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6">
             {filteredArticles.map((article) => (
               <article key={article.path}>
-                <Card as={Link} href={article.path} preset="news" title={article.title} media={article.image ? <img src={article.image} alt={article.imageAlt} className="h-full w-full object-cover" /> : null} className="h-full">
+                <Card as={Link} href={article.path} preset="imgCard" title={article.title} media={article.image ? <img src={article.image} alt={article.imageAlt} className="h-full w-full object-cover" /> : null} className="h-full">
                   <div className="flex flex-wrap gap-2">
                     {article.tags.map((articleTag) => <Tag key={articleTag.name} variant="accent">{articleTag.label}</Tag>)}
                   </div>

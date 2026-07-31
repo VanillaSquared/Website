@@ -1,5 +1,12 @@
+import Image from "next/image";
 import Link from "next/link";
 
+import craftableGunpowderImage from "@/assets/frontpage/craftable_gunpowder_showcase.png";
+import datapackImage from "@/assets/frontpage/datapack_showcase.png";
+import enchantingSystemImage from "@/assets/frontpage/enchanting_system.png";
+import rebalanceImage from "@/assets/frontpage/rebalance_showcase.png";
+import redstoneSulfurCubeImage from "@/assets/frontpage/redstone_sulfur_cube.png";
+import swirlingImage from "@/assets/frontpage/swirling_showcase.png";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
@@ -10,12 +17,36 @@ import { getVisibleNewsArticles } from "@/news/server";
 export default function Home() {
   const latestNews = getVisibleNewsArticles().slice(0, 6);
   const features = [
-    "Rebalanced armor, tools and weapons.",
-    "New Redstone Sulfur Cube.",
-    "New Enchantments.",
-    "Remade enchantment system.",
-    "Sulfur Goo & craftable gunpowder.",
-    "Lots of new Datapack features.",
+    {
+      title: "Rebalanced armor, tools and weapons.",
+      image: rebalanceImage,
+      imageAlt: "Rebalanced Vanilla² equipment",
+    },
+    {
+      title: "New Redstone Sulfur Cube.",
+      image: redstoneSulfurCubeImage,
+      imageAlt: "Redstone Sulfur Cube in Minecraft",
+    },
+    {
+      title: "New Enchantments.",
+      image: swirlingImage,
+      imageAlt: "Swirling enchantment in action",
+    },
+    {
+      title: "Remade enchantment system.",
+      image: enchantingSystemImage,
+      imageAlt: "Vanilla² enchanting system",
+    },
+    {
+      title: "Sulfur Goo & craftable gunpowder.",
+      image: craftableGunpowderImage,
+      imageAlt: "Craftable gunpowder recipe",
+    },
+    {
+      title: "Lots of new Datapack features.",
+      image: datapackImage,
+      imageAlt: "Vanilla² datapack features",
+    },
   ];
 
   const enchantments = [
@@ -77,10 +108,19 @@ export default function Home() {
         <div className="mx-auto max-w-5xl">
           <h2 className="text-center text-3xl font-bold text-heading">Features</h2>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <Card key={f} preset="homepage">
-                <p className="text-soft">{f}</p>
-              </Card>
+            {features.map((feature) => (
+              <Card
+                key={feature.title}
+                preset="imgCard"
+                title={feature.title}
+                media={(
+                  <Image
+                    src={feature.image}
+                    alt={feature.imageAlt}
+                    sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
+                  />
+                )}
+              />
             ))}
           </div>
         </div>
@@ -119,7 +159,7 @@ export default function Home() {
                   <Card
                     as={Link}
                     href={article.path}
-                    preset="news"
+                    preset="imgCard"
                     title={article.title}
                     media={article.image ? <img src={article.image} alt={article.imageAlt} /> : null}
                     className="h-full"

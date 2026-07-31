@@ -29,9 +29,9 @@ const presets = {
     contentClassName: "m-0",
     hoverAccent: false,
   },
-  news: {
+  imgCard: {
     size: "p-0",
-    className: "block overflow-hidden rounded-xl !border border-news-card bg-news-card-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+    className: "block overflow-hidden rounded-xl !border border-img-card bg-img-card-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
     titleClassName: "px-4 pb-2 pt-3 text-base font-semibold leading-snug text-heading",
     contentClassName: "px-4 pb-4",
     hoverAccent: true,
@@ -46,7 +46,7 @@ export function NewsCard({ author, authorImage, publishedAt, className = "", ...
   return (
     <Card
       {...props}
-      preset="news"
+      preset="imgCard"
       title="Written By"
       titleAs="p"
       titleClassName="!px-2 !pb-0 !pt-3 text-center !text-sm"
@@ -89,7 +89,7 @@ export default function Card({
   const shouldHoverAccent = hoverAccent ?? presetConfig.hoverAccent ?? true;
   const hoverClass = shouldHoverAccent ? "hover:border-accent" : "";
   const isInfoCard = preset === "info";
-  const isNewsCard = preset === "news";
+  const isImgCard = preset === "imgCard";
   const titleContent = title ? (
     <TitleComponent className={`${presetConfig.titleClassName ?? ""} ${titleClassName}`}>
       {title}
@@ -97,7 +97,7 @@ export default function Card({
   ) : null;
   const mediaContent = media ? (
     <div
-      className={`flex justify-center ${isInfoCard ? "" : isNewsCard ? "aspect-[16/9] overflow-hidden bg-news-image [&>img]:h-full [&>img]:w-full [&>img]:object-cover" : "bg-category p-4"}`}
+      className={`flex justify-center ${isInfoCard ? "" : isImgCard ? "aspect-[16/9] overflow-hidden bg-img-card-image [&>img]:h-full [&>img]:w-full [&>img]:object-cover" : "bg-category p-4"}`}
       aria-label={mediaAlt || undefined}
     >
       {media}
@@ -109,8 +109,8 @@ export default function Card({
       className={`border-2 bg-card transition-colors ${sizes[selectedSize] ?? selectedSize} ${hoverClass} ${presetConfig.className ?? ""} ${className}`}
       {...props}
     >
-      {isNewsCard ? mediaContent : titleContent}
-      {isNewsCard ? titleContent : mediaContent}
+      {isImgCard ? mediaContent : titleContent}
+      {isImgCard ? titleContent : mediaContent}
       {description ? (
         <p className={`${isInfoCard ? "border-t border-category-card-border px-4 py-3" : "mt-2"} text-sm text-muted ${descriptionClassName}`}>{description}</p>
       ) : null}
