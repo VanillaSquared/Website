@@ -4,8 +4,8 @@ tag: patchnotes
 image: "@/assets/news/generic_website_image.png"
 showImageOnPage: false
 author: PainterFlow11
-authorImage: "@/assets/news/generic_website_image.png"
-published_date: 30/07/2026
+authorImage: "@/assets/news/PainterFlow11.png"
+published_date: 02/08/2026
 private: true
 ---
 
