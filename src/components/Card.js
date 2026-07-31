@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { formatEuropeanDateTime } from "@/utils/dateTime";
 
 const sizes = {
@@ -71,7 +73,8 @@ export default function Card({
   mediaAlt,
   details = [],
   children,
-  as: Component = "div",
+  as,
+  href,
   titleAs,
   preset = "homepage",
   size,
@@ -84,10 +87,12 @@ export default function Card({
   ...props
 }) {
   const presetConfig = presets[preset] ?? presets.homepage;
+  const Component = as ?? (href ? Link : "div");
   const TitleComponent = titleAs ?? presetConfig.titleAs ?? "h3";
   const selectedSize = size ?? presetConfig.size ?? "md";
   const shouldHoverAccent = hoverAccent ?? presetConfig.hoverAccent ?? true;
   const hoverClass = shouldHoverAccent ? "hover:border-accent" : "";
+  const linkClass = href ? "block focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent" : "";
   const isInfoCard = preset === "info";
   const isImgCard = preset === "imgCard";
   const titleContent = title ? (
@@ -106,7 +111,8 @@ export default function Card({
 
   return (
     <Component
-      className={`border-2 bg-card transition-colors ${sizes[selectedSize] ?? selectedSize} ${hoverClass} ${presetConfig.className ?? ""} ${className}`}
+      className={`border-2 bg-card transition-colors ${sizes[selectedSize] ?? selectedSize} ${hoverClass} ${linkClass} ${presetConfig.className ?? ""} ${className}`}
+      href={href}
       {...props}
     >
       {isImgCard ? mediaContent : titleContent}

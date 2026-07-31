@@ -21,39 +21,45 @@ export default function Home() {
       title: "Rebalanced armor, tools and weapons.",
       image: rebalanceImage,
       imageAlt: "Rebalanced Vanilla² equipment",
+      href: "/docs/items",
     },
     {
       title: "New Redstone Sulfur Cube.",
       image: redstoneSulfurCubeImage,
-      imageAlt: "Redstone Sulfur Cube in Minecraft",
+      imageAlt: "Redstone Sulfur Cube",
+      href: "/docs/items/sulfur_goo",
     },
     {
       title: "New Enchantments.",
       image: swirlingImage,
       imageAlt: "Swirling enchantment in action",
+      href: "/docs/enchanting",
     },
     {
       title: "Remade enchantment system.",
       image: enchantingSystemImage,
       imageAlt: "Vanilla² enchanting system",
+      href: "/docs/enchanting",
     },
     {
       title: "Sulfur Goo & craftable gunpowder.",
       image: craftableGunpowderImage,
       imageAlt: "Craftable gunpowder recipe",
+      href: "/docs/items/sulfur_goo",
     },
     {
       title: "Lots of new Datapack features.",
       image: datapackImage,
       imageAlt: "Vanilla² datapack features",
+      href: "/docs/datapacks/enchanting/custom_enchantments",
     },
   ];
 
   const enchantments = [
-    { name: "Dash", desc: "Burst forward and strike entities caught in the lunge." },
-    { name: "Ruthless", desc: "Greatly increases attack damage at a self-damage cost." },
-    { name: "Swirling", desc: "Spin with your weapon and repeatedly strike nearby enemies." },
-    { name: "Void Strike", desc: "Applies the Voided effect to targets." },
+    { name: "Dash", desc: "Burst forward and strike entities caught in the lunge.", href: "/docs/enchanting/dash" },
+    { name: "Ruthless", desc: "Greatly increases attack damage at a self-damage cost.", href: "/docs/enchanting/ruthless" },
+    { name: "Swirling", desc: "Spin with your weapon and repeatedly strike nearby enemies.", href: "/docs/enchanting/swirling" },
+    { name: "Void Strike", desc: "Applies the Voided effect to targets.", href: "/docs/enchanting/void_strike" },
   ];
 
   return (
@@ -104,6 +110,7 @@ export default function Home() {
             {features.map((feature) => (
               <Card
                 key={feature.title}
+                href={feature.href}
                 preset="imgCard"
                 title={feature.title}
                 media={(
@@ -133,7 +140,7 @@ export default function Home() {
           </p>
           <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {enchantments.map((e) => (
-              <Card key={e.name} preset="homepage" title={e.name}>
+              <Card key={e.name} href={e.href} preset="homepage" title={e.name}>
                 <p className="mt-2 text-sm text-muted">{e.desc}</p>
               </Card>
             ))}
