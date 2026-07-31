@@ -16,12 +16,12 @@ export default function FilterSidebar({ open, onClose, title = "Filters", subtit
       closeOnOutsideClick={false}
     >
       <div className="flex h-full min-h-0 flex-col">
-        <div className={`shrink-0 flex items-center justify-between pb-4 ${borderless ? "" : "border-b border-divider"}`}>
+        <div className={`relative shrink-0 pb-4 ${borderless ? "" : "border-b border-divider"}`}>
           <div>
             <h2 className="text-xl font-semibold text-heading">{title}</h2>
             {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
           </div>
-          <Button size="icon" variant="tertiary" icon={xIcon} aria-label="Close filters" onClick={onClose} />
+          <Button size="icon" variant="tertiary" icon={xIcon} aria-label="Close filters" className="absolute top-0 right-0" onClick={onClose} />
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto py-4">{children}</div>

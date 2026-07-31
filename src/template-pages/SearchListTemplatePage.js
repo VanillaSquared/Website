@@ -10,6 +10,7 @@ export default function SearchListTemplatePage({
   maxWidth = "max-w-6xl",
   listMaxWidth = "max-w-4xl",
   className = "",
+  controlsClassName = "",
 }) {
   return (
     <DefaultTemplatePage search={search?.header ?? search}>
@@ -17,7 +18,7 @@ export default function SearchListTemplatePage({
         <div className={`flex min-h-0 w-full flex-1 flex-col ${maxWidth}`}>
           {notice}
           <div className="mb-7 flex justify-center">
-            <div className="flex w-full max-w-3xl items-center gap-2">
+            <div className={`flex w-full max-w-3xl items-center gap-2 ${controlsClassName}`}>
               {leadingActions}
               <SearchBar {...search} variant={search?.variant ?? "large"} className={`flex-1 ${search?.className ?? ""}`} />
               {actions}

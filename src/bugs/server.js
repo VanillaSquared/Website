@@ -10,7 +10,7 @@ import { extractMarkdownDetails, parseFrontmatterDate, scanMarkdownFiles, titleF
 const BUGS_DIRECTORY = path.resolve(process.cwd(), "src", "bugs");
 
 export const BUG_REPORT_CATEGORY_CONFIGS = [
-  { slug: "vanilla-squared", label: "Vanilla Squared", shortening: "vsq", order: 1 },
+  { slug: "vanilla-squared", label: "Mod", shortening: "vsq", order: 1 },
   { slug: "website", label: "Website", shortening: "web", order: 2 },
 ];
 export const BUG_REPORT_PRIORITIES = ["Low", "Medium", "High", "Code Red", "unset"];

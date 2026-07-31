@@ -12,10 +12,10 @@ const variants = {
   default: {
     form: "max-w-sm",
     input: "h-9 rounded-lg py-1.5 text-sm",
-    filled: "bg-[#25262a]/90",
-    empty: "bg-[#202124]/85",
-    hover: "hover:bg-[#25262a]/90 focus:bg-[#25262a]/90",
-    clear: "hover:bg-[#2b2c30]/90 hover:text-heading",
+    filled: "bg-search-hover",
+    empty: "bg-search",
+    hover: "hover:bg-search-hover focus:bg-search-hover",
+    clear: "hover:bg-button-tertiary-hover hover:text-heading",
   },
   large: {
     form: "max-w-none",
@@ -56,6 +56,7 @@ export default function SearchBar({
   previewTitleKey = "title",
   previewDescriptionKey = "description",
   previewMetaKey,
+  previewMetaCase = "lower",
   previewHrefKey,
   showPreview = true,
   variant = "default",
@@ -238,6 +239,7 @@ export default function SearchBar({
               const title = getPathValue(item, previewTitleKey);
               const description = getPathValue(item, previewDescriptionKey);
               const meta = previewMetaKey ? getPathValue(item, previewMetaKey) : "";
+              const displayedMeta = previewMetaCase === "upper" ? meta.toUpperCase() : meta.toLowerCase();
               const href = previewHrefKey ? getPathValue(item, previewHrefKey) : "";
               const ResultElement = href ? "a" : "button";
 
@@ -255,7 +257,7 @@ export default function SearchBar({
                   className="block w-full rounded-lg px-3 py-2 text-left transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none"
                 >
                   <span className="flex items-center gap-2 text-sm font-semibold text-heading">
-                    {meta ? <span className="font-mono text-xs text-accent">{meta.toLowerCase()}</span> : null}
+                    {meta ? <span className="font-mono text-xs text-accent">{displayedMeta}</span> : null}
                     <span className="truncate">{title}</span>
                   </span>
                   {description ? <span className="mt-1 block truncate text-xs text-muted">{description}</span> : null}

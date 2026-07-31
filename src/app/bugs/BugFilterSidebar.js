@@ -8,6 +8,11 @@ import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
 import FilterSidebar from "@/components/FilterSidebar";
 
+const priorityLabels = {
+  "Code Red": "Urgent",
+  unset: "None",
+};
+
 const filterTextColors = {
   priority: {
     Low: "text-[var(--vsq-tag-low-text)]",
@@ -87,8 +92,9 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
   return (
     <>
       <Button
-        variant="iconButton"
-        size="iconButton"
+        variant="tertiary"
+        size="icon"
+        className="!bg-search hover:!bg-search-hover focus-visible:!bg-search-hover"
         icon={filterIcon}
         iconClassName="h-5 w-5"
         aria-label="Filters"
@@ -103,27 +109,29 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
         borderless
         footer={<Button className="w-full" variant="tertiary" onClick={clearFilters} disabled={isPending}>Clear filters</Button>}
       >
-            <FilterGroup
-              label="Category"
-              name="category"
-              values={searchParams.getAll("category")}
-              options={categories.map((category) => ({ value: category.slug, label: category.label }))}
-              onChange={updateFilter}
-            />
-            <FilterGroup
-              label="Priority"
-              name="priority"
-              values={searchParams.getAll("priority")}
-              options={priorities.map((priority) => ({ value: priority, label: priority }))}
-              onChange={updateFilter}
-            />
-            <FilterGroup
-              label="Status"
-              name="status"
-              values={searchParams.getAll("status")}
-              options={statuses.map((status) => ({ value: status, label: status }))}
-              onChange={updateFilter}
-            />
+        <div className="space-y-8">
+          <FilterGroup
+            label="Category"
+            name="category"
+            values={searchParams.getAll("category")}
+            options={categories.map((category) => ({ value: category.slug, label: category.label }))}
+            onChange={updateFilter}
+          />
+          <FilterGroup
+            label="Priority"
+            name="priority"
+            values={searchParams.getAll("priority")}
+            options={priorities.map((priority) => ({ value: priority, label: priorityLabels[priority] ?? priority }))}
+            onChange={updateFilter}
+          />
+          <FilterGroup
+            label="Status"
+            name="status"
+            values={searchParams.getAll("status")}
+            options={statuses.map((status) => ({ value: status, label: status }))}
+            onChange={updateFilter}
+          />
+        </div>
       </FilterSidebar>
     </>
   );

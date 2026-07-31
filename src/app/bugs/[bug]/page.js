@@ -9,8 +9,13 @@ import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
 
 const categoryLabels = {
-  "vanilla-squared": "Vanilla Squared",
+  "vanilla-squared": "Mod",
   website: "Website",
+};
+
+const priorityLabels = {
+  "Code Red": "Urgent",
+  unset: "None",
 };
 
 const priorityVariants = {
@@ -52,7 +57,7 @@ export async function generateMetadata({ params }) {
   if (!bug) return { title: "Bug not found | Vanilla²" };
 
   return {
-    title: `${bug.publicId} | Vanilla² Bugs`,
+    title: `${bug.publicId.toUpperCase()} | Vanilla² Bugs`,
     description: bug.title,
   };
 }
@@ -74,7 +79,7 @@ export default async function BugViewPage({ params }) {
       headerClassName="border-b-0 pb-3"
       detailsCardClassName="!border-0"
       contentClassName="pt-1"
-      eyebrow={bug.publicId}
+      eyebrow={bug.publicId.toUpperCase()}
       title={(
         <span className="flex items-start gap-3">
           <Checkmark {...getBugStatusCheckmarkProps(bug)} size="lg" className="mt-1" />
@@ -84,7 +89,7 @@ export default async function BugViewPage({ params }) {
       meta={[
         { label: "Reporter", value: bug.creatorUsername, className: "text-soft" },
         { label: "Category", value: categoryLabel, className: "text-accent" },
-        { label: "Priority", value: bug.priority, className: priorityDetailColors[bug.priority] ?? "text-muted" },
+        { label: "Priority", value: priorityLabels[bug.priority] ?? bug.priority, className: priorityDetailColors[bug.priority] ?? "text-muted" },
         { label: "Status", value: bug.status, className: statusDetailColors[bug.status] ?? "text-heading" },
         { label: "Affected versions", value: affectedVersions, className: "text-soft" },
         { label: "Fixed version", value: bug.fixedVersion ?? (bug.fixed ? "Unknown" : "Not fixed"), className: bug.fixed || bug.fixedVersion ? "text-[var(--vsq-filter-status-fixed)]" : "text-muted" },
@@ -94,7 +99,7 @@ export default async function BugViewPage({ params }) {
       <section className="flex flex-col gap-5">
         <div className="flex flex-wrap gap-2">
           <Tag variant="subtle">{categoryLabel}</Tag>
-          <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
+          <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{priorityLabels[bug.priority] ?? bug.priority}</Tag>
           <Tag variant="accent">{bug.status}</Tag>
         </div>
         <MarkdownContent source={bug.source} basePath="/bugs" />

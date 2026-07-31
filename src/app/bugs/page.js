@@ -51,16 +51,20 @@ export default async function BugsPage({ searchParams }) {
     previewTitleKey: "title",
     previewDescriptionKey: "description",
     previewMetaKey: "publicId",
+    previewMetaCase: "upper",
+    variant: "default",
   };
 
   return (
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { placeholder: "Search documentation" } }}
+      controlsClassName="justify-center"
       leadingActions={(
         <Button
           href="https://github.com/VanillaSquared/Website"
-          variant="iconButton"
-          size="iconButton"
+          variant="tertiary"
+          size="icon"
+          className="!bg-search hover:!bg-search-hover focus-visible:!bg-search-hover"
           icon={plusIcon}
           iconClassName="h-5 w-5"
           external
