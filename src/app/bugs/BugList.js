@@ -5,7 +5,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import Checkmark from "@/components/Checkmark";
-import Separator from "@/components/Separator";
 import Tag from "@/components/Tag";
 
 const categoryLabels = {
@@ -60,17 +59,16 @@ export default function BugList({ bugs }) {
   }
 
   return (
-    <div className="relative h-[calc(100dvh-20rem)] min-h-64 before:absolute before:top-0 before:-left-4 before:-right-4 before:h-px before:bg-separator after:absolute after:bottom-0 after:-left-4 after:-right-4 after:h-px after:bg-separator">
+    <div className="h-[calc(100dvh-20rem)] min-h-64">
       <div
         className={`scrollbar-while-scrolling h-full overflow-y-auto ${isScrolling ? "is-scrolling" : ""}`}
         onScroll={handleScroll}
       >
-        {bugs.map((bug, index) => (
+        {bugs.map((bug) => (
           <div key={bug.publicId}>
-            {index > 0 ? <Separator /> : null}
             <Link
               href={`/bugs/${bug.publicId}`}
-              className="block cursor-pointer px-4 py-3 transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
+              className="block cursor-pointer rounded-xl px-4 py-3 transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
               aria-label={`View bug ${bug.publicId}: ${bug.title}`}
             >
               <article className="flex gap-3">

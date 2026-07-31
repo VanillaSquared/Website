@@ -23,18 +23,13 @@
   --vsq-role-color-not-signed-in: #6b7280;
   --vsq-role-color-custom-default: #c269c2;
   --vsq-role-color-background-mix: 12%;
-  --vsq-role-color-border-mix: 42%;
   --vsq-tag-low-bg: rgb(52 211 153 / 0.1);
-  --vsq-tag-low-border: rgb(52 211 153 / 0.4);
   --vsq-tag-low-text: #34d399;
   --vsq-tag-medium-bg: rgb(250 204 21 / 0.1);
-  --vsq-tag-medium-border: rgb(250 204 21 / 0.4);
   --vsq-tag-medium-text: #facc15;
   --vsq-tag-high-bg: rgb(251 146 60 / 0.1);
-  --vsq-tag-high-border: rgb(251 146 60 / 0.4);
   --vsq-tag-high-text: #fb923c;
   --vsq-tag-code-red-bg: rgb(248 113 113 / 0.1);
-  --vsq-tag-code-red-border: rgb(248 113 113 / 0.5);
   --vsq-tag-code-red-text: #f87171;
   --vsq-filter-status-fixed: #34d399;
   --vsq-filter-status-unfixable: #ef4444;
@@ -165,7 +160,6 @@
 .role-color-tag {
   color: var(--role-color, var(--vsq-role-color-custom-default));
   background-color: color-mix(in srgb, var(--role-color, var(--vsq-role-color-custom-default)) var(--vsq-role-color-background-mix), transparent);
-  border-color: color-mix(in srgb, var(--role-color, var(--vsq-role-color-custom-default)) var(--vsq-role-color-border-mix), transparent);
 }
 
 @theme inline {

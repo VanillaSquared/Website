@@ -17,6 +17,10 @@ export default function ElementViewTemplatePage({
   search = {},
   maxWidth = "max-w-6xl",
   className = "",
+  articleClassName = "",
+  headerClassName = "",
+  detailsCardClassName = "",
+  contentClassName = "",
 }) {
   return (
     <DefaultTemplatePage search={search}>
@@ -45,8 +49,8 @@ export default function ElementViewTemplatePage({
           ) : null}
 
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <article className="min-w-0 overflow-hidden rounded-2xl border border-divider bg-card">
-              <header className="border-b border-divider px-5 py-5 sm:px-7">
+            <article className={`min-w-0 overflow-hidden rounded-2xl border border-divider bg-card ${articleClassName}`}>
+              <header className={`border-b border-divider px-5 py-5 sm:px-7 ${headerClassName}`}>
                 {eyebrow ? <p className="mb-2 font-mono text-xs font-bold text-accent">{eyebrow}</p> : null}
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0">
@@ -57,12 +61,12 @@ export default function ElementViewTemplatePage({
                 </div>
               </header>
 
-              <div className="px-5 py-6 sm:px-7">{children}</div>
+              <div className={`px-5 py-6 sm:px-7 ${contentClassName}`}>{children}</div>
             </article>
 
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               {meta.length ? (
-                <Card title="Details" preset="details" size="p-5" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="!mt-2" hoverAccent={false}>
+                <Card title="Details" preset="details" size="p-5" titleAs="h2" titleClassName="text-base font-semibold text-heading" contentClassName="!mt-2" hoverAccent={false} className={detailsCardClassName}>
                   <dl className="space-y-2">
                     {meta.map((item) => (
                       <div key={item.label}>

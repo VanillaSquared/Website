@@ -39,7 +39,7 @@ const statusDetailColors = {
 };
 
 function formatDate(value) {
-  return formatEuropeanDateTime(value, { dateStyle: "medium", timeZone: "UTC" }, "Unknown");
+  return formatEuropeanDateTime(value, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }, "Unknown").replace(/^(\d{1,2}) /, "$1. ");
 }
 
 export function generateStaticParams() {
@@ -70,6 +70,10 @@ export default async function BugViewPage({ params }) {
       backHref="/bugs"
       backLabel="All bugs"
       className="py-8"
+      articleClassName="border-0"
+      headerClassName="border-b-0 pb-3"
+      detailsCardClassName="!border-0"
+      contentClassName="pt-1"
       eyebrow={bug.publicId}
       title={(
         <span className="flex items-start gap-3">
@@ -93,7 +97,6 @@ export default async function BugViewPage({ params }) {
           <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{bug.priority}</Tag>
           <Tag variant="accent">{bug.status}</Tag>
         </div>
-        <div className="-mx-5 h-px bg-divider sm:-mx-7" />
         <MarkdownContent source={bug.source} basePath="/bugs" />
       </section>
     </ElementViewTemplatePage>
