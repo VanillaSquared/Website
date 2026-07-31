@@ -6,6 +6,7 @@ import vsqLogo from "@/assets/VSQLogo_circle.png";
 import Button from "@/components/Button";
 import NewsTagFilter from "@/components/NewsTagFilter";
 import SearchBar from "@/components/SearchBar";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function TopBar({ newsTagFilter, search = {}, variant = "default" }) {
   const searchProps = {
@@ -27,6 +28,7 @@ export default function TopBar({ newsTagFilter, search = {}, variant = "default"
           <span>Vanilla²</span>
         </Link>
         {variant === "news" ? <NewsTagFilter {...newsTagFilter} /> : null}
+        <ThemeToggle />
         <Button
           href="https://discord.gg/pppHybq9xT"
           variant="blurple"
@@ -35,7 +37,7 @@ export default function TopBar({ newsTagFilter, search = {}, variant = "default"
           icon={discordIcon}
           iconClassName="h-3.5 w-4.5 object-contain"
           aria-label="Join the Vanilla² Discord server"
-          className="ml-auto shrink-0"
+          className="shrink-0"
         />
         <div className="w-full max-w-44 sm:max-w-64 md:max-w-80">
           <SearchBar {...searchProps} />

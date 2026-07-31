@@ -10,6 +10,9 @@ published_date: 31/07/2026
 
 This Update revamps the front page(as previously announced). But thats not all, [the_jan_craft](https://github.com/pxlarified) remade the entire UI of the bug reporter to match its UI with the rest of the website.
 
+## Added Light/Dark mode
+- light/dark mode can be toggled in the header and is saved in cookies on the client.
+
 ## Front Page
 - no longer includes false/outdated information.
 - the individual cards are now clickable, they will redirect to their docs(if the docs for that card are available)
