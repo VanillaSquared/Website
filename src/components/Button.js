@@ -21,6 +21,7 @@ const sizes = {
   sm: "rounded-lg px-2 py-1 text-sm",
   md: "rounded-xl px-4 py-2 text-base",
   icon: "h-9 w-9 rounded-lg p-0 text-sm",
+  iconButtonSm: "h-8 w-8 rounded-full p-0 text-sm",
   iconButton: "h-10 w-10 rounded-full p-0 text-sm",
 };
 

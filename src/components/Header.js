@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import discordIcon from "@/assets/discord.png";
 import vsqLogo from "@/assets/VSQLogo_circle.png";
+import Button from "@/components/Button";
 import NewsTagFilter from "@/components/NewsTagFilter";
 import SearchBar from "@/components/SearchBar";
 
@@ -25,7 +27,17 @@ export default function TopBar({ newsTagFilter, search = {}, variant = "default"
           <span>Vanilla²</span>
         </Link>
         {variant === "news" ? <NewsTagFilter {...newsTagFilter} /> : null}
-        <div className="ml-auto w-full max-w-44 sm:max-w-64 md:max-w-80">
+        <Button
+          href="https://discord.gg/pppHybq9xT"
+          variant="blurple"
+          size="iconButtonSm"
+          external
+          icon={discordIcon}
+          iconClassName="h-3.5 w-4.5 object-contain"
+          aria-label="Join the Vanilla² Discord server"
+          className="ml-auto shrink-0"
+        />
+        <div className="w-full max-w-44 sm:max-w-64 md:max-w-80">
           <SearchBar {...searchProps} />
         </div>
       </nav>

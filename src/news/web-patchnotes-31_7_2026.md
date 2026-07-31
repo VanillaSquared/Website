@@ -26,6 +26,9 @@ This Update revamps the front page(as previously announced). But thats not all, 
 - fixed PainterFlow11 profile picture
 - updated the `generic_website_image` to the new front page
 
+## Header
+- added a discord invite link to the official vsq discord server
+
 ## Other Changes
 - the Cards component got some updates
 - removed database ([the_jan_craft](https://github.com/pxlarified))
