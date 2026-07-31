@@ -12,6 +12,7 @@ This Update revamps the front page(as previously announced). But thats not all, 
 
 ## Added Light/Dark mode
 - light/dark mode can be toggled in the header and is saved in cookies on the client.
+- default is dark mode
 
 ## Front Page
 - no longer includes false/outdated information.
