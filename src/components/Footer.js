@@ -7,6 +7,12 @@ export default function Footer() {
         <p className="text-sm text-subtle">© Vanilla² (VSQ)</p>
         <div className="flex gap-6 text-sm text-subtle">
           <Link
+            href="/modlicence"
+            className="transition-colors hover:text-soft"
+          >
+            Mod Licence
+          </Link>
+          <Link
             href="https://github.com/VanillaSquared/"
             className="transition-colors hover:text-soft"
           >
