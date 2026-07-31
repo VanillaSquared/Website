@@ -4,7 +4,7 @@ tag: patchnotes
 image: "@/assets/news/generic_website_image.png"
 showImageOnPage: false
 author: PainterFlow11
-authorImage: "@/assets/news/generic_website_image.png"
+authorImage: "@/assets/news/PainterFlow11.png"
 published_date: 30/07/2026
 ---
 
@@ -33,6 +33,3 @@ The reason for this is because I noticed that I could just reuse the system used
 
 # Bugfixes
 - fixed [web-5](../../bugs/web-5): incorrect placeholder text in the /components searchbar
-
-
-*Developers note: ignore my profile picture, I will fix it*
