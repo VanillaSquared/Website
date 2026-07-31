@@ -7,7 +7,6 @@ import filterIcon from "@/assets/icons/filter.svg";
 import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
 import FilterSidebar from "@/components/FilterSidebar";
-import Separator from "@/components/Separator";
 
 const filterTextColors = {
   priority: {
@@ -101,6 +100,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
         onClose={() => setOpen(false)}
         title="Filters"
         subtitle="Narrow the bug list."
+        borderless
         footer={<Button className="w-full" variant="tertiary" onClick={clearFilters} disabled={isPending}>Clear filters</Button>}
       >
             <FilterGroup
@@ -110,7 +110,6 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
               options={categories.map((category) => ({ value: category.slug, label: category.label }))}
               onChange={updateFilter}
             />
-            <Separator className="my-3" />
             <FilterGroup
               label="Priority"
               name="priority"
@@ -118,7 +117,6 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
               options={priorities.map((priority) => ({ value: priority, label: priority }))}
               onChange={updateFilter}
             />
-            <Separator className="my-3" />
             <FilterGroup
               label="Status"
               name="status"
