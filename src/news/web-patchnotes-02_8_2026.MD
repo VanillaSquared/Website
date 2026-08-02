@@ -26,5 +26,8 @@ This update adds all the changelogs for the future -2.12.0 updates. It also adds
 - new [docs/other-features/sulfur_spike_dripping](../docs/other-features/sulfur_spike_dripping) page
 - moved `docs/datapacks/recipe_tags` page to [docs/datapacks/tags/recipe_tags](../docs/datapacks/tags/recipe_tags)
 
+# /bugs
+- instead of viewing the bugs in a small  scrollable window, the entire page is now scrollable ([suggested by the_jan_craft](https://github.com/pxlarified))
+
 # Other Changes
 - Heavily reduced package size of media content

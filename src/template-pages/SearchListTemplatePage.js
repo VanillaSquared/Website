@@ -11,13 +11,14 @@ export default function SearchListTemplatePage({
   listMaxWidth = "max-w-4xl",
   className = "",
   controlsClassName = "",
+  controlsContainerClassName = "",
 }) {
   return (
     <DefaultTemplatePage search={search?.header ?? search}>
       <section className={`flex min-h-0 flex-1 justify-center bg-background px-6 pt-10 pb-10 ${className}`}>
         <div className={`flex min-h-0 w-full flex-1 flex-col ${maxWidth}`}>
           {notice}
-          <div className="mb-7 flex justify-center">
+          <div className={`mb-7 flex justify-center ${controlsContainerClassName}`}>
             <div className={`flex w-full max-w-3xl items-center gap-2 ${controlsClassName}`}>
               {leadingActions}
               <SearchBar {...search} variant={search?.variant ?? "large"} className={`flex-1 ${search?.className ?? ""}`} />
