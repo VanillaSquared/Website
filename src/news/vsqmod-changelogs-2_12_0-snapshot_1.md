@@ -6,7 +6,7 @@ showImageOnPage: false
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 published_date: 02/08/2026
-private: true
+private: false
 ---
 
 This is the first snapshot for the -2.12.0 area. This update will focus improving the 26.2 update and add the content requested by the community. This first snapshot is a bit smaller, but don't worry, more is coming!
@@ -28,3 +28,5 @@ This is the first snapshot for the -2.12.0 area. This update will focus improvin
 
 ## Tags
 - moved all recipe tags from `vsq/tags/recipes` to `vsq/tags/recipe`
+
+# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.1)
