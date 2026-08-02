@@ -1,6 +1,6 @@
 import "server-only";
 
-import { resolveAssetDataUrl } from "@/markdown/server";
+import { resolveAssetUrl } from "@/markdown/server";
 
 const SUBHEADER_MARKER = "VSQ_SUBHEADER:";
 
@@ -58,7 +58,7 @@ export function resolveLocalLinks(basePath) {
 export function resolveAssetImages() {
   return () => (tree) => {
     function visit(node) {
-      if (node.type === "image") node.url = resolveAssetDataUrl(node.url) ?? node.url;
+      if (node.type === "image") node.url = resolveAssetUrl(node.url) ?? node.url;
       node.children?.forEach(visit);
     }
     visit(tree);

@@ -9,7 +9,7 @@ import {
   extractMarkdownDetails,
   isSafeRouteSegments,
   markdownRouteSegments,
-  resolveAssetDataUrl,
+  resolveAssetUrl,
   scanMarkdownFiles,
   titleFromSegment,
 } from "@/markdown/server";
@@ -27,7 +27,7 @@ function normalizeSidebarCard(value) {
   return {
     title: String(value.title || "Quick information"),
     description: value.description ? String(value.description) : "",
-    image: value.image ? resolveAssetDataUrl(value.image) : null,
+    image: value.image ? resolveAssetUrl(value.image) : null,
     imageAlt: value.imageAlt ? String(value.imageAlt) : "",
     imageDisplay: value.imageDisplay === "item" ? "item" : "default",
     details,

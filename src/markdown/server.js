@@ -8,15 +8,9 @@ import { toString } from "mdast-util-to-string";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 
+import { resolveAssetUrl } from "@/utils/serverAssets";
+
 const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9_-]*$/;
-const ASSET_MIME_TYPES = {
-  ".gif": "image/gif",
-  ".jpeg": "image/jpeg",
-  ".jpg": "image/jpeg",
-  ".png": "image/png",
-  ".svg": "image/svg+xml",
-  ".webp": "image/webp",
-};
 const parser = unified().use(remarkParse);
 
 export function titleFromSegment(segment) {
@@ -51,16 +45,7 @@ export function isSafeRouteSegments(segments) {
   return Array.isArray(segments) && segments.every((segment) => SAFE_SEGMENT.test(segment));
 }
 
-export function resolveAssetDataUrl(source, assetDirectory = "") {
-  if (!String(source).startsWith("@/assets/")) return null;
-
-  const assetsDirectory = path.resolve(process.cwd(), "src", "assets", assetDirectory);
-  const assetPath = path.resolve(process.cwd(), "src", String(source).slice(2));
-  const mimeType = ASSET_MIME_TYPES[path.extname(assetPath).toLowerCase()];
-  if (!assetPath.startsWith(`${assetsDirectory}${path.sep}`) || !mimeType || !fs.existsSync(assetPath)) return null;
-
-  return `data:${mimeType};base64,${fs.readFileSync(assetPath).toString("base64")}`;
-}
+export { resolveAssetUrl };
 
 export function scanMarkdownFiles(rootDirectory, directory = rootDirectory, relativeDirectory = "") {
   if (!fs.existsSync(directory)) return [];
