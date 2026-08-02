@@ -15,6 +15,7 @@ This update adds all the changelogs for the future -2.12.0 updates. It also adds
 - new private article `vsqmod-changelogs-2_12_0-snapshot_2`
 - new private article `vsqmod-changelogs-2_12_0-snapshot_3`
 - new private article `vsqmod-changelogs-2_12_0-snapshot_4`
+- new private article `vsqmod-changelogs-2_12_0`
 - new private article `vsqmod-changelogs-2_12_1`
 - added 4 new images for each one of the articles mentioned above.
 
