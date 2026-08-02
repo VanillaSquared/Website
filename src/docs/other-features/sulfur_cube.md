@@ -1,11 +1,11 @@
 ---
-title: Sulfur Cubes
-description: Breeding Sulfur Cubes and their Redstone Block and Sponge variants.
+title: Sulfur Cube
+description: Breeding Sulfur Cubes and their new Redstone Block and Sponge archetypes.
 order: 1
 sidebarCard:
   enabled: true
-  title: Sulfur Cubes
-  description: Breedable mobs with 2 new block variants.
+  title: Sulfur Cube
+  description: Breedable mobs with 2 new sulfur cube archetypes.
   details:
     - label: Breeding item
       value: Sulfur Goo
@@ -17,7 +17,7 @@ sidebarCard:
       value: "1280 blocks"
 ---
 
-Sulfur Cubes can now be bred and have 2 new variants, one for redstone and another one for removing water. A variant is created by letting a Sulfur Cube swallow the block it needs.
+Sulfur Cubes can now be bred and have 2 new sulfur cube archetypes.
 
 ## Breeding
 
