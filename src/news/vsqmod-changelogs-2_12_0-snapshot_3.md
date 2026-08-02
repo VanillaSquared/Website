@@ -12,7 +12,7 @@ private: true
 # Changelogs
 
 This snapshot is adding the Redstone Sulfur Cube. By putting a Block of Redstone inside a Sulfur Cube, you now have a moving power source that powers all Redstone components in a 1 block radius around it! It also fixes quite a few older bugs.   
-*Developers Note: fixed all sulfur cubes with blocks in them acting like the sulfur cube with Redstone block. This was an issue in the previous snapshot*
+*Developers Note: The original version of this snapshot had a bug where every Sulfur Cube acted like a Sulfur Cube with redstone, the old version is still available on GitHub, but this is the fixed build.*
 
 # Gameplay
 
