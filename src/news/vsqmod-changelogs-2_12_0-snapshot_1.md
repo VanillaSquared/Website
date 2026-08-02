@@ -1,16 +1,19 @@
 ---
 title: Vanilla² -2.12.0-snapshot.1
 tag: patchnotes
-image: "@/assets/news/generic_website_image.png"
-showImageOnPage: false
+image: "@/assets/news/vsq-2_12_0-snapshot_1.png"
+showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 published_date: 02/08/2026
-private: false
 ---
 
+# Changelogs
+
 This is the first snapshot for the -2.12.0 area. This update will focus improving the 26.2 update and add the content requested by the community. This first snapshot is a bit smaller, but don't worry, more is coming!
+
 # Gameplay
+
 ## Sulfur Goo
 - added sulfur goo which can drop from sulfur cube
 - sulfur goo can be combined with coal and bone meal to make 2 gunpowder
