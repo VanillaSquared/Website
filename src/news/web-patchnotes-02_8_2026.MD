@@ -23,3 +23,6 @@ This update adds all the changelogs for the future -2.12.0 updates. It also adds
 - new [docs/other-features/sulfur_cube](../docs/other-features/sulfur_cube) page
 - new [docs/other-features/sulfur_spike_dripping](../docs/other-features/sulfur_spike_dripping) page
 - moved `docs/datapacks/recipe_tags` page to [docs/datapacks/tags/recipe_tags](../docs/datapacks/tags/recipe_tags)
+
+# Other Changes
+- Heavily reduced package size of media content
