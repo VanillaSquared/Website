@@ -118,7 +118,7 @@ Invalid recipes are skipped and reported in the server log.
 
 ## Add the recipe to loot
 
-Vanilla Squared replaces enchanted-book loot with Enchanting Recipe Books. Each loot source selects a recipe from a [recipe tag](/docs/datapacks/recipe_tags).
+Vanilla Squared replaces enchanted-book loot with Enchanting Recipe Books. Each loot source selects a recipe from a [recipe tag](/docs/datapacks/tags/recipe_tags).
 
 To add the example recipe to ancient city chests, create:
 

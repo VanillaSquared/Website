@@ -7,7 +7,7 @@ order: 6
 Vanilla Squared also adds a new loot function which allows you to randomize recipes in the recipe book. This can be neatly used for datapacks that have custom unlockable features hidden in custom/vanilla structures. When implementing this I imagined that you can use this to make every recipe in the game hidden in a structure, requiring the player to explore the world and progress their way through the game to obtain the items required to beat the game. However I assume you might have something else on your mind.
 
 
-`vsq:randomize_recipes` selects one loaded recipe from a [recipe tag](/docs/datapacks/recipe_tags) and writes it to the item's `minecraft:recipes` component.
+`vsq:randomize_recipes` selects one loaded recipe from a [recipe tag](/docs/datapacks/tags/recipe_tags) and writes it to the item's `minecraft:recipes` component.
 
 ## Format
 
