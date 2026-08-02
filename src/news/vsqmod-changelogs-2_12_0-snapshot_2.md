@@ -1,8 +1,8 @@
 ---
 title: Vanilla² -2.12.0-snapshot.2
 tag: patchnotes
-image: "@/assets/news/generic_website_image.png"
-showImageOnPage: false
+image: "@/assets/news/vsq-2_12_0-snapshot_2.png"
+showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 published_date: 09/08/2026
@@ -26,7 +26,7 @@ The second snapshot for -2.12.0 is coming with a some new functionality for sulf
 - also did quite a lot of polishing work on the enchantment table   
    
 # Technical   
-- cleaned up the size of the GitHub repository a bit   
+- reduced the size of the GitHub repository a bit ([the_jan_craft](https://github.com/pxlarified))
    
 ## Enchanting Recipes   
 - added `icon` field which defines the item to display in the recipe book   
