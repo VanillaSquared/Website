@@ -1,12 +1,12 @@
 ---
 title: Vanilla² -2.12.0
 tag: patchnotes
-image: "@/assets/news/vsq-2_12_0-snapshot_4.png"
+image: "@/assets/news/vsq-2_12_0.png"
 showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 published_date: 13/09/2026
-private: false
+private: true
 ---
 
 # Changelogs
