@@ -6,7 +6,7 @@ showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 published_date: 23/08/2026
-private: false
+private: true
 ---
 
 # Changelogs
