@@ -59,7 +59,6 @@ export default async function BugsPage({ searchParams }) {
     <SearchListTemplatePage
       search={{ ...bugSearch, header: { placeholder: "Search documentation" } }}
       controlsClassName="justify-center"
-      controlsContainerClassName="sticky top-16 z-40 bg-background"
       leadingActions={(
         <Button
           href="https://github.com/VanillaSquared/Website"
