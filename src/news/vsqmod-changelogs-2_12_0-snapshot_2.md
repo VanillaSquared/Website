@@ -31,8 +31,8 @@ The second snapshot for -2.12.0 is coming with a some new functionality for sulf
 ## Enchanting Recipes   
 - added `icon` field which defines the item to display in the recipe book   
 - removed `name` field, the name is now manually defined in the `item_name` component of the `icon` field and the name of the enchanting book in the UI is derived from the enchantments definition   
-- fixed enchanting recipe groups UI being a bit broken   
-   
+- fixed enchanting recipe groups UI being a bit broken
+
 # Bugfixes   
 - fixed vsq-57: Groups don't display their "Right-click for more" text in the lore when hovering over the icon in the recipe book.   
 - fixed vsq-58: The preview for groups is just completely broken.   

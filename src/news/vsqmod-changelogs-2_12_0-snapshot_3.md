@@ -19,7 +19,7 @@ This snapshot is adding the Redstone Sulfur Cube. By putting a Block of Redstone
 - added Redstone Sulfur Cube which powers Redstone components in a 1 block radius around it
 
 # Technical   
-- bumped Fabric API from `0.152.2+26.2` to `0.154.2+26.2`   
+- bumped Fabric API from `0.152.2+26.2` to `0.154.2+26.2`
    
 ## NBT Tags   
 - added new `vsq:powerRedstone: INT` NBT tag which controls how much Redstone power should be given of by an entity, ranges from 0-15, 0 meaning it emits now Redstone power.   
@@ -30,4 +30,4 @@ This snapshot is adding the Redstone Sulfur Cube. By putting a Block of Redstone
 - fixed vsq-62: Enchantment effects from the offhand could be used in the mainhand in some cases   
 - fixed vsq-63: Missing translation for 2 tags   
 - fixed vsq-64: Redundant code in swirling   
-- fixed vsq-65: when switching from swirling to a non-swirling enchanted item, the player animation would freeze and bug out   
+- fixed vsq-65: when switching from swirling to a non-swirling enchanted item, the player animation would freeze and bug out
