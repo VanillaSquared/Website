@@ -1,5 +1,5 @@
 ---
-title: Vanilla² -2.12.0-snapshot.3
+title: Vanilla² -2.12.0-snapshot.3.1
 tag: patchnotes
 image: "@/assets/news/vsq-2_12_0-snapshot_3.png"
 showImageOnPage: true
