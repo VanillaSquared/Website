@@ -17,6 +17,12 @@ export default function Footer() {
             Mod Licence
           </Link>
           <Link
+            href="/licence"
+            className="transition-colors hover:text-soft"
+          >
+            Website Licence
+          </Link>
+          <Link
             href="https://github.com/VanillaSquared/"
             className="transition-colors hover:text-soft"
           >
