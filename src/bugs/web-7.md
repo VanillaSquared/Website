@@ -8,7 +8,7 @@ priority: Medium
 status: Confirmed
 fixed: false
 affectedVersions:
-  - 0.1.1
+  - Web 0.1.1
 fixedVersion: null
 ---
 
