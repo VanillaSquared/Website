@@ -8,9 +8,9 @@ priority: Low
 status: Fixed
 fixed: false
 affectedVersions:
-  - Web 29/07/2026
+  - Web 0.1.0 29/07/2026
 fixedVersion: 
-  - Web 30/07/2026
+  - Web 0.1.0 30/07/2026
 ---
 
 the searchbar in the header on the components page says that it is searching for components, even though its searching for docs.

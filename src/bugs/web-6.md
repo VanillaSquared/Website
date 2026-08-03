@@ -8,7 +8,7 @@ priority: High
 status: Fixed
 fixed: true
 affectedVersions:
-  - Web 0.1.1
+  - Web 0.1.0
 fixedVersion: Web 0.1.1
 ---
 

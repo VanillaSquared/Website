@@ -27,5 +27,6 @@ These are mostly minor things but I think they greatly improve the user experien
 
 # Bug Reporter
 - Fixed [web-2](../../bugs/web-2): Bug report filter button flicker.
+- Fixed [web-3](../../bugs/web-3)
 - Fixed [web-6](../../bugs/web-6): the link styling is not applied in headers
 - Fixed [web-7](../../bugs/web-7): the news page tags text is unreadable in flashbang mode
