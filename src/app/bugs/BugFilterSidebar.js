@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { startTransition, useState } from "react";
 
 import filterIcon from "@/assets/icons/filter.svg";
 import Button from "@/components/Button";
@@ -61,7 +61,6 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
   function updateFilter(name, value) {
     const nextParams = new URLSearchParams(searchParams.toString());
@@ -107,7 +106,7 @@ export default function BugFilterSidebar({ categories, priorities, statuses }) {
         title="Filters"
         subtitle="Narrow the bug list."
         borderless
-        footer={<Button className="w-full" variant="tertiary" onClick={clearFilters} disabled={isPending}>Clear filters</Button>}
+        footer={<Button className="w-full" variant="tertiary" onClick={clearFilters}>Clear filters</Button>}
       >
         <div className="space-y-8">
           <FilterGroup

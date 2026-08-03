@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import Checkmark from "@/components/Checkmark";
@@ -10,7 +10,6 @@ export default function NewsTagFilter({ options = [], value = [] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedTags, setSelectedTags] = useState(value);
-  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     setSelectedTags(value);
@@ -46,7 +45,6 @@ export default function NewsTagFilter({ options = [], value = [] }) {
             <Checkmark
               checked={checked}
               onChange={(nextChecked) => updateTag(option.value, nextChecked)}
-              disabled={isPending}
               size="sm"
               aria-label={`${checked ? "Remove" : "Add"} ${option.label} filter`}
             />

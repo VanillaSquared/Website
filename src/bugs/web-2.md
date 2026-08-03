@@ -5,11 +5,11 @@ author: PainterFlow11
 created_date: 30/07/2026
 category: website
 priority: Medium
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
   - all
-fixedVersion: null
+fixedVersion: Web 0.1.1
 ---
 
 The button to clear filters in the modal for filtering bug reports flickers to its locked variant for a short moment when applying a filter.
