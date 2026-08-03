@@ -48,7 +48,7 @@ export default function NewsTagFilter({ options = [], value = [] }) {
               size="sm"
               aria-label={`${checked ? "Remove" : "Add"} ${option.label} filter`}
             />
-            <span className="hidden xl:inline">{option.label}</span>
+            <span className="hidden lg:inline">{option.label}</span>
           </span>
         );
       })}
