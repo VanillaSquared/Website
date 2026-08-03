@@ -23,7 +23,7 @@ const guideSteps = [
 
 const guidelines = [
   "Use a short, specific title and report only one problem per report.",
-  "Include the exact Vanilla Squared version; do not write \"latest.\" (*the website doesn't have versions)",
+  "Include the exact Vanilla Squared version; do not write \"latest.\"",
   "Explain what happened and the exact steps needed to reproduce it.",
   "Do not distribute material you don't have the rights to.",
   "Attach relevant logs or crash reports. Screenshots and videos should support, not replace, written steps.",

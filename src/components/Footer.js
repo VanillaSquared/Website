@@ -1,10 +1,14 @@
 import Link from "next/link";
+import packageJson from "../../package.json";
 
 export default function Footer() {
   return (
     <footer className="bg-background px-6 py-10">
       <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
-        <p className="text-sm text-subtle">© Vanilla² (VSQ)</p>
+        <p className="text-sm text-subtle">
+          © Vanilla² (VSQ)
+          <span className="ml-1 text-xs">V{packageJson.version}</span>
+        </p>
         <div className="flex gap-6 text-sm text-subtle">
           <Link
             href="/modlicence"
