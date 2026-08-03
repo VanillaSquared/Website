@@ -5,6 +5,7 @@ image: "@/assets/news/vsq-2_12_0.png"
 showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
+authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 13/09/2026
 private: true
 ---

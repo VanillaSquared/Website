@@ -210,6 +210,7 @@ imageAlt: Website patchnotes
 showImageOnPage: false
 author: PainterFlow11
 authorImage: "@/assets/news/generic_website_image.png"
+authorLink: https://github.com/PainterFlow11
 published_date: 29/07/2026
 private: false
 ---
@@ -222,6 +223,7 @@ private: false
 - `showImageOnPage`: Whether the image is also shown at the top of the article. Defaults to `true` and has to be `true` or `false`.
 - `author`: The displayed author name.
 - `authorImage`: The author's image. It also has to be stored under `src/assets/news/`.
+- `authorLink`: An optional HTTP(S) URL or site-relative path for the author card. When omitted, the card is not clickable and has no hover effect.
 - `published_date`: Required and written as `dd/mm/yyyy`. This also controls the order on the news page.
 - `private`: Set this to `true` to remove the article from the news page and its route.
 

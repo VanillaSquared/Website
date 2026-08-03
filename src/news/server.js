@@ -45,6 +45,15 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     throw new Error(`Invalid showImageOnPage value in ${relativeFile}. Expected true or false.`);
   }
 
+  if (data.authorLink !== undefined && typeof data.authorLink !== "string") {
+    throw new Error(`Invalid authorLink value in ${relativeFile}. Expected an HTTP(S) URL or a site-relative path.`);
+  }
+
+  const authorLink = data.authorLink?.trim() || "";
+  if (authorLink && !/^https?:\/\//i.test(authorLink) && !/^\/(?!\/)/.test(authorLink)) {
+    throw new Error(`Invalid authorLink value in ${relativeFile}. Expected an HTTP(S) URL or a site-relative path.`);
+  }
+
   const imageSource = data.image ? String(data.image).trim() : "";
   const image = imageSource ? resolveAssetUrl(imageSource, "news") : null;
   if (imageSource && !image) {
@@ -67,6 +76,7 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
     tags,
     author: typeof data.author === "string" ? data.author.trim() : "",
     authorImage,
+    authorLink,
     publishedAt: publishedDate.iso,
     publishedAtMs: publishedDate.timestamp,
     private: data.private === true,

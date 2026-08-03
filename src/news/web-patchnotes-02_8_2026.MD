@@ -5,6 +5,7 @@ image: "@/assets/news/generic_website_image.png"
 showImageOnPage: false
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
+authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 02/08/2026
 ---
 

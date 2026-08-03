@@ -40,7 +40,7 @@ const presets = {
   },
 };
 
-export function NewsCard({ author, authorImage, publishedAt, className = "", ...props }) {
+export function NewsCard({ author, authorImage, authorLink, publishedAt, className = "", ...props }) {
   if (!author) return null;
 
   const publishedDate = formatEuropeanDateTime(publishedAt, { dateStyle: "medium", timeZone: "UTC" }, "Unknown");
@@ -49,11 +49,12 @@ export function NewsCard({ author, authorImage, publishedAt, className = "", ...
     <Card
       {...props}
       preset="imgCard"
+      href={authorLink || undefined}
       title="Written By"
       titleAs="p"
       titleClassName="!px-2 !pb-0 !pt-3 text-center !text-sm"
       media={authorImage ? <img src={authorImage} alt={`${author} author portrait`} /> : null}
-      hoverAccent={false}
+      hoverAccent={Boolean(authorLink)}
       className={`w-32 shrink-0 ${className}`}
       contentClassName="!px-2 !pb-3 text-center"
     >

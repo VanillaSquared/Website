@@ -5,6 +5,7 @@ image: "@/assets/news/ty-for-500-downloads.png"
 showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
+authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 03/08/2026
 ---
 
