@@ -14,9 +14,9 @@ fixedVersion:
 
 The styling of links is not applied in headers.
 
-# [link to localhost](http://localhost:3000)
-## [link to localhost](http://localhost:3000)
-### [link to localhost](http://localhost:3000)
+# [hyper link to localhost](http://localhost:3000)
+## [hyper link to localhost](http://localhost:3000)
+### [hyper link to localhost](http://localhost:3000)
 # http://localhost:3000
 ## http://localhost:3000
 ### http://localhost:3000
