@@ -24,3 +24,6 @@ These are mostly minor things but I think they greatly improve the user experien
 
 ## Other Changes
 - added a small version number to the `Footer` component
+
+# Bug Reporter
+- Confirmed [web-6](../../bugs/web-6): the link styling is not applied in headers
