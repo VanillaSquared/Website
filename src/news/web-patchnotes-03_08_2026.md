@@ -7,7 +7,6 @@ author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 03/08/2026
-private: true
 ---
 -# Website V0.1.1 (*Developers Note: "from now on I will actually add Version numbering to the Website"*)
 
