@@ -16,3 +16,5 @@ The Vanilla Squared website is finally getting released. It contains a Bug Repor
 
 I will be going on Vacation this friday for 2 weeks, but do not fear, updates will release while I'm gone. In the meantime, I will also plan the next update after -2.12.0 which will be the start of the beta phase, -1.0.0. I have some great features planned already.
 One unfortunate thing though is that -1.0.0 might get a bit delayed because I want the Mod to first update to 26.3 before the -1.0.0 snapshot cycle starts off. So yeah thats kinda all I have to say, I'm going to despawn again.
+
+### To celebrate the release, [I also released a new update for the website!](https://vanillasquared.up.railway.app/news/web-patchnotes-03_08_2026)
