@@ -16,5 +16,9 @@ These are mostly minor things but I think they greatly improve the user experien
 ## /bugs
 - changed the + button to a ? button which now opens a modal with a mini-guide on how to make a bug report.
 
+## /news
+- the announcement tag now has a unique color
+- the other tag now has a unique color
+
 ## Other Changes
 - added a small version number to the `Footer` component

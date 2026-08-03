@@ -40,7 +40,7 @@ export default async function NewsArticlePage({ params }) {
             {article.image && article.showImageOnPage ? <img src={article.image} alt={article.imageAlt} className="mb-7 aspect-[16/9] w-full rounded-xl object-cover" /> : null}
             <h1 className="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{article.title}</h1>
             <div className="mt-4 flex flex-wrap gap-2" aria-label="Article tags">
-              {article.tags.map((tag) => <Tag key={tag.name} variant="accent" className="rounded-full">{tag.label}</Tag>)}
+              {article.tags.map((tag) => <Tag key={tag.name} variant={tag.name} className="rounded-full">{tag.label}</Tag>)}
             </div>
           </header>
 

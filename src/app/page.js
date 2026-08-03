@@ -166,7 +166,7 @@ export default function Home() {
                   >
                     <div className="flex flex-wrap gap-2">
                       {article.tags.map((articleTag) => (
-                        <Tag key={articleTag.name} variant="accent">{articleTag.label}</Tag>
+                        <Tag key={articleTag.name} variant={articleTag.name}>{articleTag.label}</Tag>
                       ))}
                     </div>
                   </Card>

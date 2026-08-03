@@ -29,7 +29,7 @@ export default async function NewsPage({ searchParams }) {
               <article key={article.path}>
                 <Card as={Link} href={article.path} preset="imgCard" title={article.title} media={article.image ? <img src={article.image} alt={article.imageAlt} className="h-full w-full object-cover" /> : null} className="h-full">
                   <div className="flex flex-wrap gap-2">
-                    {article.tags.map((articleTag) => <Tag key={articleTag.name} variant="accent">{articleTag.label}</Tag>)}
+                    {article.tags.map((articleTag) => <Tag key={articleTag.name} variant={articleTag.name}>{articleTag.label}</Tag>)}
                   </div>
                 </Card>
               </article>
