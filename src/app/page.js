@@ -78,7 +78,7 @@ export default function Home() {
           <Tag>Fabric Loader ≥0.19.3</Tag>
           <Tag>Java ≥25</Tag>
         </div>
-        <ModrinthDownloadStats />
+        <ModrinthDownloadStats showFollowers={false} />
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <Button href="https://modrinth.com/mod/vsq" external>
             Download

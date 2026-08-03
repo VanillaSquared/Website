@@ -17,12 +17,10 @@ async function getProjectStats() {
     if (!response.ok) return null;
 
     const project = await response.json();
-    const downloads = getCount(project.downloads);
-    const followers = getCount(project.followers);
-
-    return downloads === null || followers === null
-      ? null
-      : { downloads, followers };
+    return {
+      downloads: getCount(project.downloads),
+      followers: getCount(project.followers),
+    };
   } catch {
     return null;
   }
@@ -33,19 +31,29 @@ function formatCount(count, singular, plural) {
   return `${formattedCount} ${count === 1 ? singular : plural}`;
 }
 
-export default async function ModrinthDownloadStats() {
+export default async function ModrinthDownloadStats({
+  showDownloads = true,
+  showFollowers = true,
+}) {
+  if (!showDownloads && !showFollowers) return null;
+
   const stats = await getProjectStats();
 
   if (stats === null) return null;
 
+  const downloads = showDownloads && stats.downloads !== null
+    ? formatCount(stats.downloads, "download", "downloads")
+    : null;
+  const followers = showFollowers && stats.followers !== null
+    ? formatCount(stats.followers, "follower", "followers")
+    : null;
+
+  if (downloads === null && followers === null) return null;
+
   return (
     <p className="mt-8 text-center text-base tabular-nums text-soft">
-      <span className="block">
-        {formatCount(stats.downloads, "download", "downloads")}
-      </span>
-      <span className="block">
-        {formatCount(stats.followers, "follower", "followers")}
-      </span>
+      {downloads !== null && <span className="block">{downloads}</span>}
+      {followers !== null && <span className="block">{followers}</span>}
     </p>
   );
 }
