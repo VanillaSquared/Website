@@ -5,11 +5,11 @@ author: PainterFlow11
 created_date: 03/08/2026
 category: website
 priority: Medium
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
   - Web 0.1.0
-fixedVersion: null
+fixedVersion: Web 0.1.1
 ---
 
 [browser] Image with src "/_next/static/media/VSQLogo_circle.07-zm5ryk3p5b.png" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
