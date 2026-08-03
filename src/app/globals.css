@@ -31,8 +31,11 @@
   --vsq-tag-high-text: #fb923c;
   --vsq-tag-code-red-bg: rgb(248 113 113 / 0.1);
   --vsq-tag-code-red-text: #f87171;
+  --vsq-tag-patchnotes-text: #ffffff;
   --vsq-tag-announcement-bg: rgb(105 162 194 / 0.12);
+  --vsq-tag-announcement-text: #ffffff;
   --vsq-tag-other-bg: rgb(156 163 175 / 0.12);
+  --vsq-tag-other-text: #ffffff;
   --vsq-filter-status-fixed: #34d399;
   --vsq-filter-status-unfixable: #ef4444;
   --vsq-filter-status-unconfirmed: #a78bfa;
@@ -184,8 +187,11 @@
   --vsq-tag-high-text: #c2410c;
   --vsq-tag-code-red-bg: rgb(220 38 38 / 0.1);
   --vsq-tag-code-red-text: #b91c1c;
+  --vsq-tag-patchnotes-text: #7e3f7e;
   --vsq-tag-announcement-bg: rgb(59 130 169 / 0.12);
+  --vsq-tag-announcement-text: #1f607f;
   --vsq-tag-other-bg: rgb(107 114 128 / 0.12);
+  --vsq-tag-other-text: #4b5563;
   --vsq-checkmark-unconfirmed-bg: #f3f4f6;
   --vsq-checkmark-unconfirmed-border: #d1d5db;
   --vsq-checkmark-unconfirmed-text: #6b7280;
