@@ -24,9 +24,11 @@ These are mostly minor things but I think they greatly improve the user experien
 
 ## Other Changes
 - added a small version number to the `Footer` component
+- fixed the Table component sometimes being buggy
 
 # Bug Reporter
+- Fixed [web-1](../../bugs/web-1): Website docs category is above the Datapacks category.
 - Fixed [web-2](../../bugs/web-2): Bug report filter button flicker.
-- Fixed [web-3](../../bugs/web-3)
+- Fixed [web-3](../../bugs/web-3): When zooming in too far the labels of the filters disappear in /news
 - Fixed [web-6](../../bugs/web-6): the link styling is not applied in headers
 - Fixed [web-7](../../bugs/web-7): the news page tags text is unreadable in flashbang mode
