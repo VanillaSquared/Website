@@ -1,7 +1,7 @@
 ---
-title: Vanilla² -2.12.0-snapshot.1
+title: Thanks for 500 downloads
 tag: announcement
-image: "@/assets/news/vsq-2_12_0-snapshot_1.png"
+image: "@/assets/news/ty-for-500-downloads.png"
 showImageOnPage: true
 author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
