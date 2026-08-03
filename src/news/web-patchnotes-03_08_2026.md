@@ -32,3 +32,4 @@ These are mostly minor things but I think they greatly improve the user experien
 - Fixed [web-3](../../bugs/web-3): When zooming in too far the labels of the filters disappear in /news
 - Fixed [web-6](../../bugs/web-6): the link styling is not applied in headers
 - Fixed [web-7](../../bugs/web-7): the news page tags text is unreadable in flashbang mode
+- Fixed [web-8](../../bugs/web-8): Weird Warning in the console yapping about some random image
