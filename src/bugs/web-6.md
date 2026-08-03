@@ -5,11 +5,11 @@ author: PainterFlow11
 created_date: 03/08/2026
 category: website
 priority: High
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
   - Web 0.1.1
-fixedVersion: 
+fixedVersion: Web 0.1.1
 ---
 
 The styling of links is not applied in headers.

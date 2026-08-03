@@ -45,7 +45,7 @@ function renderInline(text, keyPrefix = "inline") {
         href={href}
         target={/^https?:\/\//i.test(href) ? "_blank" : undefined}
         rel={/^https?:\/\//i.test(href) ? "noopener noreferrer" : undefined}
-        className="text-accent underline-offset-2 hover:text-heading hover:underline"
+        className="text-accent underline-offset-2 hover:underline"
       >
         {inlineContent}
       </a>

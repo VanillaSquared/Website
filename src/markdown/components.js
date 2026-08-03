@@ -26,8 +26,18 @@ function FencedCodeBlock({ children }) {
   return <CodeBlock code={code} language={language} />;
 }
 
+function MarkdownLink({ className = "", ...props }) {
+  return (
+    <a
+      {...props}
+      className={`${className} text-accent underline-offset-2 hover:underline`}
+    />
+  );
+}
+
 /** Components approved for use in repository Markdown content. */
 export const markdownComponents = {
+  a: MarkdownLink,
   Button,
   Card,
   CategoryNavigation,
