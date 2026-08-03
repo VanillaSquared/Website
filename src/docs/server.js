@@ -15,6 +15,9 @@ import {
 } from "@/markdown/server";
 
 const DOCS_DIRECTORY = path.resolve(process.cwd(), "src", "docs");
+const DIRECTORY_ORDERS = new Map([
+  ["datapacks", 5],
+]);
 
 function normalizeSidebarCard(value) {
   if (!value || typeof value !== "object" || value.enabled === false) return null;
@@ -71,7 +74,7 @@ function makeNavigation(documents) {
         node = {
           id: `directory:${key}`,
           label: titleFromSegment(segment),
-          order: Number.MAX_SAFE_INTEGER,
+          order: DIRECTORY_ORDERS.get(key) ?? Number.MAX_SAFE_INTEGER,
           children: [],
         };
         directoryNodes.set(key, node);

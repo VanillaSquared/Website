@@ -5,12 +5,11 @@ author: PainterFlow11
 created_date: 30/07/2026
 category: website
 priority: Low
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
-  - Web 0.1.1
-fixedVersion: null
+  - Web 0.1.0
+fixedVersion: Web 0.1.1
 ---
 
-Read the title.
-Idk what a good fix for this wld be, but u'd have to somehow assign a order value to doc categories, without making them clickable.
+Title, js change the index numbers
