@@ -4,7 +4,7 @@ description: The supported Markdown syntax, website components and header fields
 order: 1
 ---
 
-The website uses `.md` files for docs, news articles and bug reports. Docs are stored in `src/docs/`, news articles in `src/news/` and bug reports in `src/bugs/`.
+The website uses `.md` files for docs and news articles. Docs are stored in `src/docs/` and news articles in `src/news/`. Bug report descriptions support sanitized Markdown through the bug reporter, but are not repository files.
 
 The path and filename decide the page URL. For example, `src/docs/website/markdown.md` becomes `/docs/website/markdown`. Use lowercase snake case for filenames. A category page has the same name as its folder, meaning `src/docs/website/website.md` is the page for the `website` category.
 
@@ -229,31 +229,6 @@ private: false
 
 ### Bugs
 
-```yaml
----
-id: vsq-3
-title: Short explanation of the problem
-author: PainterFlow11
-created_date: 30/07/2026
-category: vanilla-squared
-priority: Medium
-status: Unconfirmed
-fixed: false
-affectedVersions:
-  - 2.12.0-snapshot.1
-fixedVersion: null
----
-```
+Bug descriptions accept standard Markdown and GitHub-flavored tables, lists, links, and code blocks. Raw HTML and MDX features such as JSX, expressions, imports, exports, and custom components are not rendered.
 
-- `id`: The public bug ID. Use `vsq-` for Vanilla Squared and `web-` for website bugs, followed by the next unused number. If left out, the filename is used.
-- `title`: A short explanation of the bug.
-- `author`: The name of the person who reported it. Defaults to `Unknown`.
-- `created_date`: Required and written as `dd/mm/yyyy`.
-- `category`: Required. Available categories are `vanilla-squared` and `website`.
-- `priority`: Available priorities are `Low`, `Medium`, `High`, `Code Red` and `unset`. It defaults to `unset`.
-- `status`: Available statuses are `Fixed`, `Unfixable`, `Unconfirmed`, `Confirmed`, `Works as intended` and `Vanilla bug`. It defaults to `Unconfirmed`.
-- `fixed`: `true` or `false`. A status of `Fixed` also marks the report as fixed.
-- `affectedVersions`: A list of affected versions. It becomes `Unknown` when empty.
-- `fixedVersion`: The version containing the fix, or `null` when it has not been fixed.
-
-The build checks dates, tags, bug categories, priorities, statuses and image paths. If one of those is wrong, `npm run build` will tell you which file needs to be fixed.
+The build checks dates, tags and image paths. If one of those is wrong, `npm run build` will tell you which file needs to be fixed.

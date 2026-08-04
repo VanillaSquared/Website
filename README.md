@@ -4,7 +4,7 @@
 
 ## Overview
 
-The site contains the Vanilla² landing page, news, documentation, a markdown-backed bug tracker, and reusable UI templates. News articles, documentation, and bug reports are stored in the repository and rendered directly from Markdown.
+The site contains the Vanilla² landing page, news, documentation, a bug tracker, and reusable UI templates. News articles and documentation are stored in the repository and rendered from Markdown. Bug reports use the website's private issue backend.
 
 ## Tech stack
 
@@ -41,27 +41,7 @@ private: false
 
 ### Bug reports
 
-Add Markdown files under `src/bugs/`. The filename is used as the bug ID unless an `id` is supplied. All former bug reporter fields live in frontmatter:
-
-```yaml
----
-id: vsq-1
-title: Short issue summary
-author: Reporter name
-created_date: 30/07/2026
-category: vanilla-squared
-priority: Medium
-status: Confirmed
-fixed: false
-affectedVersions:
-  - 2.12.0-snapshot.1
-fixedVersion: null
----
-
-Describe the issue and reproduction steps here.
-```
-
-`created_date` is required and must use `dd/mm/yyyy`. Supported categories are `vanilla-squared` and `website`. Supported priorities are `Low`, `Medium`, `High`, `Code Red`, and `unset`. Supported statuses are `Fixed`, `Unfixable`, `Unconfirmed`, `Confirmed`, `Works as intended`, and `Vanilla bug`.
+Bug reports are created from the form on `/bugs` and loaded through `/api/bugs`. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable.
 
 ## Development
 

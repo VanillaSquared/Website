@@ -1,82 +1,98 @@
 import "server-only";
 
-import fs from "node:fs";
-import path from "node:path";
+import { revalidateTag } from "next/cache";
 
-import matter from "gray-matter";
+import {
+  BUG_DESCRIPTION_MAX_LENGTH,
+  BUG_REPORT_CATEGORY_CONFIGS,
+  BUG_REPORT_PRIORITIES,
+  BUG_REPORT_STATUSES,
+  BUG_TITLE_MAX_LENGTH,
+  MINECRAFT_VERSIONS,
+  MOD_VERSIONS,
+  OPERATING_SYSTEMS,
+} from "@/bugs/config";
 
-import { extractMarkdownDetails, parseFrontmatterDate, scanMarkdownFiles, titleFromSegment } from "@/markdown/server";
+const GITHUB_OWNER = "VanillaSquared";
+const GITHUB_REPOSITORY = "Issues";
+const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
+const BUGS_CACHE_TAG = "bugs";
+const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 
-const BUGS_DIRECTORY = path.resolve(process.cwd(), "src", "bugs");
+const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
+const categoryByLabel = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.label, category]));
+const statusLabels = new Map([
+  ["Unconfirmed", "Unconfirmed"],
+  ["Confirmed", "Confirmed"],
+  ["Fixed", "Fixed"],
+  ["Intended", "Works as intended"],
+  ["Vanilla", "Vanilla bug"],
+]);
 
-export const BUG_REPORT_CATEGORY_CONFIGS = [
-  { slug: "vanilla-squared", label: "Mod", shortening: "vsq", order: 1 },
-  { slug: "website", label: "Website", shortening: "web", order: 2 },
-];
-export const BUG_REPORT_PRIORITIES = ["Low", "Medium", "High", "Code Red", "unset"];
-export const BUG_REPORT_STATUSES = ["Fixed", "Unfixable", "Unconfirmed", "Confirmed", "Works as intended", "Vanilla bug"];
-
-const categoryNames = new Set(BUG_REPORT_CATEGORY_CONFIGS.map(({ slug }) => slug));
-
-function normalizeList(value) {
-  const values = Array.isArray(value) ? value : String(value ?? "").split(",");
-  return [...new Set(values.map((item) => String(item).trim()).filter(Boolean))];
-}
-
-function normalizeChoice(value, choices, fallback, field, relativeFile) {
-  const normalized = String(value ?? fallback).trim();
-  const match = choices.find((choice) => choice.toLowerCase() === normalized.toLowerCase());
-  if (!match) throw new Error(`Invalid ${field} "${normalized}" in ${relativeFile}.`);
-  return match;
-}
-
-function normalizeFrontmatter(data, relativeFile, fallbackId, source) {
-  const publicId = String(data.id || fallbackId).trim().toLowerCase();
-  if (!/^[a-z0-9][a-z0-9-]{1,31}$/.test(publicId)) throw new Error(`Invalid bug id "${publicId}" in ${relativeFile}.`);
-
-  const category = String(data.category || "").trim().toLowerCase();
-  if (!categoryNames.has(category)) throw new Error(`Invalid bug category "${category}" in ${relativeFile}.`);
-
-  const status = normalizeChoice(data.status, BUG_REPORT_STATUSES, "Unconfirmed", "status", relativeFile);
-  const details = extractMarkdownDetails(source);
-  const createdAt = parseFrontmatterDate(data.created_date, "created_date", relativeFile).iso;
+function githubHeaders() {
+  const token = process.env.github;
+  if (!token) throw new Error("Bug storage is not configured.");
 
   return {
-    publicId,
-    title: String(data.title || titleFromSegment(fallbackId)).trim(),
-    category,
-    priority: normalizeChoice(data.priority, BUG_REPORT_PRIORITIES, "unset", "priority", relativeFile),
-    status,
-    fixed: data.fixed === true || status === "Fixed",
-    affectedVersions: normalizeList(data.affectedVersions).length ? normalizeList(data.affectedVersions) : ["Unknown"],
-    fixedVersion: data.fixedVersion ? String(data.fixedVersion).trim() : null,
-    creatorUsername: String(data.author || "Unknown").trim(),
-    createdAt,
-    description: details.text,
-    source: source.trim(),
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${token}`,
+    "X-GitHub-Api-Version": "2022-11-28",
   };
 }
 
-export function getBugReports() {
-  const reports = scanMarkdownFiles(BUGS_DIRECTORY).map((relativeFile) => {
-    const absoluteFile = path.resolve(BUGS_DIRECTORY, relativeFile);
-    const parsedPath = path.parse(relativeFile);
-    const source = fs.readFileSync(absoluteFile, "utf8");
-    const parsed = matter(source);
-    return normalizeFrontmatter(parsed.data, relativeFile, parsedPath.name, parsed.content);
+async function githubRequest(path, options = {}) {
+  const response = await fetch(`${GITHUB_API}${path}`, {
+    ...options,
+    headers: { ...githubHeaders(), ...options.headers },
   });
 
-  const seen = new Set();
-  for (const report of reports) {
-    if (seen.has(report.publicId)) throw new Error(`Duplicate bug id: ${report.publicId}`);
-    seen.add(report.publicId);
+  if (!response.ok) {
+    const error = new Error("Bug storage request failed.");
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
+function issueToBug(issue) {
+  const labels = issue.labels.map((label) => typeof label === "string" ? label : label.name);
+  const categoryConfig = labels.map((label) => categoryByLabel.get(label)).find(Boolean);
+  const priority = BUG_REPORT_PRIORITIES.find((value) => labels.includes(value)) ?? "Unset";
+  const status = [...statusLabels].find(([label]) => labels.includes(label))?.[1] ?? "Unconfirmed";
+  const [description, environment = ""] = String(issue.body ?? "").split(ENVIRONMENT_SEPARATOR, 2);
+  const environmentValues = Object.fromEntries(
+    [...environment.matchAll(/^- \*\*(Minecraft version|Mod version|Operating system):\*\* (.+)$/gim)]
+      .map((match) => [match[1], match[2].trim()])
+  );
+
+  return {
+    id: String(issue.number),
+    publicId: `bug-${issue.number}`,
+    title: issue.title,
+    category: categoryConfig?.slug ?? "website",
+    priority,
+    status,
+    minecraftVersion: environmentValues["Minecraft version"] ?? "Unknown",
+    modVersion: environmentValues["Mod version"] ?? "Unknown",
+    operatingSystem: environmentValues["Operating system"] ?? "Unknown",
+    createdAt: issue.created_at,
+    description: description.trim(),
+    source: description.trim(),
+  };
+}
+
+async function getAllIssues() {
+  const issues = [];
+
+  for (let page = 1; ; page += 1) {
+    const batch = await githubRequest(`/issues?state=all&per_page=100&page=${page}`, {
+      next: { revalidate: 60, tags: [BUGS_CACHE_TAG] },
+    });
+    issues.push(...batch.filter((issue) => !issue.pull_request));
+    if (batch.length < 100) break;
   }
 
-  const categoryOrder = new Map(BUG_REPORT_CATEGORY_CONFIGS.map(({ slug, order }) => [slug, order]));
-  return reports.sort((left, right) => (
-    (categoryOrder.get(left.category) ?? 99) - (categoryOrder.get(right.category) ?? 99)
-    || left.publicId.localeCompare(right.publicId, undefined, { numeric: true })
-  ));
+  return issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
 }
 
 function normalizeFilters(value, allowedValues) {
@@ -84,13 +100,14 @@ function normalizeFilters(value, allowedValues) {
   return [...new Set(values.map((item) => allowedValues.find((allowed) => allowed.toLowerCase() === String(item ?? "").toLowerCase())).filter(Boolean))];
 }
 
-export function listBugReports({ q, category, priority, status } = {}) {
+export async function listBugReports({ q, category, priority, status } = {}) {
   const query = String(q ?? "").trim().toLowerCase();
-  const categories = normalizeFilters(category, [...categoryNames]);
+  const categories = normalizeFilters(category, [...categoryBySlug.keys()]);
   const priorities = normalizeFilters(priority, BUG_REPORT_PRIORITIES);
   const statuses = normalizeFilters(status, BUG_REPORT_STATUSES);
+  const reports = await getAllIssues();
 
-  return getBugReports().filter((report) => (
+  return reports.filter((report) => (
     (!query || [report.publicId, report.title, report.description].some((value) => value.toLowerCase().includes(query)))
     && (!categories.length || categories.includes(report.category))
     && (!priorities.length || priorities.includes(report.priority))
@@ -98,7 +115,63 @@ export function listBugReports({ q, category, priority, status } = {}) {
   ));
 }
 
-export function getBugReportByPublicId(publicId) {
-  const normalizedId = String(publicId ?? "").trim().toLowerCase();
-  return getBugReports().find((report) => report.publicId === normalizedId) ?? null;
+export async function getBugReportById(id) {
+  if (!/^\d+$/.test(String(id))) return null;
+
+  try {
+    const issue = await githubRequest(`/issues/${id}`, {
+      next: { revalidate: 60, tags: [BUGS_CACHE_TAG, `${BUGS_CACHE_TAG}-${id}`] },
+    });
+    return issue.pull_request ? null : issueToBug(issue);
+  } catch (error) {
+    if (error.status === 404) return null;
+    throw error;
+  }
 }
+
+function requiredString(value, maximum) {
+  const normalized = typeof value === "string" ? value.trim() : "";
+  return normalized && normalized.length <= maximum ? normalized : null;
+}
+
+function allowedChoice(value, choices) {
+  return typeof value === "string" && choices.includes(value) ? value : null;
+}
+
+export function validateBugSubmission(input) {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return null;
+
+  const title = requiredString(input.title, BUG_TITLE_MAX_LENGTH);
+  const description = requiredString(input.description, BUG_DESCRIPTION_MAX_LENGTH);
+  const category = allowedChoice(input.category, [...categoryBySlug.keys()]);
+  const minecraftVersion = allowedChoice(input.minecraftVersion, MINECRAFT_VERSIONS);
+  const modVersion = allowedChoice(input.modVersion, MOD_VERSIONS);
+  const operatingSystem = allowedChoice(input.operatingSystem, OPERATING_SYSTEMS);
+
+  if (!title || !description || !category || !minecraftVersion || !modVersion || !operatingSystem) return null;
+  return { title, description, category, minecraftVersion, modVersion, operatingSystem };
+}
+
+export async function createBugReport(report) {
+  const category = categoryBySlug.get(report.category);
+  const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}`;
+  const issue = await githubRequest("/issues", {
+    method: "POST",
+    cache: "no-store",
+    body: JSON.stringify({
+      title: report.title,
+      body,
+      labels: [category.label, "Unset", "Unconfirmed"],
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  revalidateTag(BUGS_CACHE_TAG, { expire: 0 });
+  return issueToBug(issue);
+}
+
+export {
+  BUG_REPORT_CATEGORY_CONFIGS,
+  BUG_REPORT_PRIORITIES,
+  BUG_REPORT_STATUSES,
+};

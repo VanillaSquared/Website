@@ -1,38 +1,87 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import questionIcon from "@/assets/icons/question.svg";
+import plusIcon from "@/assets/icons/plus.svg";
+import {
+  BUG_DESCRIPTION_MAX_LENGTH,
+  BUG_REPORT_CATEGORY_CONFIGS,
+  BUG_TITLE_MAX_LENGTH,
+  MINECRAFT_VERSIONS,
+  MOD_VERSIONS,
+  OPERATING_SYSTEMS,
+} from "@/bugs/config";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
+import TextInput from "@/components/TextInput";
 
-const guideSteps = [
-  {
-    title: "Check for duplicates",
-    description: "Search the bug list first. If the problem already exists, add any missing details to that report instead.",
-  },
-  {
-    title: "Create the report file",
-    description: "Add a Markdown file in src/bugs/ using the next vsq- ID for mod bugs or web- ID for website bugs.",
-  },
-  {
-    title: "Describe and submit it",
-    description: "Complete the report header, write clear reproduction steps, then submit your change to the Website repository.",
-  },
-];
+const selectClassName = "rounded-lg border border-input-border bg-input px-3 py-2 text-heading outline-none transition-colors hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus";
 
-const guidelines = [
-  "Use a short, specific title and report only one problem per report.",
-  "Include the exact Vanilla Squared version; do not write \"latest.\"",
-  "Explain what happened and the exact steps needed to reproduce it.",
-  "Do not distribute material you don't have the rights to.",
-  "Attach relevant logs or crash reports. Screenshots and videos should support, not replace, written steps.",
-  "Remove access tokens, private server addresses, and any other sensitive information before submitting.",
-  "Leave new reports as unconfirmed with no priority until they have been reviewed.",
-];
+function SelectField({ label, name, options }) {
+  return (
+    <label className="flex flex-col gap-2 text-sm font-semibold text-soft">
+      {label}
+      <select name={name} required defaultValue="" className={selectClassName}>
+        <option value="" disabled>Select an option</option>
+        {options.map((option) => (
+          <option key={option.value ?? option} value={option.value ?? option}>{option.label ?? option}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
 
 export default function BugReportGuide() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [startedAt, setStartedAt] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
+
+  function openForm() {
+    setError("");
+    setStartedAt(Date.now());
+    setOpen(true);
+  }
+
+  async function submitReport(event) {
+    event.preventDefault();
+    setSubmitting(true);
+    setError("");
+
+    const form = event.currentTarget;
+    const fields = new FormData(form);
+    const payload = {
+      title: fields.get("title"),
+      description: fields.get("description"),
+      category: fields.get("category"),
+      minecraftVersion: fields.get("minecraftVersion"),
+      modVersion: fields.get("modVersion"),
+      operatingSystem: fields.get("operatingSystem"),
+      website: fields.get("website"),
+      startedAt,
+    };
+
+    try {
+      const response = await fetch("/api/bugs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "Bug report could not be created.");
+
+      setOpen(false);
+      form.reset();
+      router.push(`/bugs/${result.bug.id}`);
+      router.refresh();
+    } catch (submissionError) {
+      setError(submissionError.message || "Bug report could not be created.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <>
@@ -40,64 +89,70 @@ export default function BugReportGuide() {
         variant="tertiary"
         size="icon"
         className="!bg-search hover:!bg-search-hover focus-visible:!bg-search-hover"
-        icon={questionIcon}
-        iconClassName="h-6 w-6 text-button-tertiary-text"
-        aria-label="Bug report guide"
-        title="How to create a bug report"
-        onClick={() => setOpen(true)}
+        icon={plusIcon}
+        iconClassName="h-5 w-5 text-button-tertiary-text"
+        aria-label="Create bug report"
+        title="Create bug report"
+        onClick={openForm}
       />
 
       <Modal
         open={open}
         onClose={() => setOpen(false)}
         variant="wide"
-        ariaLabelledBy="bug-report-guide-title"
-        ariaDescribedBy="bug-report-guide-description"
+        ariaLabelledBy="create-bug-report-title"
+        ariaDescribedBy="create-bug-report-description"
       >
-        <div className="space-y-6">
+        <form onSubmit={submitReport} className="space-y-5">
           <header>
-            <p className="text-sm font-semibold text-accent">Bug reporting help</p>
-            <h2 id="bug-report-guide-title" className="mt-1 text-2xl font-bold text-heading">
-              Create a useful bug report
-            </h2>
-            <p id="bug-report-guide-description" className="mt-2 text-sm leading-6 text-muted">
-              A complete report makes it easier to reproduce the problem and get it fixed quickly.
+            <p className="text-sm font-semibold text-accent">Bug reporter</p>
+            <h2 id="create-bug-report-title" className="mt-1 text-2xl font-bold text-heading">Create a bug report</h2>
+            <p id="create-bug-report-description" className="mt-2 text-sm leading-6 text-muted">
+              Describe one problem clearly. Reports can be submitted without signing in.
             </p>
           </header>
 
-          <section aria-labelledby="quick-guide-title">
-            <h3 id="quick-guide-title" className="text-lg font-semibold text-heading">Quick guide</h3>
-            <ol className="mt-3 grid gap-3 md:grid-cols-3">
-              {guideSteps.map((step, index) => (
-                <li key={step.title} className="rounded-xl border border-divider bg-control/40 p-4">
-                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-control-accent-soft text-sm font-bold text-accent">
-                    {index + 1}
-                  </span>
-                  <h4 className="mt-3 font-semibold text-heading">{step.title}</h4>
-                  <p className="mt-1 text-sm leading-5 text-muted">{step.description}</p>
-                </li>
-              ))}
-            </ol>
-          </section>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextInput
+              label="Title"
+              name="title"
+              className="sm:col-span-2"
+              sampleText="A short summary of the problem"
+              maxLength={BUG_TITLE_MAX_LENGTH}
+              required
+            />
+            <TextInput
+              label="Description"
+              name="description"
+              className="sm:col-span-2"
+              sampleText="What happened, what did you expect, and how can it be reproduced?"
+              lines={5}
+              maxLines={10}
+              maxLength={BUG_DESCRIPTION_MAX_LENGTH}
+              required
+            />
+            <SelectField
+              label="Category"
+              name="category"
+              options={BUG_REPORT_CATEGORY_CONFIGS.map(({ slug, label }) => ({ value: slug, label }))}
+            />
+            <SelectField label="Minecraft version" name="minecraftVersion" options={MINECRAFT_VERSIONS} />
+            <SelectField label="Mod version" name="modVersion" options={MOD_VERSIONS} />
+            <SelectField label="Operating system" name="operatingSystem" options={OPERATING_SYSTEMS} />
+          </div>
 
-          <section aria-labelledby="report-guidelines-title">
-            <h3 id="report-guidelines-title" className="text-lg font-semibold text-heading">Bug report guidelines</h3>
-            <ul className="mt-3 grid gap-x-8 gap-y-2 text-sm leading-6 text-soft md:grid-cols-2">
-              {guidelines.map((guideline) => (
-                <li key={guideline} className="flex gap-3">
-                  <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
-                  <span>{guideline}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+          <label className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+            Website
+            <input name="website" tabIndex={-1} autoComplete="off" />
+          </label>
 
-          <footer className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button variant="tertiary" onClick={() => setOpen(false)}>Close</Button>
-            <Button href="/docs/website/making_a_bug_report" variant="secondary">Read the full guide</Button>
-            <Button href="https://github.com/VanillaSquared/Website" external>Open GitHub</Button>
+          {error ? <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">{error}</p> : null}
+
+          <footer className="flex justify-end gap-2">
+            <Button variant="tertiary" onClick={() => setOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Submit report"}</Button>
           </footer>
-        </div>
+        </form>
       </Modal>
     </>
   );
