@@ -8,7 +8,8 @@ priority: Medium
 status: Confirmed
 fixed: false
 affectedVersions:
-  - all
+  - vsq-2.12.1
+  - vsq-2.12.0
 fixedVersion: null
 ---
 
