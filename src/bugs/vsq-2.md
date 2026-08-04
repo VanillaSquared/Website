@@ -12,4 +12,5 @@ affectedVersions:
 fixedVersion: null
 ---
 
-In specific setups, redstone sulfur cubes can be pushed in a certain way, which causes redstone to flicker even though it shouldn't
+In specific setups, redstone sulfur cubes can be pushed in a certain way, which causes redstone to flicker even though it shouldn't.
+I will investigate the logic very soon to give very detailed documentation.
