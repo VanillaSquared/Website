@@ -124,9 +124,9 @@ export default function Card({
       {details.length ? (
         <dl className="border-t border-category-card-border text-sm">
           {details.map((detail, index) => (
-            <div key={`${detail.label}-${index}`} className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3 border-b border-category-card-border px-4 py-2.5 last:border-b-0">
+            <div key={`${detail.label}-${index}`} className="grid grid-cols-[minmax(min-content,2fr)_minmax(0,3fr)] gap-3 border-b border-category-card-border px-4 py-2.5 last:border-b-0">
               <dt className="font-medium text-accent">{detail.label}</dt>
-              <dd className="min-w-0 text-soft">{detail.value}</dd>
+              <dd className="min-w-0 [overflow-wrap:anywhere] text-soft">{detail.value}</dd>
             </div>
           ))}
         </dl>

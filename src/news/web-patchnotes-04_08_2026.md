@@ -15,6 +15,7 @@ So this is a smaller update.
 
 ## /docs
 - both sidebars of the docs are now fully collapsible
+- the sidebar text on the quick info cards can no longer overlap if u minimize the right side too much
 
 # Bugs
 - fixed [web-4](../../bugs/web-4): the right side of the /docs page doesn't display.
