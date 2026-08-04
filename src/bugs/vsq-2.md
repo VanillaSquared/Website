@@ -5,8 +5,8 @@ author: PainterFlow11
 created_date: 30/07/2026
 category: vanilla-squared
 priority: Medium
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
   - vsq-2.12.1
   - vsq-2.12.0
