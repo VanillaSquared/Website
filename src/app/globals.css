@@ -494,23 +494,80 @@ body {
   right: calc(var(--docs-right-width, 300px) - 4px);
 }
 
-@media (min-width: 64rem) {
-  .docs-layout-grid {
-    grid-template-columns: var(--docs-left-width, 280px) minmax(0, 1fr);
-  }
-
-  .has-docs-layout footer {
-    background: linear-gradient(
-      to right,
-      var(--vsq-category-bg) 0 var(--docs-left-width, 280px),
-      var(--background) var(--docs-left-width, 280px) 100%
-    );
-  }
+.docs-expand-button {
+  position: fixed;
+  z-index: 40;
+  top: 50%;
+  width: 1.5rem;
+  height: 2.5rem;
+  translate: 0 -50%;
+  border: 1px solid var(--vsq-control-border);
+  background: var(--vsq-control-panel);
+  color: var(--vsq-text-heading);
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
-@media (min-width: 80rem) {
+.docs-expand-button:hover {
+  border-color: var(--vsq-control-border-hover);
+  background: var(--vsq-control-hover);
+}
+
+.docs-expand-button:focus-visible {
+  outline: 2px solid var(--vsq-control-focus);
+  outline-offset: 2px;
+}
+
+.docs-expand-button-left {
+  left: 0;
+  border-left: 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.docs-expand-button-right {
+  right: -1px;
+  border-right: 0;
+  border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.docs-layout-navigation-slot,
+.docs-layout-information-slot {
+  display: none;
+}
+
+.docs-layout-content-slot {
+  min-width: 0;
+}
+
+@media (min-width: 64rem) {
   .docs-layout-grid {
+    grid-template-areas: "navigation content information";
     grid-template-columns: var(--docs-left-width, 280px) minmax(0, 1fr) var(--docs-right-width, 300px);
+  }
+
+  .docs-layout-navigation-slot:not([data-collapsed="true"]),
+  .docs-layout-information-slot:not([data-collapsed="true"]) {
+    display: block;
+  }
+
+  .docs-layout-navigation-slot {
+    grid-area: navigation;
+  }
+
+  .docs-layout-content-slot {
+    grid-area: content;
+  }
+
+  .docs-layout-information-slot {
+    grid-area: information;
+  }
+
+  .docs-layout-navigation,
+  .docs-layout-content,
+  .docs-layout-information {
+    min-height: 100%;
   }
 
   .has-docs-layout footer {

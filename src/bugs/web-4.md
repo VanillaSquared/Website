@@ -5,11 +5,11 @@ author: PainterFlow11
 created_date: 30/07/2026
 category: website
 priority: High
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
   - Web 0.1.1
-fixedVersion: null
+fixedVersion: Web 0.1.1
 ---
 
 When zooming in too far the right side of the docs page just disappears(the side with the quick overview card).
