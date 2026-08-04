@@ -4,12 +4,12 @@ import packageJson from "../../package.json";
 export default function Footer() {
   return (
     <footer className="bg-background px-6 py-10">
-      <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 sm:flex-row">
+      <div className="mx-auto flex max-w-5xl flex-col flex-wrap items-center justify-between gap-4 sm:flex-row">
         <p className="text-sm text-subtle">
           © Vanilla² (VSQ)
           <span className="ml-1 text-xs">V{packageJson.version}</span>
         </p>
-        <div className="flex gap-6 text-sm text-subtle">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-subtle">
           <Link
             href="/modlicence"
             className="transition-colors hover:text-soft"

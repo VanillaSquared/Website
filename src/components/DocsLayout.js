@@ -14,7 +14,7 @@ function clamp(value, minimum, maximum) {
   return Math.min(Math.max(value, minimum), Math.max(minimum, maximum));
 }
 
-export default function DocsLayout({ navigation, content, sidebar }) {
+export default function DocsLayout({ navigation, content, sidebar, footer }) {
   const [leftWidth, setLeftWidth] = useState(DEFAULT_LEFT_WIDTH);
   const [rightWidth, setRightWidth] = useState(DEFAULT_RIGHT_WIDTH);
   const [leftCollapsed, setLeftCollapsed] = useState(false);
@@ -32,9 +32,7 @@ export default function DocsLayout({ navigation, content, sidebar }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.classList.add("has-docs-layout");
     return () => {
-      root.classList.remove("has-docs-layout");
       root.style.removeProperty("--docs-left-width");
       root.style.removeProperty("--docs-right-width");
     };
@@ -121,6 +119,9 @@ export default function DocsLayout({ navigation, content, sidebar }) {
       </div>
       <div className="docs-layout-slot docs-layout-information-slot" data-collapsed={rightCollapsed}>
         {sidebar}
+      </div>
+      <div className="docs-layout-footer-slot">
+        {footer}
       </div>
 
       <div

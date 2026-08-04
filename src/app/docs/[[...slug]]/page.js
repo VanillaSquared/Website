@@ -6,6 +6,7 @@ import CategoryNavigation from "@/components/CategoryNavigation";
 import CopyDocumentButton from "@/components/CopyDocumentButton";
 import DocsLayout from "@/components/DocsLayout";
 import DocsMarkdown from "@/components/DocsMarkdown";
+import Footer from "@/components/Footer";
 import OnThisPage from "@/components/OnThisPage";
 import { getBreadcrumbs, getDocsData, getDocument } from "@/docs/server";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
@@ -33,7 +34,7 @@ export default async function DocsPage({ params }) {
   const { navigation } = getDocsData();
   const breadcrumbs = getBreadcrumbs(document);
   return (
-    <DefaultTemplatePage>
+    <DefaultTemplatePage showFooter={false}>
       <DocsLayout navigation={(
         <aside key="navigation" className="docs-layout-navigation hidden bg-category lg:block">
           <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -95,7 +96,7 @@ export default async function DocsPage({ params }) {
             <OnThisPage headings={document.headings} />
           </div>
         </aside>
-      )} />
+      )} footer={<Footer />} />
     </DefaultTemplatePage>
   );
 }

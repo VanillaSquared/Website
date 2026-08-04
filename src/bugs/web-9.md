@@ -5,11 +5,11 @@ author: PainterFlow11
 created_date: 04/08/2026
 category: website
 priority: Medium
-status: Confirmed
-fixed: false
+status: Fixed
+fixed: true
 affectedVersions:
   - Web 0.1.1
-fixedVersion: null
+fixedVersion: Web 0.1.1
 ---
 
 When zooming into the docs page the Footer overflows into the sidebars on the left and right side.
