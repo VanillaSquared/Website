@@ -16,6 +16,9 @@ On top of all of that, the website should now be around 80%-90% faster.
 ## Performance
 - Improved website performance by around 80-90% ([the_jan_craft](https://github.com/pxlarified))
 
+## Front Page
+- added a new secret ;)
+
 ## /license
 - unified the Mod and Website License page designs ([the_jan_craft](https://github.com/pxlarified))
 - moved the licenses to `/license/mod` and `/license/website` ([the_jan_craft](https://github.com/pxlarified))
@@ -27,6 +30,9 @@ On top of all of that, the website should now be around 80%-90% faster.
 
 ## 404 page
 - added mini secret, still in progress
+
+## Other Changes
+- moved src/assets to cdn directory
 
 # Bugs
 - fixed [bugs-13](../../bugs/13): Images causing warnings in console
