@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-import moonIcon from "@/assets/icons/moon.svg";
-import sunIcon from "@/assets/icons/sun.svg";
+import moonIcon from "@cdn/icons/moon.svg";
+import sunIcon from "@cdn/icons/sun.svg";
 import Toggle from "@/components/Toggle";
 import { setConsentedCookie } from "@/utils/cookieConsent";
 

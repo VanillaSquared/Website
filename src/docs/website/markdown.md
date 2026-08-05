@@ -31,7 +31,7 @@ You can use headings, text formatting, links, images, quotes, lists, tables and 
 [Docs link](./committing_to_the_docs)
 [External link](https://github.com/VanillaSquared/Website)
 
-![Image description](@/assets/docs/example.svg)
+![Image description](@cdn/docs/example.svg)
 
 | Field | Required |
 | --- | --- |
@@ -44,7 +44,7 @@ You can use headings, text formatting, links, images, quotes, lists, tables and 
 ```
 ~~~
 
-`-#` is a website specific subheader. `---` outside of the file header becomes a separator. Relative links beginning with `./` are resolved from the current article. Images from the repository use an `@/assets/...` path.
+`-#` is a website specific subheader. `---` outside of the file header becomes a separator. Relative links beginning with `./` are resolved from the current article. Images from the repository use an `@cdn/...` path.
 
 Do not add `import` or `export` statements to Markdown files. Components are already made available by the website.
 
@@ -176,7 +176,7 @@ sidebarCard:
   enabled: true
   title: Quick information
   description: A short description.
-  image: "@/assets/docs/example.svg"
+  image: "@cdn/docs/example.svg"
   imageAlt: Description of the image
   imageDisplay: item
   details:
@@ -192,7 +192,7 @@ sidebarCard:
 - `sidebarCard.enabled`: Set this to `false` to hide the card.
 - `sidebarCard.title`: The card title. Defaults to `Quick information`.
 - `sidebarCard.description`: Text shown in the card.
-- `sidebarCard.image`: An image stored under `src/assets/`.
+- `sidebarCard.image`: An image stored under `cdn/`.
 - `sidebarCard.imageAlt`: A description of the image.
 - `sidebarCard.imageDisplay`: Use `item` for item images. Every other value uses the normal image style.
 - `sidebarCard.details`: A list of label and value rows.
@@ -205,11 +205,11 @@ Only `title`, `description`, `order` and `sidebarCard` are read by the docs. Unk
 ---
 title: Website Patchnotes 29/07/2026
 tag: patchnotes
-image: "@/assets/news/generic_website_image.png"
+image: "@cdn/news/generic-website-image.png"
 imageAlt: Website patchnotes
 showImageOnPage: false
 author: PainterFlow11
-authorImage: "@/assets/news/generic_website_image.png"
+authorImage: "@cdn/news/generic-website-image.png"
 authorLink: https://github.com/PainterFlow11
 published_date: 29/07/2026
 private: false
@@ -218,11 +218,11 @@ private: false
 
 - `title`: The article title. If left out, the filename is turned into a title.
 - `tag`: One or more comma separated tags. Available tags are `patchnotes`, `announcement` and `other`. It defaults to `other`.
-- `image`: The article image. It has to be stored under `src/assets/news/`.
+- `image`: The article image. It has to be stored under `cdn/news/`.
 - `imageAlt`: A description of the article image.
 - `showImageOnPage`: Whether the image is also shown at the top of the article. Defaults to `true` and has to be `true` or `false`.
 - `author`: The displayed author name.
-- `authorImage`: The author's image. It also has to be stored under `src/assets/news/`.
+- `authorImage`: The author's image. It also has to be stored under `cdn/news/`.
 - `authorLink`: An optional HTTP(S) URL or site-relative path for the author card. When omitted, the card is not clickable and has no hover effect.
 - `published_date`: Required and written as `dd/mm/yyyy`. This also controls the order on the news page.
 - `private`: Set this to `true` to remove the article from the news page and its route.

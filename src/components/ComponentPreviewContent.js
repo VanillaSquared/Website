@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import enchantingTableImage from "@/assets/docs/enchantment_table.png";
-import editIcon from "@/assets/icons/edit.svg";
+import enchantingTableImage from "@cdn/docs/enchantment-table.png";
+import editIcon from "@cdn/icons/edit.svg";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import CategoryNavigation from "@/components/CategoryNavigation";

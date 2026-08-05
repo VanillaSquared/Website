@@ -1,6 +1,6 @@
 "use client";
 
-import xIcon from "@/assets/icons/x.svg";
+import xIcon from "@cdn/icons/x.svg";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 

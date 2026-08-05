@@ -3,7 +3,7 @@ import "server-only";
 import fs from "node:fs";
 import path from "node:path";
 
-const ASSETS_DIRECTORY = path.resolve(process.cwd(), "src", "assets");
+const ASSETS_DIRECTORY = path.resolve(process.cwd(), "cdn");
 const SAFE_ASSET_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
 export const ASSET_MIME_TYPES = Object.freeze({
@@ -37,7 +37,7 @@ export function getAssetDescriptor(segments) {
 }
 
 export function resolveAssetUrl(source, assetDirectory = "") {
-  const prefix = "@/assets/";
+  const prefix = "@cdn/";
   const normalizedSource = String(source);
   if (!normalizedSource.startsWith(prefix)) return null;
 

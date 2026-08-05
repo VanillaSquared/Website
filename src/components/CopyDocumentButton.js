@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import copyIcon from "@/assets/icons/copy.svg";
+import copyIcon from "@cdn/icons/copy.svg";
 import Button from "@/components/Button";
 
 export default function CopyDocumentButton({ source }) {

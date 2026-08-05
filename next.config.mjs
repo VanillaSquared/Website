@@ -9,7 +9,7 @@ const nextConfig = {
     cpus: 2,
   },
   outputFileTracingIncludes: {
-    "/media/*": ["./src/assets/**/*"],
+    "/media/*": ["./cdn/**/*"],
   },
   async redirects() {
     return [

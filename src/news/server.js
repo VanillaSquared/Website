@@ -58,13 +58,13 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
   const imageSource = data.image ? String(data.image).trim() : "";
   const image = imageSource ? resolveAssetUrl(imageSource, "news") : null;
   if (imageSource && !image) {
-    throw new Error(`Invalid news image "${imageSource}" in ${relativeFile}. News images must exist under src/assets/news/.`);
+    throw new Error(`Invalid news image "${imageSource}" in ${relativeFile}. News images must exist under cdn/news/.`);
   }
 
   const authorImageSource = data.authorImage ? String(data.authorImage).trim() : "";
   const authorImage = authorImageSource ? resolveAssetUrl(authorImageSource, "news") : null;
   if (authorImageSource && !authorImage) {
-    throw new Error(`Invalid author image "${authorImageSource}" in ${relativeFile}. Author images must exist under src/assets/news/.`);
+    throw new Error(`Invalid author image "${authorImageSource}" in ${relativeFile}. Author images must exist under cdn/news/.`);
   }
 
   const title = String(data.title || "").trim() || titleFromSegment(fallbackSegment);

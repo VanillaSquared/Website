@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import caveImage from "@/assets/other/cave.png";
-import houseImage from "@/assets/other/house.png";
+import caveImage from "@cdn/other/cave.png";
+import houseImage from "@cdn/other/house.png";
 import ImageCodeModal from "@/components/ImageCodeModal";
 import useSecretSequence from "@/hooks/useSecretSequence";
 

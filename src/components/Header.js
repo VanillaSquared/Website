@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import discordIcon from "@/assets/discord.png";
-import vsqLogo from "@/assets/VSQLogo_circle.png";
+import discordIcon from "@cdn/discord.png";
+import vsqLogo from "@cdn/vsq-logo-circle.png";
 import Button from "@/components/Button";
 import NewsTagFilter from "@/components/NewsTagFilter";
 import SearchBar from "@/components/SearchBar";

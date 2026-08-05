@@ -27,17 +27,17 @@ Add Markdown files under `src/news/`. Supported frontmatter fields are:
 ---
 title: Article title
 tag: patchnotes
-image: "@/assets/news/article-image.svg"
+image: "@cdn/news/article-image.svg"
 imageAlt: Description of the article image
 showImageOnPage: false
 author: Author name
-authorImage: "@/assets/news/author-image.svg"
+authorImage: "@cdn/news/author-image.svg"
 published_date: 30/07/2026
 private: false
 ---
 ```
 
-`published_date` is required and must use `dd/mm/yyyy`. It controls the article's displayed publication date and newest-first ordering. `private: true` excludes the article from every news listing and route. Images must be stored under `src/assets/news/`.
+`published_date` is required and must use `dd/mm/yyyy`. It controls the article's displayed publication date and newest-first ordering. `private: true` excludes the article from every news listing and route. Images must be stored under `cdn/news/`.
 
 ### Bug reports
 

@@ -56,10 +56,10 @@ order: 1
 
 Use an existing page in the same category as a formatting reference. Keep names used by the mod exact, include full examples when documenting a format and link to another docs page instead of explaining the same thing twice. The [Markdown guide](./markdown) lists the supported syntax and components.
 
-Images belong under `src/assets/`. Add SVG files when making new website graphics; don't put generated SVG markup inside a component. Reference docs images like this:
+Images belong under `cdn/`. Add SVG files when making new website graphics; don't put generated SVG markup inside a component. Reference docs images like this:
 
 ```md
-![Useful description](@/assets/docs/example.svg)
+![Useful description](@cdn/docs/example.svg)
 ```
 
 ## Checking the Change

@@ -1,7 +1,7 @@
 import Image from "next/image";
 
-import downloadIcon from "@/assets/icons/download.svg";
-import fileIcon from "@/assets/icons/file.svg";
+import downloadIcon from "@cdn/icons/download.svg";
+import fileIcon from "@cdn/icons/file.svg";
 
 function fileNameFromHref(href) {
   if (!href) return "File";

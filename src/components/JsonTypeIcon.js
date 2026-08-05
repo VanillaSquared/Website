@@ -1,16 +1,16 @@
 import Image from "next/image";
 
-import arrayIcon from "@/assets/icons/json-types/array.svg";
-import booleanIcon from "@/assets/icons/json-types/boolean.svg";
-import byteIcon from "@/assets/icons/json-types/byte.svg";
-import doubleIcon from "@/assets/icons/json-types/double.svg";
-import floatIcon from "@/assets/icons/json-types/float.svg";
-import integerIcon from "@/assets/icons/json-types/integer.svg";
-import longIcon from "@/assets/icons/json-types/long.svg";
-import numberIcon from "@/assets/icons/json-types/number.svg";
-import objectIcon from "@/assets/icons/json-types/object.svg";
-import shortIcon from "@/assets/icons/json-types/short.svg";
-import stringIcon from "@/assets/icons/json-types/string.svg";
+import arrayIcon from "@cdn/icons/json-types/array.svg";
+import booleanIcon from "@cdn/icons/json-types/boolean.svg";
+import byteIcon from "@cdn/icons/json-types/byte.svg";
+import doubleIcon from "@cdn/icons/json-types/double.svg";
+import floatIcon from "@cdn/icons/json-types/float.svg";
+import integerIcon from "@cdn/icons/json-types/integer.svg";
+import longIcon from "@cdn/icons/json-types/long.svg";
+import numberIcon from "@cdn/icons/json-types/number.svg";
+import objectIcon from "@cdn/icons/json-types/object.svg";
+import shortIcon from "@cdn/icons/json-types/short.svg";
+import stringIcon from "@cdn/icons/json-types/string.svg";
 
 const typeDefinitions = {
   array: { icon: arrayIcon },
