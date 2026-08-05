@@ -17,8 +17,8 @@ On top of all of that, the website should now be around 80%-90% faster.
 - Improved website performance by around 80-90% ([the_jan_craft](https://github.com/pxlarified))
 
 ## /license
-- unified the Mod and Website License page designs
-- moved the licenses to `/license/mod` and `/license/website`
+- unified the Mod and Website License page designs ([the_jan_craft](https://github.com/pxlarified))
+- moved the licenses to `/license/mod` and `/license/website` ([the_jan_craft](https://github.com/pxlarified))
 
 ## /bugs
 - the UI for creating a bug is back ([the_jan_craft](https://github.com/pxlarified))
