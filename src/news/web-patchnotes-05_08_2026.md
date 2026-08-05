@@ -28,6 +28,9 @@ On top of all of that, the website should now be around 80%-90% faster.
 - new anti abuse system that rates your bug report, if its above 6/10 your bug report will be declined ([the_jan_craft](https://github.com/pxlarified))
 - now uses GitHub Issues as backend ([the_jan_craft](https://github.com/pxlarified))
 
+## /news
+- updated `generic_website_image`
+
 ## 404 page
 - added mini secret, still in progress
 
