@@ -73,4 +73,4 @@ private: true
 ---
 
 # [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.0)
--# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*
+-# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*

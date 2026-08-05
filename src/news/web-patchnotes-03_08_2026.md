@@ -35,4 +35,4 @@ These are mostly minor things but I think they greatly improve the user experien
 - Fixed [bug-11](../../bugs/11): Weird Warning in the console yapping about some random image
 
 ---
--# *Note: changelogs without any credits are from [PainterFlow11](https://github.com/PainterFlow).*
+-# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*

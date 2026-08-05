@@ -37,4 +37,4 @@ This update mainly adds the new /news page. But it also upgrades performance and
 - the Card component now has a new variant, which looks like the Cards in the news page, as thats what the new variant is used for.
 
 ---
--# *Note: changelogs without any credits are from [PainterFlow11](https://github.com/PainterFlow).*
+-# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*

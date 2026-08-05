@@ -47,4 +47,4 @@ This Update revamps the front page(as previously announced). But thats not all, 
 - removed borders from all variants of the Tags components ([the_jan_craft](https://github.com/pxlarified))
 
 ---
--# *Note: changelogs without any credits are from [PainterFlow11](https://github.com/PainterFlow).*
+-# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
