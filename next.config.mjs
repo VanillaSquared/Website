@@ -11,6 +11,20 @@ const nextConfig = {
   outputFileTracingIncludes: {
     "/media/*": ["./src/assets/**/*"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/modlicence",
+        destination: "/license/mod",
+        permanent: true,
+      },
+      {
+        source: "/licence",
+        destination: "/license/website",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     root: __dirname,
   },
