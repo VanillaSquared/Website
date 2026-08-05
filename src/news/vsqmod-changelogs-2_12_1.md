@@ -32,5 +32,5 @@ As announced, I'll be doing smaller hotfixes until 26.3 releases for now. This h
 
 ---
 
-# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.1)
+# [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.1)
 -# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

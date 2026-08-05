@@ -35,5 +35,5 @@ This snapshot is adding the Redstone Sulfur Cube. By putting a Block of Redstone
 
 ---
 
-# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.3.1)
+# [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.3.1)
 -# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

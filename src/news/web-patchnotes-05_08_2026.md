@@ -34,5 +34,4 @@ On top of all of that, the website should now be around 80%-90% faster.
 - fixed [bugs-15](../../bugs/15): mobileUI - searchbar placeholder text gets cutoff (header)
 
 ---
-
--# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*
+-# *Note: changelogs without any credits are from [PainterFlow11](https://github.com/PainterFlow).*

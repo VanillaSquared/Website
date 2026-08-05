@@ -22,5 +22,4 @@ So this is a smaller update, but it should heavily contribute to making sure tha
 - fixed [bug-12](../../bugs/12): When zooming in the docs page the footer overflows into the sidebars.
 
 ---
-
--# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*
+-# *Note: changelogs without any credits are from [PainterFlow11](https://github.com/PainterFlow).*
