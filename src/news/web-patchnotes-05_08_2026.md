@@ -7,7 +7,7 @@ author: PainterFlow11
 authorImage: "@/assets/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 05/08/2026
-private: true
+private: false
 ---
 -# Website V0.2.0
 
