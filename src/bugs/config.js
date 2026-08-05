@@ -19,7 +19,7 @@ export const MOD_VERSIONS = [
   "2.11.0",
   "Not applicable",
 ];
-export const OPERATING_SYSTEMS = ["Windows", "macOS", "Linux", "Other", "Not applicable"];
+export const OPERATING_SYSTEMS = ["Windows", "macOS", "Linux", "iOS", "Other", "Not applicable"];
 
 export const BUG_TITLE_MAX_LENGTH = 60;
 export const BUG_DESCRIPTION_MAX_LENGTH = 2000;
