@@ -23,7 +23,7 @@ export default function TopBar({ newsTagFilter, search = {}, variant = "default"
   return (
     <header className="sticky top-0 z-50 bg-[var(--vsq-surface-header)] backdrop-blur-xl after:pointer-events-none after:fixed after:top-16 after:left-0 after:right-0 after:h-px after:bg-[var(--vsq-border-header)]">
       <nav className="flex min-h-16 w-full items-center gap-3 px-4 py-3">
-        <Link href="/" className="group flex items-center gap-2 text-base font-semibold tracking-wide text-soft transition-colors hover:text-muted">
+        <Link href="/" className="group flex shrink-0 items-center gap-2 text-base font-semibold tracking-wide text-soft transition-colors hover:text-muted">
           <Image src={vsqLogo} alt="Vanilla² logo" width={32} height={32} loading="eager" className="transition duration-200 group-hover:brightness-75" />
           <span>Vanilla²</span>
         </Link>
@@ -39,7 +39,7 @@ export default function TopBar({ newsTagFilter, search = {}, variant = "default"
           aria-label="Join the Vanilla² Discord server"
           className="shrink-0"
         />
-        <div className="w-full max-w-44 sm:max-w-64 md:max-w-80">
+        <div className="hidden w-full max-w-64 sm:block md:max-w-80">
           <SearchBar {...searchProps} />
         </div>
       </nav>
