@@ -11,16 +11,16 @@ export default function Footer() {
         </p>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-subtle">
           <Link
-            href="/modlicence"
+            href="/license/mod"
             className="transition-colors hover:text-soft"
           >
-            Mod Licence
+            Mod License
           </Link>
           <Link
-            href="/licence"
+            href="/license/website"
             className="transition-colors hover:text-soft"
           >
-            Website Licence
+            Website License
           </Link>
           <Link
             href="https://github.com/VanillaSquared/"
