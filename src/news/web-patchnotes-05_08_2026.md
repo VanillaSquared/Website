@@ -32,7 +32,7 @@ On top of all of that, the website should now be around 80%-90% faster.
 - added mini secret, still in progress
 
 ## Other Changes
-- moved src/assets to cdn directory
+- moved src/assets to cdn directory ([the_jan_craft](https://github.com/pxlarified))
 
 # Bugs
 - fixed [bugs-13](../../bugs/13): Images causing warnings in console
