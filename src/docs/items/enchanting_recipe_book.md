@@ -5,7 +5,7 @@ order: 1
 sidebarCard:
   enabled: true
   title: Enchanting Recipe Book
-  image: "@/assets/docs/items/enchant_recipe.png"
+  image: "@cdn/docs/items/enchant-recipe.png"
   imageAlt: Enchanting Recipe Book
   imageDisplay: item
   description: Unlocks one or more enchanting recipes.

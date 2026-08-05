@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import fileIcon from "@/assets/icons/file.svg";
-import folderIcon from "@/assets/icons/folder.svg";
+import fileIcon from "@cdn/icons/file.svg";
+import folderIcon from "@cdn/icons/folder.svg";
 import Chevron from "@/components/Chevron";
 
 function collectOpenIds(nodes, result = []) {

@@ -2,8 +2,8 @@
 
 import { useEffect, useId, useState } from "react";
 
-import searchIcon from "@/assets/icons/search.svg";
-import xIcon from "@/assets/icons/x.svg";
+import searchIcon from "@cdn/icons/search.svg";
+import xIcon from "@cdn/icons/x.svg";
 import Preview from "@/components/Preview";
 
 const EMPTY_HIDDEN_FIELDS = Object.freeze({});

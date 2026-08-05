@@ -5,7 +5,7 @@ order: 2
 sidebarCard:
   enabled: true
   title: Enchanting Table
-  image: "@/assets/docs/enchantment_table.png"
+  image: "@cdn/docs/enchantment-table.png"
   imageAlt: Enchanting Table UI
   description: New Enchanting Table UI.
 ---

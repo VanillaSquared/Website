@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import plusIcon from "@/assets/icons/plus.svg";
+import plusIcon from "@cdn/icons/plus.svg";
 import {
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
@@ -16,7 +16,7 @@ import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 import TextInput from "@/components/TextInput";
 
-const selectClassName = "rounded-lg border border-input-border bg-input px-3 py-2 text-heading outline-none transition-colors hover:border-input-border-hover hover:bg-input-hover focus:border-input-border-focus focus:bg-input-focus";
+const selectClassName = "rounded-lg border-0 bg-input px-3 py-2 text-heading outline-none transition-colors hover:bg-input-hover focus:bg-input-focus";
 
 function SelectField({ label, name, options }) {
   return (
@@ -100,13 +100,13 @@ export default function BugReportGuide() {
         open={open}
         onClose={() => setOpen(false)}
         variant="wide"
+        className="!border-0"
         ariaLabelledBy="create-bug-report-title"
         ariaDescribedBy="create-bug-report-description"
       >
         <form onSubmit={submitReport} className="space-y-5">
           <header>
-            <p className="text-sm font-semibold text-accent">Bug reporter</p>
-            <h2 id="create-bug-report-title" className="mt-1 text-2xl font-bold text-heading">Create a bug report</h2>
+            <h2 id="create-bug-report-title" className="text-2xl font-bold text-heading">Create a bug report</h2>
             <p id="create-bug-report-description" className="mt-2 text-sm leading-6 text-muted">
               Describe one problem clearly. Reports can be submitted without signing in.
             </p>
@@ -117,6 +117,7 @@ export default function BugReportGuide() {
               label="Title"
               name="title"
               className="sm:col-span-2"
+              inputClassName="!border-0"
               sampleText="A short summary of the problem"
               maxLength={BUG_TITLE_MAX_LENGTH}
               required
@@ -125,6 +126,7 @@ export default function BugReportGuide() {
               label="Description"
               name="description"
               className="sm:col-span-2"
+              inputClassName="!border-0"
               sampleText="What happened, what did you expect, and how can it be reproduced?"
               lines={5}
               maxLines={10}
@@ -150,7 +152,7 @@ export default function BugReportGuide() {
 
           <footer className="flex justify-end gap-2">
             <Button variant="tertiary" onClick={() => setOpen(false)} disabled={submitting}>Cancel</Button>
-            <Button type="submit" disabled={submitting}>{submitting ? "Submitting…" : "Submit report"}</Button>
+            <Button type="submit" border={false} disabled={submitting}>{submitting ? "Submitting…" : "Submit report"}</Button>
           </footer>
         </form>
       </Modal>

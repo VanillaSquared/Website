@@ -1,10 +1,10 @@
 ---
 title: Vanilla² -2.12.1
 tag: patchnotes
-image: "@/assets/news/vsq-2_12_1.png"
+image: "@cdn/news/vsq-2-12-1.png"
 showImageOnPage: true
 author: PainterFlow11
-authorImage: "@/assets/news/painterflow11.png"
+authorImage: "@cdn/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 30/08/2027
 private: true

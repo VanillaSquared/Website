@@ -4,12 +4,12 @@ import path from "node:path";
 import Image from "next/image";
 import Link from "next/link";
 
-import craftableGunpowderImage from "@/assets/frontpage/craftable_gunpowder_showcase.png";
-import datapackImage from "@/assets/frontpage/datapack_showcase.png";
-import enchantingSystemImage from "@/assets/frontpage/enchanting_system.png";
-import rebalanceImage from "@/assets/frontpage/rebalance_showcase.png";
-import redstoneSulfurCubeImage from "@/assets/frontpage/redstone_sulfur_cube.png";
-import swirlingImage from "@/assets/frontpage/swirling_showcase.png";
+import craftableGunpowderImage from "@cdn/frontpage/craftable-gunpowder-showcase.png";
+import datapackImage from "@cdn/frontpage/datapack-showcase.png";
+import enchantingSystemImage from "@cdn/frontpage/enchanting-system.png";
+import rebalanceImage from "@cdn/frontpage/rebalance-showcase.png";
+import redstoneSulfurCubeImage from "@cdn/frontpage/redstone-sulfur-cube.png";
+import swirlingImage from "@cdn/frontpage/swirling-showcase.png";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
@@ -19,7 +19,7 @@ import Tag from "@/components/Tag";
 import { getVisibleNewsArticles } from "@/news/server";
 
 const splashTexts = fs
-  .readFileSync(path.resolve(process.cwd(), "src", "assets", "frontpage", "supersecretsplashtexts.txt"), "utf8")
+  .readFileSync(path.resolve(process.cwd(), "cdn", "frontpage", "super-secret-splash-texts.txt"), "utf8")
   .split(/\r?\n/)
   .map((splashText) => splashText.trim())
   .filter(Boolean);

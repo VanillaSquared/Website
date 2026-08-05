@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useState } from "react";
 
-import filterIcon from "@/assets/icons/filter.svg";
+import filterIcon from "@cdn/icons/filter.svg";
 import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
 import FilterSidebar from "@/components/FilterSidebar";

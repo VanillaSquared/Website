@@ -1,10 +1,10 @@
 ---
 title: Website Patchnotes 30/07/2026
 tag: patchnotes
-image: "@/assets/news/generic_website_image.png"
+image: "@cdn/news/generic-website-image.png"
 showImageOnPage: false
 author: PainterFlow11
-authorImage: "@/assets/news/painterflow11.png"
+authorImage: "@cdn/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 30/07/2026
 ---

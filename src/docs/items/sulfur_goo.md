@@ -5,7 +5,7 @@ order: 2
 sidebarCard:
   enabled: true
   title: Sulfur Goo
-  image: "@/assets/docs/items/sulfur_goo.png"
+  image: "@cdn/docs/items/sulfur-goo.png"
   imageAlt: Sulfur Goo
   imageDisplay: item
   description: Dropped by Sulfur Cubes.
