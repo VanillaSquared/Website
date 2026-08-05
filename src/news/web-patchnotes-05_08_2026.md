@@ -18,3 +18,6 @@ This is kinda a surprise update, even to me. [the_jan_craft](https://github.com/
 - new anti abuse system that rates your bug report, if its above 6/10 your bug report will be declined [the_jan_craft](https://github.com/pxlarified)
 - now uses GitHub Issues as backend [the_jan_craft](https://github.com/pxlarified)
 *Developers Note: I am still missing permissions on the GitHub.*
+
+## 404 page
+- added mini secret, still in progress
