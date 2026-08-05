@@ -126,6 +126,8 @@
   --vsq-json-icon-double: #db2777;
   --vsq-json-icon-boolean-true: #12b83f;
   --vsq-json-icon-boolean-false: #c8102e;
+  --vsq-secret-splash: #ff00ff;
+  --vsq-secret-splash-shadow: #7f007f;
 
   --vsq-button-primary: #bd72bd;
   --vsq-button-primary-hover: #a966a9;
@@ -454,6 +456,42 @@ body {
   color: var(--foreground);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
     sans-serif;
+}
+
+.front-page-secret-title {
+  position: relative;
+  display: inline-block;
+}
+
+.front-page-secret-splash {
+  position: absolute;
+  z-index: 1;
+  top: 58%;
+  left: 68%;
+  width: max-content;
+  max-width: 80vw;
+  color: var(--vsq-secret-splash);
+  -webkit-text-fill-color: var(--vsq-secret-splash);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(0.7rem, 2.8vw, 1.5rem);
+  font-weight: 900;
+  letter-spacing: -0.08em;
+  line-height: 1;
+  text-shadow: 0.12em 0.12em 0 var(--vsq-secret-splash-shadow);
+  transform: rotate(-12deg);
+  transform-origin: center;
+  white-space: nowrap;
+  animation: secret-splash-pulse 900ms ease-in-out infinite alternate;
+}
+
+@keyframes secret-splash-pulse {
+  from {
+    scale: 0.95;
+  }
+
+  to {
+    scale: 1.05;
+  }
 }
 
 .docs-resize-handle {
@@ -993,6 +1031,10 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .front-page-secret-splash {
+    animation: none;
+  }
+
   .modal-popup-enter,
   .modal-popup-exit,
   .modal-backdrop-enter,

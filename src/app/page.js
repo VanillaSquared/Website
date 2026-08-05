@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,9 +13,16 @@ import swirlingImage from "@/assets/frontpage/swirling_showcase.png";
 import Button from "@/components/Button";
 import Card from "@/components/Card";
 import Footer from "@/components/Footer";
+import FrontPageSecret from "@/components/FrontPageSecret";
 import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
 import Tag from "@/components/Tag";
 import { getVisibleNewsArticles } from "@/news/server";
+
+const splashTexts = fs
+  .readFileSync(path.resolve(process.cwd(), "src", "assets", "frontpage", "supersecretsplashtexts.txt"), "utf8")
+  .split(/\r?\n/)
+  .map((splashText) => splashText.trim())
+  .filter(Boolean);
 
 export default function Home() {
   const latestNews = getVisibleNewsArticles().slice(0, 6);
@@ -69,9 +79,7 @@ export default function Home() {
     <div className="flex flex-col flex-1 font-sans">
       {/* Hero */}
       <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-background">
-        <h1 className="text-5xl font-bold tracking-tight text-heading sm:text-6xl">
-          Vanilla²
-        </h1>
+        <FrontPageSecret splashTexts={splashTexts} />
         <p className="mt-4 max-w-2xl text-lg text-muted">
           A Fabric combat and progression overhaul that keeps Minecraft close to
           vanilla while expanding weapons, armor, enchantments, and combat utility.
