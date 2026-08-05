@@ -20,3 +20,7 @@ So this is a smaller update, but it should heavily contribute to making sure tha
 # Bugs
 - fixed [bug-7](../../bugs/7): the right side of the /docs page doesn't display.
 - fixed [bug-12](../../bugs/12): When zooming in the docs page the footer overflows into the sidebars.
+
+---
+
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

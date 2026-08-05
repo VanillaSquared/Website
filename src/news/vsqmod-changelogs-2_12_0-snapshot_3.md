@@ -32,3 +32,8 @@ This snapshot is adding the Redstone Sulfur Cube. By putting a Block of Redstone
 - fixed vsq-63: Missing translation for 2 tags   
 - fixed vsq-64: Redundant code in swirling   
 - fixed vsq-65: when switching from swirling to a non-swirling enchanted item, the player animation would freeze and bug out
+
+---
+
+# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.3.1)
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

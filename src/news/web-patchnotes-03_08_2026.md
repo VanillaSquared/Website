@@ -33,3 +33,7 @@ These are mostly minor things but I think they greatly improve the user experien
 - Fixed [bug-9](../../bugs/9): the link styling is not applied in headers
 - Fixed [bug-10](../../bugs/10): the news page tags text is unreadable in flashbang mode
 - Fixed [bug-11](../../bugs/11): Weird Warning in the console yapping about some random image
+
+---
+
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

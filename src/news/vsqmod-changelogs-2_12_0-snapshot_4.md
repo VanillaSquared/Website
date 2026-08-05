@@ -29,3 +29,8 @@ This is the final snapshot for -2.12.0, I wanted to add a bit more but I didn't 
 ## Tags
 - added `vsq:sulfur_cube_archetype/dries_water` which lists blocks that can be used to dry water when they are in a sulfur cube.
 - added `vsq:sulfur_cube_archetype/powers_redstone` which lists blocks that can be used to power surrounding Redstone components when in a sulfur cube.
+
+---
+
+# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.4)
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

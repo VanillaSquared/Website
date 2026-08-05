@@ -34,3 +34,7 @@ The reason for this is because I noticed that I could just reuse the system used
 
 # Bugfixes
 - fixed [bug-8](../../bugs/8): incorrect placeholder text in the /components searchbar
+
+---
+
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

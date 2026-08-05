@@ -29,3 +29,8 @@ As announced, I'll be doing smaller hotfixes until 26.3 releases for now. This h
 
 ## Enchantments
 - removed `weight` field as it was no longer needed, if it exists in a json, it will be skipped and a warning will be sent in console
+
+---
+
+# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.1)
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

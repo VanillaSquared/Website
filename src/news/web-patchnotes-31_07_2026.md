@@ -45,3 +45,7 @@ This Update revamps the front page(as previously announced). But thats not all, 
     - toggleCookies(boolean); - toggles cookies
 - removed database ([the_jan_craft](https://github.com/pxlarified))
 - removed borders from all variants of the Tags components ([the_jan_craft](https://github.com/pxlarified))
+
+---
+
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

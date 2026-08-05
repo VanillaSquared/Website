@@ -37,4 +37,9 @@ The second snapshot for -2.12.0 is coming with a some new functionality for sulf
 # Bugfixes   
 - fixed vsq-57: Groups don't display their "Right-click for more" text in the lore when hovering over the icon in the recipe book.   
 - fixed vsq-58: The preview for groups is just completely broken.   
-- fixed vsq-59: the `minecraft:tooltips_display` data component cannot hide the `vsq:enchantment` data components tooltip  
+- fixed vsq-59: the `minecraft:tooltips_display` data component cannot hide the `vsq:enchantment` data components tooltip
+
+---
+
+# [Download on modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.2)
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

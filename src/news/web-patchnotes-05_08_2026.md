@@ -32,3 +32,7 @@ On top of all of that, the website should now be around 80%-90% faster.
 - fixed [bugs-13](../../bugs/13): Images causing warnings in console
 - fixed [bugs-14](../../bugs/14): mobileUI - light/dark mode toggle overlap with logo (header)
 - fixed [bugs-15](../../bugs/15): mobileUI - searchbar placeholder text gets cutoff (header)
+
+---
+
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*

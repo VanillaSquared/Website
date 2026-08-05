@@ -32,3 +32,7 @@ This update adds all the changelogs for the future -2.12.0 updates. It also adds
 
 # Other Changes
 - Heavily reduced package size of media content
+
+---
+
+-# *Note: changes without any credits are by [PainterFlow11](https://github.com/PainterFlow).*
