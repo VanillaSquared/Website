@@ -8,9 +8,12 @@ import matter from "gray-matter";
 import { isSafeRouteSegments, markdownRouteSegments, scanMarkdownFiles, titleFromSegment } from "@/markdown/server";
 
 const LICENCES_DIRECTORY = path.resolve(process.cwd(), "src", "licences");
+let licences;
 
 export function getLicences() {
-  return scanMarkdownFiles(LICENCES_DIRECTORY).map((relativeFile) => {
+  if (process.env.NODE_ENV === "production" && licences) return licences;
+
+  licences = scanMarkdownFiles(LICENCES_DIRECTORY).map((relativeFile) => {
     const segments = markdownRouteSegments(relativeFile);
     if (!isSafeRouteSegments(segments)) throw new Error(`Unsafe licence path: ${relativeFile}`);
 
@@ -24,6 +27,7 @@ export function getLicences() {
       source: parsed.content.trim(),
     };
   });
+  return licences;
 }
 
 export function getLicence(slug) {

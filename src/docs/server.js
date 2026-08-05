@@ -18,6 +18,7 @@ const DOCS_DIRECTORY = path.resolve(process.cwd(), "src", "docs");
 const DIRECTORY_ORDERS = new Map([
   ["datapacks", 5],
 ]);
+let docsData;
 
 function normalizeSidebarCard(value) {
   if (!value || typeof value !== "object" || value.enabled === false) return null;
@@ -121,6 +122,8 @@ function makeNavigation(documents) {
 }
 
 export function getDocsData() {
+  if (process.env.NODE_ENV === "production" && docsData) return docsData;
+
   const documents = scanMarkdownFiles(DOCS_DIRECTORY).map((relativeFile) => {
     const absoluteFile = path.resolve(DOCS_DIRECTORY, relativeFile);
     const segments = markdownRouteSegments(relativeFile, { collapseIndex: true });
@@ -159,7 +162,8 @@ export function getDocsData() {
     seen.add(document.path);
   }
 
-  return { documents, navigation: makeNavigation(documents) };
+  docsData = { documents, navigation: makeNavigation(documents) };
+  return docsData;
 }
 
 export function getDocument(slug = []) {

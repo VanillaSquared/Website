@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { Readable } from "node:stream";
 
 import { getAssetDescriptor } from "@/utils/serverAssets";
 
@@ -11,7 +12,8 @@ export async function GET(request, { params }) {
 
   const etag = `"${asset.stats.size}-${asset.stats.mtimeMs}"`;
   const headers = {
-    "Cache-Control": "public, max-age=0, must-revalidate",
+    "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    "Content-Length": String(asset.stats.size),
     "Content-Type": asset.mimeType,
     ETag: etag,
     "X-Content-Type-Options": "nosniff",
@@ -21,5 +23,5 @@ export async function GET(request, { params }) {
     return new Response(null, { status: 304, headers });
   }
 
-  return new Response(fs.readFileSync(asset.absolutePath), { headers });
+  return new Response(Readable.toWeb(fs.createReadStream(asset.absolutePath)), { headers });
 }

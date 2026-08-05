@@ -15,6 +15,7 @@ import {
 } from "@/markdown/server";
 
 const NEWS_DIRECTORY = path.resolve(process.cwd(), "src", "news");
+let newsArticles;
 
 export const NEWS_TAGS = Object.freeze({
   patchnotes: { label: "Patch notes" },
@@ -84,6 +85,8 @@ function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
 }
 
 export function getNewsArticles() {
+  if (process.env.NODE_ENV === "production" && newsArticles) return newsArticles;
+
   const articles = scanMarkdownFiles(NEWS_DIRECTORY).map((relativeFile) => {
     const segments = markdownRouteSegments(relativeFile);
     if (!isSafeRouteSegments(segments)) throw new Error(`Unsafe news article path: ${relativeFile}`);
@@ -111,7 +114,8 @@ export function getNewsArticles() {
     seen.add(article.path);
   }
 
-  return articles.sort((left, right) => right.publishedAtMs - left.publishedAtMs || left.title.localeCompare(right.title));
+  newsArticles = articles.sort((left, right) => right.publishedAtMs - left.publishedAtMs || left.title.localeCompare(right.title));
+  return newsArticles;
 }
 
 export function getVisibleNewsArticles() {

@@ -108,7 +108,7 @@ export default function SearchBar({
           setPreviewLoading(false);
         }
       }
-    }, 120);
+    }, 250);
 
     return () => {
       controller.abort();

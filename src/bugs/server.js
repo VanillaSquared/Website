@@ -1,6 +1,6 @@
 import "server-only";
 
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 import {
   BUG_DESCRIPTION_MAX_LENGTH,
@@ -81,19 +81,17 @@ function issueToBug(issue) {
   };
 }
 
-async function getAllIssues() {
+const getAllIssues = unstable_cache(async function getAllIssues() {
   const issues = [];
 
   for (let page = 1; ; page += 1) {
-    const batch = await githubRequest(`/issues?state=all&per_page=100&page=${page}`, {
-      next: { revalidate: 60, tags: [BUGS_CACHE_TAG] },
-    });
+    const batch = await githubRequest(`/issues?state=all&per_page=100&page=${page}`);
     issues.push(...batch.filter((issue) => !issue.pull_request));
     if (batch.length < 100) break;
   }
 
   return issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
-}
+}, ["all-bug-reports"], { revalidate: 60, tags: [BUGS_CACHE_TAG] });
 
 function normalizeFilters(value, allowedValues) {
   const values = Array.isArray(value) ? value : [value];
