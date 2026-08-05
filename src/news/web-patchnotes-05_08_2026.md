@@ -27,3 +27,6 @@ On top of all of that, the website should now be around 80%-90% faster.
 
 ## 404 page
 - added mini secret, still in progress
+
+# Bugs
+- fixed [bugs-13](../../bugs/13): Images causing warnings in console

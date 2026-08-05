@@ -21,18 +21,21 @@ export default function Home() {
       title: "Rebalanced armor, tools and weapons.",
       image: rebalanceImage,
       imageAlt: "Rebalanced Vanilla² equipment",
+      loading: "eager",
       href: "/docs/items",
     },
     {
       title: "New Redstone Sulfur Cube.",
       image: redstoneSulfurCubeImage,
       imageAlt: "Redstone Sulfur Cube",
+      loading: "eager",
       href: "/docs/items/sulfur_goo",
     },
     {
       title: "New Enchantments.",
       image: swirlingImage,
       imageAlt: "Swirling enchantment in action",
+      loading: "eager",
       href: "/docs/enchanting",
     },
     {
@@ -117,6 +120,7 @@ export default function Home() {
                   <Image
                     src={feature.image}
                     alt={feature.imageAlt}
+                    loading={feature.loading}
                     sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
                   />
                 )}
