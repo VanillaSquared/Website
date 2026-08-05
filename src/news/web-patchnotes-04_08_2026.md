@@ -18,5 +18,5 @@ So this is a smaller update, but it should heavily contribute to making sure tha
 - the sidebar text on the quick info cards can no longer overlap if u minimize the right side too much
 
 # Bugs
-- fixed [web-4](../../bugs/web-4): the right side of the /docs page doesn't display.
-- fixed [web-9](../../bugs/web-9): When zooming in the docs page the footer overflows into the sidebars.
+- fixed [bug-7](../../bugs/7): the right side of the /docs page doesn't display.
+- fixed [bug-12](../../bugs/12): When zooming in the docs page the footer overflows into the sidebars.

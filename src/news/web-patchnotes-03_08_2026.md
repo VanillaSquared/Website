@@ -27,9 +27,9 @@ These are mostly minor things but I think they greatly improve the user experien
 - fixed the Table component sometimes being buggy
 
 # Bug Reporter
-- Fixed [web-1](../../bugs/web-1): Website docs category is above the Datapacks category.
-- Fixed [web-2](../../bugs/web-2): Bug report filter button flicker.
-- Fixed [web-3](../../bugs/web-3): When zooming in too far the labels of the filters disappear in /news
-- Fixed [web-6](../../bugs/web-6): the link styling is not applied in headers
-- Fixed [web-7](../../bugs/web-7): the news page tags text is unreadable in flashbang mode
-- Fixed [web-8](../../bugs/web-8): Weird Warning in the console yapping about some random image
+- Fixed [bug-4](../../bugs/4): Website docs category is above the Datapacks category.
+- Fixed [bug-5](../../bugs/5): Bug report filter button flicker.
+- Fixed [bug-6](../../bugs/6): When zooming in too far the labels of the filters disappear in /news
+- Fixed [bug-9](../../bugs/9): the link styling is not applied in headers
+- Fixed [bug-10](../../bugs/10): the news page tags text is unreadable in flashbang mode
+- Fixed [bug-11](../../bugs/11): Weird Warning in the console yapping about some random image

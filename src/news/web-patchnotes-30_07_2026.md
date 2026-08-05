@@ -33,4 +33,4 @@ The reason for this is because I noticed that I could just reuse the system used
 - removed some components which were only there because of the login system
 
 # Bugfixes
-- fixed [web-5](../../bugs/web-5): incorrect placeholder text in the /components searchbar
+- fixed [bug-8](../../bugs/8): incorrect placeholder text in the /components searchbar
