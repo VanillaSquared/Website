@@ -1,20 +1,23 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
+import caveImage from "@/assets/other/cave.png";
 import houseImage from "@/assets/other/house.png";
-import Modal from "@/components/Modal";
-import TextInput from "@/components/TextInput";
+import ImageCodeModal from "@/components/ImageCodeModal";
 
 const SECRET_PHRASE = "av house";
-const SECRET_DIGITS = "1158";
+const HOUSE_CODE_DIGITS = "1158";
+const CAVE_CODE = "17";
 
 export default function NotFoundSecret() {
   const typedPhrase = useRef("");
   const [open, setOpen] = useState(false);
-  const [digits, setDigits] = useState("");
-  const solved = digits.length === SECRET_DIGITS.length && [...digits].sort().join("") === SECRET_DIGITS;
+  const [houseCode, setHouseCode] = useState("");
+  const [caveCode, setCaveCode] = useState("");
+  const houseSolved = houseCode.length === HOUSE_CODE_DIGITS.length
+    && [...houseCode].sort().join("") === HOUSE_CODE_DIGITS;
+  const caveSolved = caveCode === CAVE_CODE;
 
   useEffect(() => {
     if (open) return undefined;
@@ -31,7 +34,8 @@ export default function NotFoundSecret() {
       typedPhrase.current += key;
       if (typedPhrase.current === SECRET_PHRASE) {
         typedPhrase.current = "";
-        setDigits("");
+        setHouseCode("");
+        setCaveCode("");
         setOpen(true);
       }
     }
@@ -42,33 +46,41 @@ export default function NotFoundSecret() {
 
   function closeModal() {
     setOpen(false);
-    setDigits("");
+    setHouseCode("");
+    setCaveCode("");
+  }
+
+  if (houseSolved) {
+    return (
+      <ImageCodeModal
+        key="cave"
+        open={open}
+        onClose={closeModal}
+        image={caveImage}
+        imageAlt="A cave"
+        title="Cave"
+        name="cave-code"
+        value={caveCode}
+        onValueChange={setCaveCode}
+        maxLength={2}
+        showCharacterLimit={false}
+        successMessage={caveSolved ? "In progress" : null}
+      />
+    );
   }
 
   return (
-    <Modal open={open} onClose={closeModal} variant="wide" ariaLabelledBy="house-secret-title">
-      <h2 id="house-secret-title" className="sr-only">House</h2>
-      <div className="space-y-5">
-        <Image
-          src={houseImage}
-          alt="A house"
-          className="h-auto w-full rounded-lg"
-          priority={false}
-        />
-        <TextInput
-          label="Code"
-          name="house-code"
-          value={digits}
-          filter="integer"
-          inputMode="numeric"
-          maxLength={4}
-          autoComplete="off"
-          onInput={(event) => setDigits(event.currentTarget.value)}
-        />
-        <p className="min-h-5 text-center text-sm font-semibold text-heading">
-          {solved ? "In progress" : null}
-        </p>
-      </div>
-    </Modal>
+    <ImageCodeModal
+      key="house"
+      open={open}
+      onClose={closeModal}
+      image={houseImage}
+      imageAlt="A house"
+      title="House"
+      name="house-code"
+      value={houseCode}
+      onValueChange={setHouseCode}
+      maxLength={4}
+    />
   );
 }

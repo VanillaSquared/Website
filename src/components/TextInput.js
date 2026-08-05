@@ -72,6 +72,7 @@ export default function TextInput({
   maxCharacters,
   maxCharacterLimit,
   maxLength,
+  showCharacterLimit = true,
   allowBrowserExtensions = false,
   useOnePassword,
   onInput,
@@ -95,7 +96,7 @@ export default function TextInput({
   const minimumCharacters = normalizeCharacterLimit(minCharacters ?? minCharacterLimit ?? minLength);
   const characterCount = value != null ? getCharacterCount(value) : uncontrolledCharacterCount;
   const displayedCharacterCount = minimumCharacters == null ? characterCount : Math.max(characterCount, minimumCharacters);
-  const showCharacterLimit = characterLimit != null;
+  const shouldShowCharacterLimit = showCharacterLimit && characterLimit != null;
   const stateInputClasses = locked
     ? "rounded-lg border border-locked-input-border bg-locked-input px-3 py-2 text-locked-text outline-none transition-colors placeholder:text-locked-text placeholder:italic cursor-not-allowed"
     : inputClasses;
@@ -174,7 +175,7 @@ export default function TextInput({
           {...props}
         />
       )}
-      {showCharacterLimit ? (
+      {shouldShowCharacterLimit ? (
         <span className="self-end text-xs font-normal text-muted">
           {displayedCharacterCount}/{characterLimit}
         </span>
