@@ -14,6 +14,7 @@ export const metadata = {
   title: "Bugs | Vanilla²",
   description: "Browse known Vanilla² bug reports.",
 };
+export const dynamic = "force-dynamic";
 
 function getSearchParamValue(params, name) {
   const value = params?.[name];
@@ -34,7 +35,12 @@ export default async function BugsPage({ searchParams }) {
     priority: getSearchParamValues(params, "priority"),
     status: getSearchParamValues(params, "status"),
   };
-  const bugs = listBugReports(filters);
+  let bugs;
+  try {
+    bugs = await listBugReports(filters);
+  } catch {
+    bugs = null;
+  }
   const searchHiddenFields = {
     category: filters.category,
     priority: filters.priority,
@@ -45,7 +51,7 @@ export default async function BugsPage({ searchParams }) {
     defaultValue: filters.q,
     hiddenFields: searchHiddenFields,
     placeholder: "Search bug reports",
-    previewEndpoint: "/api/bugs/get",
+    previewEndpoint: "/api/bugs",
     previewResultsKey: "bugs",
     previewTitleKey: "title",
     previewDescriptionKey: "description",
@@ -67,7 +73,14 @@ export default async function BugsPage({ searchParams }) {
         />
       )}
     >
-      <BugList bugs={bugs} />
+      {bugs ? (
+        <BugList bugs={bugs} />
+      ) : (
+        <div className="px-4 py-8 text-center">
+          <p className="text-lg font-semibold text-heading">Bug reports could not be loaded</p>
+          <p className="mt-2 text-sm text-muted">Please try again later.</p>
+        </div>
+      )}
     </SearchListTemplatePage>
   );
 }

@@ -1,5 +1,5 @@
 export function getBugStatusCheckmarkProps(bug) {
-  if (bug?.status === "Fixed" || bug?.fixed) {
+  if (bug?.status === "Fixed") {
     return { checked: true, variant: "green", icon: "check" };
   }
 

@@ -10,7 +10,7 @@ import FilterSidebar from "@/components/FilterSidebar";
 
 const priorityLabels = {
   "Code Red": "Urgent",
-  unset: "None",
+  Unset: "None",
 };
 
 const filterTextColors = {
@@ -19,11 +19,10 @@ const filterTextColors = {
     Medium: "text-[var(--vsq-tag-medium-text)]",
     High: "text-[var(--vsq-tag-high-text)]",
     "Code Red": "text-[var(--vsq-tag-code-red-text)]",
-    unset: "text-muted",
+    Unset: "text-muted",
   },
   status: {
     Fixed: "text-[var(--vsq-filter-status-fixed)]",
-    Unfixable: "text-[var(--vsq-filter-status-unfixable)]",
     Unconfirmed: "text-[var(--vsq-filter-status-unconfirmed)]",
     Confirmed: "text-[var(--vsq-filter-status-confirmed)]",
     "Works as intended": "text-[var(--vsq-filter-status-intended)]",

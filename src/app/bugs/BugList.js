@@ -11,7 +11,7 @@ const categoryLabels = {
 
 const priorityLabels = {
   "Code Red": "Urgent",
-  unset: "None",
+  Unset: "None",
 };
 
 const priorityVariants = {
@@ -19,7 +19,7 @@ const priorityVariants = {
   Medium: "medium",
   High: "high",
   "Code Red": "codeRed",
-  unset: "subtle",
+  Unset: "subtle",
 };
 
 function getDescriptionPreview(description) {
@@ -41,9 +41,9 @@ export default function BugList({ bugs }) {
       {bugs.map((bug) => (
         <div key={bug.publicId}>
           <Link
-            href={`/bugs/${bug.publicId}`}
+            href={`/bugs/${bug.id}`}
             className="block cursor-pointer rounded-xl bg-card py-3 pl-4 pr-12 transition-colors hover:bg-control-hover/60 focus-visible:bg-control-hover focus-visible:outline-none"
-            aria-label={`View bug ${bug.publicId.toUpperCase()}: ${bug.title}`}
+            aria-label={`View ${bug.publicId.toUpperCase()}: ${bug.title}`}
           >
             <article className="flex gap-3">
               <Checkmark {...getBugStatusCheckmarkProps(bug)} className="mt-1" />

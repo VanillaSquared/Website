@@ -1,18 +1,18 @@
 ---
 title: Making a Bug Report
-description: How to add a useful bug report to the website.
+description: How to submit a useful bug report.
 order: 2
 ---
 
-Bug reports are stored as Markdown files in `src/bugs/`. Before adding one, check the [bug page](/bugs) to make sure the same problem hasn't already been reported. If it has, add any missing information to the existing report instead of making a duplicate.
+Before creating a report, check the [bug page](/bugs) to make sure the same problem has not already been reported. Select the plus button on that page to open the bug reporter. You do not need to sign in.
 
 ## What to Include
 
-A bug report should explain what happened, what should have happened and how someone else can cause it. Please also include the exact Vanilla Squared or website version. "Latest" stops being useful as soon as another version releases.
+Use a short, specific title and report one problem at a time. Explain what happened, what should have happened, and the exact steps someone else can follow to reproduce it.
 
-For a mod bug, also include your Minecraft version, Fabric Loader version, Fabric API version and other installed mods if they might be related. Add the crash report or relevant log when the game crashed. Do not paste access tokens, server addresses you want to keep private or anything else sensitive into a report.
+Select the correct category, Minecraft version, Vanilla Squared version, and operating system. Use `Not applicable` only when an environment field does not apply, such as the mod version for a website problem.
 
-A useful report body looks something like this:
+A useful description looks like this:
 
 ```md
 When an enchanting recipe is selected, closing and reopening the enchanting table clears the selected recipe.
@@ -26,44 +26,6 @@ How to reproduce:
 The recipe should still be selected, but no recipe is selected.
 ```
 
-Screenshots or short videos are useful for visual problems, but they should not replace the written reproduction steps.
+Attachments are not supported. Do not include access tokens, private server addresses, personal information, or any other sensitive data. Bug descriptions support standard sanitized Markdown, but not raw HTML, JSX, MDX expressions, imports, exports, or custom components.
 
-## Adding the Report
-
-Find the newest ID for the correct category in `src/bugs/`, then use the next number. Mod reports use `vsq-` and website reports use `web-`. The filename and `id` should match, for example `src/bugs/web-3.md`.
-
-Add this header for a new Vanilla Squared report:
-
-```yaml
----
-id: vsq-3
-title: Short explanation of the problem
-author: Your name
-created_date: 30/07/2026
-category: vanilla-squared
-priority: unset
-status: Unconfirmed
-fixed: false
-affectedVersions:
-  - 2.12.0-snapshot.1
-fixedVersion: null
----
-```
-
-For a website report, change the ID to `web-3` and the category to `website`. Use the actual date and affected version, not the values from this example. New reports should normally keep `priority: unset` and `status: Unconfirmed` until the problem has been checked.
-
-Write the report below the header. You can use all of the syntax explained in the [Markdown guide](./markdown).
-
-## Updating a Report
-
-Once the problem has been reproduced, change the status to `Confirmed`. If it was fixed, use:
-
-```yaml
-status: Fixed
-fixed: true
-fixedVersion: 2.12.0
-```
-
-Use `Works as intended` when the reported behavior is intentional, `Vanilla bug` when the same problem happens without Vanilla Squared and `Unfixable` when there is a clear reason it will not be fixed. Explain that reason in the report body so the status isn't just a dead end.
-
-After adding or updating the report, follow [Committing to the Docs](./committing_to_the_docs) to check and submit the change.
+New reports always begin with an unconfirmed status and no assigned priority. These fields cannot be selected by the reporter.

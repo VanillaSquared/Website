@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
-import { getBugReportByPublicId, getBugReports } from "@/bugs/server";
+import { getBugReportById } from "@/bugs/server";
+import BugMarkdown from "@/components/BugMarkdown";
 import Checkmark from "@/components/Checkmark";
-import MarkdownContent from "@/markdown/MarkdownContent";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
@@ -15,7 +15,7 @@ const categoryLabels = {
 
 const priorityLabels = {
   "Code Red": "Urgent",
-  unset: "None",
+  Unset: "None",
 };
 
 const priorityVariants = {
@@ -23,7 +23,7 @@ const priorityVariants = {
   Medium: "medium",
   High: "high",
   "Code Red": "codeRed",
-  unset: "subtle",
+  Unset: "subtle",
 };
 
 const priorityDetailColors = {
@@ -31,12 +31,11 @@ const priorityDetailColors = {
   Medium: "text-[var(--vsq-tag-medium-text)]",
   High: "text-[var(--vsq-tag-high-text)]",
   "Code Red": "text-[var(--vsq-tag-code-red-text)]",
-  unset: "text-muted",
+  Unset: "text-muted",
 };
 
 const statusDetailColors = {
   Fixed: "text-[var(--vsq-filter-status-fixed)]",
-  Unfixable: "text-[var(--vsq-filter-status-unfixable)]",
   Unconfirmed: "text-[var(--vsq-filter-status-unconfirmed)]",
   Confirmed: "text-[var(--vsq-filter-status-confirmed)]",
   "Works as intended": "text-[var(--vsq-filter-status-intended)]",
@@ -47,13 +46,11 @@ function formatDate(value) {
   return formatEuropeanDateTime(value, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }, "Unknown").replace(/^(\d{1,2}) /, "$1. ");
 }
 
-export function generateStaticParams() {
-  return getBugReports().map((bug) => ({ bug: bug.publicId }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }) {
   const { bug: bugParam } = await params;
-  const bug = getBugReportByPublicId(decodeURIComponent(bugParam));
+  const bug = await getBugReportById(decodeURIComponent(bugParam)).catch(() => null);
   if (!bug) return { title: "Bug not found | Vanilla²" };
 
   return {
@@ -64,11 +61,10 @@ export async function generateMetadata({ params }) {
 
 export default async function BugViewPage({ params }) {
   const { bug: bugParam } = await params;
-  const bug = getBugReportByPublicId(decodeURIComponent(bugParam));
+  const bug = await getBugReportById(decodeURIComponent(bugParam)).catch(() => null);
   if (!bug) notFound();
 
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
-  const affectedVersions = bug.affectedVersions.length ? bug.affectedVersions.join(", ") : "Unknown";
 
   return (
     <ElementViewTemplatePage
@@ -87,12 +83,12 @@ export default async function BugViewPage({ params }) {
         </span>
       )}
       meta={[
-        { label: "Reporter", value: bug.creatorUsername, className: "text-soft" },
         { label: "Category", value: categoryLabel, className: "text-accent" },
         { label: "Priority", value: priorityLabels[bug.priority] ?? bug.priority, className: priorityDetailColors[bug.priority] ?? "text-muted" },
         { label: "Status", value: bug.status, className: statusDetailColors[bug.status] ?? "text-heading" },
-        { label: "Affected versions", value: affectedVersions, className: "text-soft" },
-        { label: "Fixed version", value: bug.fixedVersion ?? (bug.fixed ? "Unknown" : "Not fixed"), className: bug.fixed || bug.fixedVersion ? "text-[var(--vsq-filter-status-fixed)]" : "text-muted" },
+        { label: "Minecraft version", value: bug.minecraftVersion, className: "text-soft" },
+        { label: "Mod version", value: bug.modVersion, className: "text-soft" },
+        { label: "Operating system", value: bug.operatingSystem, className: "text-soft" },
         { label: "Created", value: formatDate(bug.createdAt), className: "text-muted" },
       ]}
     >
@@ -102,7 +98,7 @@ export default async function BugViewPage({ params }) {
           <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{priorityLabels[bug.priority] ?? bug.priority}</Tag>
           <Tag variant="accent">{bug.status}</Tag>
         </div>
-        <MarkdownContent source={bug.source} basePath="/bugs" />
+        <BugMarkdown source={bug.source} />
       </section>
     </ElementViewTemplatePage>
   );
