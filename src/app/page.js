@@ -82,7 +82,7 @@ export default function Home() {
         <FrontPageSecret splashTexts={splashTexts} />
         <p className="mt-4 max-w-2xl text-lg text-muted">
             This Mod overhauls many of Minecrafts outdated system, like the combat system and enchanting system. 
-            On top of that the mod also adds a few other features, for example: the Redstone Sulfur Cube. 
+            On top of that the mod also adds a few other features.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Tag>Minecraft 26.2</Tag>
