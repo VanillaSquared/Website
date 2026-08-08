@@ -81,8 +81,8 @@ export default function Home() {
       <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-background">
         <FrontPageSecret splashTexts={splashTexts} />
         <p className="mt-4 max-w-2xl text-lg text-muted">
-          A Fabric combat and progression overhaul that keeps Minecraft close to
-          vanilla while expanding weapons, armor, enchantments, and combat utility.
+            This Mod overhauls many of Minecrafts outdated system, like the combat system and enchanting system. 
+            On top of that the mod also adds a few other features. 
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Tag>Minecraft 26.2</Tag>
