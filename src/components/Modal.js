@@ -16,17 +16,19 @@ const MODAL_ANIMATIONS = {
   },
   "slide-right": {
     duration: 180,
-    popupEnter: "modal-slide-right-enter",
-    popupExit: "modal-slide-right-exit",
+    popupEnter: "modal-slide-enter",
+    popupExit: "modal-slide-exit",
     backdropEnter: "",
     backdropExit: "",
+    slideOffset: "100%",
   },
   "slide-left": {
     duration: 180,
-    popupEnter: "modal-slide-left-enter",
-    popupExit: "modal-slide-left-exit",
+    popupEnter: "modal-slide-enter",
+    popupExit: "modal-slide-exit",
     backdropEnter: "",
     backdropExit: "",
+    slideOffset: "-100%",
   },
 };
 
@@ -211,6 +213,8 @@ export default function Modal({
   if (!shouldRender || typeof document === "undefined") return null;
 
   const activeAnimation = MODAL_ANIMATIONS[open ? resolvedOpenAnimation : resolvedCloseAnimation];
+  const animationStyle = activeAnimation.slideOffset ? { "--modal-slide-offset": activeAnimation.slideOffset } : undefined;
+
   return createPortal(
     <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`} onKeyDown={handleDialogKeyDown}>
       {closeOnOutsideClick ? (
@@ -225,6 +229,7 @@ export default function Modal({
         aria-describedby={ariaDescribedBy}
         preset="homepage"
         hoverAccent={false}
+        style={animationStyle}
         className={`pointer-events-auto relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${open ? activeAnimation.popupEnter : activeAnimation.popupExit} ${className}`}
         contentClassName={variantConfig.content ?? ""}
         onClick={(event) => event.stopPropagation()}
@@ -233,6 +238,35 @@ export default function Modal({
           {children}
         </div>
       </Card>
+      <style jsx global>{`
+        @keyframes modal-slide-in {
+          from { transform: translate3d(var(--modal-slide-offset, 0), 0, 0); }
+          to { transform: translate3d(0, 0, 0); }
+        }
+
+        @keyframes modal-slide-out {
+          from { transform: translate3d(0, 0, 0); }
+          to { transform: translate3d(var(--modal-slide-offset, 0), 0, 0); }
+        }
+
+        .modal-slide-enter {
+          animation: modal-slide-in 180ms ease-out both;
+          will-change: transform;
+        }
+
+        .modal-slide-exit {
+          animation: modal-slide-out 180ms ease-in both;
+          pointer-events: none;
+          will-change: transform;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .modal-slide-enter,
+          .modal-slide-exit {
+            animation-duration: 1ms;
+          }
+        }
+      `}</style>
     </div>,
     document.body
   );
