@@ -31,7 +31,6 @@ This is the final snapshot for -2.12.0, I wanted to add a bit more but I didn't 
 - added `vsq:sulfur_cube_archetype/powers_redstone` which lists blocks that can be used to power surrounding Redstone components when in a sulfur cube.
 
 ---
-
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
 
 <Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.4" variant="modrinth" external>Download on Modrinth</Button>
