@@ -102,21 +102,22 @@ export default function NewsTagFilter({ options = [], value = [] }) {
         open={filterModalOpen}
         onClose={() => setFilterModalOpen(false)}
         variant="filterSidebarLeft"
+        className="!border-0"
         ariaLabelledBy="news-filter-modal-title"
       >
         <div className="flex h-full min-h-0 flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-divider px-1 pb-4">
+          <div className="relative shrink-0 pb-4">
             <div>
               <h2 id="news-filter-modal-title" className="text-base font-semibold text-heading">Filter news</h2>
               <p className="mt-1 text-xs text-muted">Choose one or more tags.</p>
             </div>
             <Button
-              variant="iconButton"
-              size="iconButtonSm"
+              size="icon"
+              variant="tertiary"
               icon={closeIcon}
               aria-label="Close news filters"
+              className="absolute top-0 right-0"
               onClick={() => setFilterModalOpen(false)}
-              className="shrink-0"
             />
           </div>
 
