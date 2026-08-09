@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import xIcon from "@cdn/icons/x.svg";
 import Button from "@/components/Button";
 import CategoryNavigation from "@/components/CategoryNavigation";
 import Modal from "@/components/Modal";
+import SearchBar from "@/components/SearchBar";
 
 function HamburgerIcon() {
   return (
@@ -31,8 +32,36 @@ function getDesktopNavigationFocusTarget() {
   return document.querySelector("button[aria-label='Expand documentation navigation']");
 }
 
+function filterNavigation(items, query) {
+  const terms = query.toLowerCase().trim().split(/\s+/).filter(Boolean);
+  if (!terms.length) return items;
+
+  return items.flatMap((item) => {
+    const label = String(item.label ?? "").toLowerCase();
+    const matches = terms.every((term) => label.includes(term));
+
+    if (matches) {
+      return [{
+        ...item,
+        defaultOpen: Boolean(item.children?.length),
+      }];
+    }
+
+    const children = item.children ? filterNavigation(item.children, query) : [];
+    if (!children.length) return [];
+
+    return [{
+      ...item,
+      children,
+      defaultOpen: true,
+    }];
+  });
+}
+
 export default function DocsNavigationSidebar({ items = [], selectedId }) {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredItems = useMemo(() => filterNavigation(items, searchQuery), [items, searchQuery]);
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 64rem)");
@@ -85,13 +114,28 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
             />
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto py-4">
-            <CategoryNavigation
-              items={items}
-              selectedId={selectedId}
-              onNavigate={() => setOpen(false)}
-              className="!bg-transparent !px-0 !py-0"
+          <div className="shrink-0 pb-2 sm:hidden">
+            <SearchBar
+              placeholder="Search documentation"
+              label="Search documentation navigation"
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={() => {}}
+              showPreview={false}
             />
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto py-4">
+            {filteredItems.length ? (
+              <CategoryNavigation
+                items={filteredItems}
+                selectedId={selectedId}
+                onNavigate={() => setOpen(false)}
+                className="!bg-transparent !px-0 !py-0"
+              />
+            ) : (
+              <p className="px-3 py-2 text-sm text-muted">No matching documentation.</p>
+            )}
           </div>
         </div>
       </Modal>
