@@ -32,5 +32,6 @@ This is the final snapshot for -2.12.0, I wanted to add a bit more but I didn't 
 
 ---
 
-# [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.4)
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
+
+<Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.4" variant="modrinth" external>Download on Modrinth</Button>
