@@ -19,6 +19,10 @@ Welcome to this surprise update. I may be on vacation, but that doesn’t mean I
 
 ## /news
 - the news filters will get grouped in a modal accessible through a new button in the header which appears when zooming in too far, this way you can still see the labels of the filters on an iPhone
+- all mc mod articles now have a download button at the bottom instead of js a link
+
+## Markdown
+- new modrinth button variant
 
 # Bugs
 - fixed [bugs-16](../../bugs/bug-16): articles image and title are not centered
