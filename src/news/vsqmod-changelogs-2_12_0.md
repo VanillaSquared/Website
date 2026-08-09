@@ -71,7 +71,6 @@ private: true
 - fixed vsq-65: when switching from swirling to a non-swirling enchanted item, the player animation would freeze and bug out
 
 ---
-
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
 
 <Button href="https://modrinth.com/mod/vsq/version/-2.12.0" variant="modrinth" external>Download on Modrinth</Button>
