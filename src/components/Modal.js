@@ -37,6 +37,7 @@ const variants = {
   wide: { overlay: "items-center justify-center overflow-y-auto p-4", card: "w-full max-w-3xl min-h-40", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   drawer: { overlay: "items-stretch justify-end overflow-hidden", card: "h-full w-full max-w-md rounded-none !border-y-0 !border-r-0", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   filterSidebar: { root: "top-16 right-0 bottom-0 left-0", overlay: "items-stretch justify-end overflow-hidden p-4", card: "h-full w-full max-w-sm rounded-2xl", content: "h-full min-h-0", lockBodyScroll: false, openAnimation: "slide-right", closeAnimation: "slide-right" },
+  filterSidebarLeft: { root: "top-16 right-0 bottom-0 left-0", overlay: "items-stretch justify-start overflow-hidden p-4", card: "h-full w-full max-w-sm rounded-2xl", content: "h-full min-h-0", lockBodyScroll: false, openAnimation: "slide-left", closeAnimation: "slide-left" },
   bottomSheet: { overlay: "items-end justify-center overflow-hidden p-0 sm:p-4", card: "w-full max-w-2xl rounded-b-none sm:rounded-b-xl", openAnimation: "fade+pop", closeAnimation: "fade+pop" },
   fullscreen: { overlay: "items-stretch justify-stretch overflow-y-auto p-0 sm:p-6", card: "min-h-full w-full rounded-none sm:rounded-xl", openAnimation: "none", closeAnimation: "none" },
 };
