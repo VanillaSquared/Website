@@ -4,12 +4,12 @@ import xIcon from "@cdn/icons/x.svg";
 import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 
-export default function FilterSidebar({ open, onClose, title = "Filters", subtitle, footer, children, borderless = false }) {
+export default function FilterSidebar({ open, onClose, title = "Filters", subtitle, footer, children, borderless = false, variant = "filterSidebar" }) {
   return (
     <Modal
       open={open}
       onClose={onClose}
-      variant="filterSidebar"
+      variant={variant}
       className={borderless ? "!border-0" : ""}
       background="none"
       blurBackground={false}
