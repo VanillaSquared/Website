@@ -162,6 +162,11 @@
   --vsq-button-green-hover: #2a8955;
   --vsq-button-green-outline: #43b978;
   --vsq-button-green-outline-hover: #3aa86b;
+  --vsq-button-modrinth: #1bd96a;
+  --vsq-button-modrinth-hover: #18c961;
+  --vsq-button-modrinth-outline: #46e986;
+  --vsq-button-modrinth-outline-hover: #5bed92;
+  --vsq-button-modrinth-text: #101114;
 
   color-scheme: dark;
 }
@@ -373,6 +378,11 @@
   --color-button-green-hover: var(--vsq-button-green-hover);
   --color-button-green-outline: var(--vsq-button-green-outline);
   --color-button-green-outline-hover: var(--vsq-button-green-outline-hover);
+  --color-button-modrinth: var(--vsq-button-modrinth);
+  --color-button-modrinth-hover: var(--vsq-button-modrinth-hover);
+  --color-button-modrinth-outline: var(--vsq-button-modrinth-outline);
+  --color-button-modrinth-outline-hover: var(--vsq-button-modrinth-outline-hover);
+  --color-button-modrinth-text: var(--vsq-button-modrinth-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

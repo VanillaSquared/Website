@@ -62,7 +62,7 @@ You can use the website components directly in Markdown. Component names are cas
 </Card>
 ```
 
-`Button` can link to another page. Available variants are `primary`, `secondary`, `tertiary`, `blue`, `purple`, `blurple`, `red`, `danger`, `green` and `locked`. Available sizes are `sm`, `md`, `icon` and `iconButton`.
+`Button` can link to another page. Available variants are `primary`, `secondary`, `tertiary`, `blue`, `purple`, `blurple`, `red`, `danger`, `green`, `modrinth` and `locked`. Available sizes are `sm`, `md`, `icon` and `iconButton`.
 
 ```mdx
 <Button href="https://github.com/VanillaSquared/Website" external variant="blue">

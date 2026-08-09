@@ -9,6 +9,7 @@ const variants = {
   red: "border-button-red-outline bg-button-red text-button-text hover:border-button-red-outline-hover hover:bg-button-red-hover",
   danger: "border-button-red-outline bg-button-red text-button-text hover:border-button-red-outline-hover hover:bg-button-red-hover",
   green: "border-button-green-outline bg-button-green text-button-text hover:border-button-green-outline-hover hover:bg-button-green-hover",
+  modrinth: "border-button-modrinth-outline bg-button-modrinth text-button-modrinth-text hover:border-button-modrinth-outline-hover hover:bg-button-modrinth-hover",
   locked: "border-locked-border bg-locked text-locked-text cursor-not-allowed"
 };
 

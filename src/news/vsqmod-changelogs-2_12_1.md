@@ -31,6 +31,6 @@ As announced, I'll be doing smaller hotfixes until 26.3 releases for now. This h
 - removed `weight` field as it was no longer needed, if it exists in a json, it will be skipped and a warning will be sent in console
 
 ---
-
-# [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.1)
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
+
+<Button href="https://modrinth.com/mod/vsq/version/-2.12.1" variant="modrinth" external>Download on Modrinth</Button>

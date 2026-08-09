@@ -40,6 +40,6 @@ The second snapshot for -2.12.0 is coming with a some new functionality for sulf
 - fixed vsq-59: the `minecraft:tooltips_display` data component cannot hide the `vsq:enchantment` data components tooltip
 
 ---
-
-# [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.2)
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
+
+<Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.2" variant="modrinth" external>Download on Modrinth</Button>
