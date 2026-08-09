@@ -57,13 +57,20 @@ function getModalAnimation(animation, fallback = "fade+pop") {
   return MODAL_ANIMATIONS[animation] ? animation : fallback;
 }
 
+function isVisibleElement(element) {
+  return element instanceof HTMLElement
+    && !element.hasAttribute("aria-hidden")
+    && element.getClientRects().length > 0;
+}
+
 function getFocusableElements(container) {
   if (!container) return [];
-  return [...container.querySelectorAll(focusableSelector)].filter((element) => (
-    element instanceof HTMLElement
-    && !element.hasAttribute("aria-hidden")
-    && element.getClientRects().length > 0
-  ));
+  return [...container.querySelectorAll(focusableSelector)].filter(isVisibleElement);
+}
+
+function resolveFocusTarget(target) {
+  const resolved = typeof target === "function" ? target() : target;
+  return isVisibleElement(resolved) ? resolved : null;
 }
 
 function lockBodyScroll() {
@@ -112,6 +119,7 @@ export default function Modal({
   closeAnimation,
   popupAnimation,
   closeOnOutsideClick = true,
+  restoreFocusTo,
   ariaLabelledBy,
   ariaDescribedBy,
   className = "",
@@ -161,12 +169,13 @@ export default function Modal({
     if (open || !restoreFocusRef.current) return;
     const previousFocus = restoreFocusRef.current;
     restoreFocusRef.current = null;
-    previousFocus.focus();
-  }, [open]);
+    (resolveFocusTarget(restoreFocusTo) ?? (isVisibleElement(previousFocus) ? previousFocus : null))?.focus();
+  }, [open, restoreFocusTo]);
 
   useEffect(() => () => {
-    restoreFocusRef.current?.focus();
-  }, []);
+    const previousFocus = restoreFocusRef.current;
+    (resolveFocusTarget(restoreFocusTo) ?? (isVisibleElement(previousFocus) ? previousFocus : null))?.focus();
+  }, [restoreFocusTo]);
 
   function handleDialogKeyDown(event) {
     if (variantConfig.modal === false) return;
