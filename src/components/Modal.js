@@ -234,6 +234,16 @@ export default function Modal({
         </div>
       </Card>
       <style jsx global>{`
+        @keyframes modal-slide-right-in {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+
+        @keyframes modal-slide-right-out {
+          from { transform: translateX(0); }
+          to { transform: translateX(100%); }
+        }
+
         @keyframes modal-slide-left-in {
           from { transform: translateX(-100%); }
           to { transform: translateX(0); }
@@ -242,6 +252,15 @@ export default function Modal({
         @keyframes modal-slide-left-out {
           from { transform: translateX(0); }
           to { transform: translateX(-100%); }
+        }
+
+        .modal-slide-right-enter {
+          animation: modal-slide-right-in 180ms ease-out both;
+        }
+
+        .modal-slide-right-exit {
+          animation: modal-slide-right-out 180ms ease-in both;
+          pointer-events: none;
         }
 
         .modal-slide-left-enter {
@@ -254,6 +273,8 @@ export default function Modal({
         }
 
         @media (prefers-reduced-motion: reduce) {
+          .modal-slide-right-enter,
+          .modal-slide-right-exit,
           .modal-slide-left-enter,
           .modal-slide-left-exit {
             animation-duration: 1ms;
