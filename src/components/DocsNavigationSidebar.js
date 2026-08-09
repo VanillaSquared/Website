@@ -82,34 +82,6 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
           </div>
         </div>
       </Modal>
-
-      <style jsx global>{`
-        @keyframes modal-slide-left-in {
-          from { transform: translateX(-100%); }
-          to { transform: translateX(0); }
-        }
-
-        @keyframes modal-slide-left-out {
-          from { transform: translateX(0); }
-          to { transform: translateX(-100%); }
-        }
-
-        .modal-slide-left-enter {
-          animation: modal-slide-left-in 180ms ease-out both;
-        }
-
-        .modal-slide-left-exit {
-          animation: modal-slide-left-out 180ms ease-in both;
-          pointer-events: none;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .modal-slide-left-enter,
-          .modal-slide-left-exit {
-            animation-duration: 1ms;
-          }
-        }
-      `}</style>
     </>
   );
 }
