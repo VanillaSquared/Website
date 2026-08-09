@@ -75,7 +75,6 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
           <div className="relative shrink-0 pb-4">
             <div>
               <h2 id="docs-navigation-title" className="text-xl font-semibold text-heading">Documentation</h2>
-              <p className="mt-1 text-sm text-muted">Browse categories and pages.</p>
             </div>
             <Button
               size="icon"
