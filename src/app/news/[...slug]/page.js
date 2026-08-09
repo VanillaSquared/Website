@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 
-import Button from "@/components/Button";
 import { NewsCard } from "@/components/Card";
 import Tag from "@/components/Tag";
 import MarkdownContent from "@/markdown/MarkdownContent";
@@ -15,33 +14,6 @@ function getVisibleNewsArticle(slug) {
   const segments = Array.isArray(slug) ? slug : [];
   const pathname = `/news/${segments.join("/")}`;
   return getVisibleNewsArticles().find((article) => article.path === pathname) ?? null;
-}
-
-function extractModrinthDownload(source) {
-  const match = source.match(/(?:^|\n)\s*\[([^\]]+)\]\((https?:\/\/(?:www\.)?modrinth\.com\/[^)\s]+)(?:\s+"[^"]*")?\)\s*$/i);
-  if (!match || !/(?:download|modrinth)/i.test(match[1])) {
-    return { source, href: null };
-  }
-
-  return {
-    source: source.slice(0, match.index).trimEnd(),
-    href: match[2],
-  };
-}
-
-function ArticleContent({ source, linkBase, modrinthDownloadHref }) {
-  return (
-    <div>
-      <MarkdownContent source={source} basePath={linkBase} />
-      {modrinthDownloadHref ? (
-        <div className="mt-8">
-          <Button href={modrinthDownloadHref} variant="modrinth" external>
-            Download on Modrinth
-          </Button>
-        </div>
-      ) : null}
-    </div>
-  );
 }
 
 export async function generateMetadata({ params }) {
@@ -60,8 +32,6 @@ export default async function NewsArticlePage({ params }) {
   const article = getVisibleNewsArticle(slug);
   if (!article) notFound();
 
-  const { source, href: modrinthDownloadHref } = extractModrinthDownload(article.source);
-
   return (
     <DefaultTemplatePage>
       <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
@@ -79,9 +49,9 @@ export default async function NewsArticlePage({ params }) {
               <aside className="mb-6 lg:mb-0" aria-label="Article author">
                 <NewsCard author={article.author} authorImage={article.authorImage} authorLink={article.authorLink} publishedAt={article.publishedAt} />
               </aside>
-              <ArticleContent source={source} linkBase={article.linkBase} modrinthDownloadHref={modrinthDownloadHref} />
+              <MarkdownContent source={article.source} basePath={article.linkBase} />
             </div>
-          ) : <ArticleContent source={source} linkBase={article.linkBase} modrinthDownloadHref={modrinthDownloadHref} />}
+          ) : <MarkdownContent source={article.source} basePath={article.linkBase} />}
         </article>
       </main>
     </DefaultTemplatePage>
