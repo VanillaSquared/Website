@@ -166,11 +166,11 @@ export default function Modal({
   }, [open, shouldRender, variantConfig.modal]);
 
   useEffect(() => {
-    if (open || !restoreFocusRef.current) return;
+    if (shouldRender || !restoreFocusRef.current) return;
     const previousFocus = restoreFocusRef.current;
     restoreFocusRef.current = null;
     (resolveFocusTarget(restoreFocusTo) ?? (isVisibleElement(previousFocus) ? previousFocus : null))?.focus();
-  }, [open, restoreFocusTo]);
+  }, [shouldRender, restoreFocusTo]);
 
   useEffect(() => () => {
     const previousFocus = restoreFocusRef.current;
