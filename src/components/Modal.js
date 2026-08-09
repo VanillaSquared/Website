@@ -233,58 +233,6 @@ export default function Modal({
           {children}
         </div>
       </Card>
-      <style jsx global>{`
-        @keyframes modal-slide-right-in {
-          from { transform: translate3d(100%, 0, 0); }
-          to { transform: translate3d(0, 0, 0); }
-        }
-
-        @keyframes modal-slide-right-out {
-          from { transform: translate3d(0, 0, 0); }
-          to { transform: translate3d(100%, 0, 0); }
-        }
-
-        @keyframes modal-slide-left-in {
-          from { transform: translate3d(-100%, 0, 0); }
-          to { transform: translate3d(0, 0, 0); }
-        }
-
-        @keyframes modal-slide-left-out {
-          from { transform: translate3d(0, 0, 0); }
-          to { transform: translate3d(-100%, 0, 0); }
-        }
-
-        .modal-slide-right-enter {
-          animation: modal-slide-right-in 180ms ease-out both;
-          will-change: transform;
-        }
-
-        .modal-slide-right-exit {
-          animation: modal-slide-right-out 180ms ease-in both;
-          pointer-events: none;
-          will-change: transform;
-        }
-
-        .modal-slide-left-enter {
-          animation: modal-slide-left-in 180ms ease-out both;
-          will-change: transform;
-        }
-
-        .modal-slide-left-exit {
-          animation: modal-slide-left-out 180ms ease-in both;
-          pointer-events: none;
-          will-change: transform;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .modal-slide-right-enter,
-          .modal-slide-right-exit,
-          .modal-slide-left-enter,
-          .modal-slide-left-exit {
-            animation-duration: 1ms;
-          }
-        }
-      `}</style>
     </div>,
     document.body
   );
