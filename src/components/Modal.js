@@ -169,8 +169,8 @@ export default function Modal({
 
     const animation = dialog.animate(
       open
-        ? [{ transform: "translateX(50%)" }, { transform: "translateX(0)" }]
-        : [{ transform: "translateX(0)" }, { transform: "translateX(50%)" }],
+        ? [{ transform: "translateX(0)" }, { transform: "translateX(0)" }]
+        : [{ transform: "translateX(0)" }, { transform: "translateX(0)" }],
       {
         duration: MODAL_ANIMATIONS["slide-right"].duration,
         easing: open ? "ease-out" : "ease-in",
