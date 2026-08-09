@@ -20,6 +20,16 @@ export default function NewsTagFilter({ options = [], value = [] }) {
     setSelectedTags(value);
   }, [value]);
 
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 64rem)");
+    const handleChange = (event) => {
+      if (event.matches) setFilterModalOpen(false);
+    };
+
+    media.addEventListener("change", handleChange);
+    return () => media.removeEventListener("change", handleChange);
+  }, []);
+
   function updateTag(tag, checked) {
     const nextTags = checked
       ? [...selectedTags, tag]
