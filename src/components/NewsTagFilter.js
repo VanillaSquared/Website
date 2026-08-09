@@ -3,8 +3,8 @@
 import { startTransition, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import closeIcon from "@/assets/icons/close.svg";
-import filterIcon from "@/assets/icons/filter.svg";
+import closeIcon from "@cdn/close.svg";
+import filterIcon from "@cdn/filter.svg";
 import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
 import Modal from "@/components/Modal";
