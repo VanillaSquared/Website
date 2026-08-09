@@ -34,7 +34,15 @@ export default async function DocsPage({ params }) {
   const { navigation } = getDocsData();
   const breadcrumbs = getBreadcrumbs(document);
   return (
-    <DefaultTemplatePage showFooter={false}>
+    <DefaultTemplatePage
+      showFooter={false}
+      header={{
+        docsNavigation: {
+          items: navigation,
+          selectedId: document.path,
+        },
+      }}
+    >
       <DocsLayout navigation={(
         <aside key="navigation" className="docs-layout-navigation hidden bg-category lg:block">
           <div className="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto">
@@ -43,11 +51,6 @@ export default async function DocsPage({ params }) {
         </aside>
       )} content={(
         <main key="content" className="docs-layout-content min-w-0 px-5 py-8 lg:px-8 xl:px-10">
-          <details className="mb-6 border-b border-category-line bg-category p-2 lg:hidden">
-            <summary className="cursor-pointer px-2 py-1 font-semibold text-heading">Documentation navigation</summary>
-            <CategoryNavigation items={navigation} selectedId={document.path} className="mt-2" />
-          </details>
-
           <nav aria-label="Breadcrumb" className="mb-5 text-sm text-muted">
             <ol className="flex flex-wrap items-center gap-2">
               {breadcrumbs.map((breadcrumb, index) => (

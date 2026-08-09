@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import Card from "@/components/Card";
@@ -21,6 +21,13 @@ const MODAL_ANIMATIONS = {
     backdropEnter: "",
     backdropExit: "",
   },
+  "slide-left": {
+    duration: 180,
+    popupEnter: "modal-slide-left-enter",
+    popupExit: "modal-slide-left-exit",
+    backdropEnter: "",
+    backdropExit: "",
+  },
 };
 
 const variants = {
@@ -35,11 +42,35 @@ const variants = {
 };
 
 const backgrounds = { dim: "bg-modal-backdrop", none: "bg-transparent" };
+const focusableSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])",
+].join(",");
 let bodyScrollLockCount = 0;
 let restoreBodyScroll = null;
 
 function getModalAnimation(animation, fallback = "fade+pop") {
   return MODAL_ANIMATIONS[animation] ? animation : fallback;
+}
+
+function isVisibleElement(element) {
+  return element instanceof HTMLElement
+    && !element.hasAttribute("aria-hidden")
+    && element.getClientRects().length > 0;
+}
+
+function getFocusableElements(container) {
+  if (!container) return [];
+  return [...container.querySelectorAll(focusableSelector)].filter(isVisibleElement);
+}
+
+function resolveFocusTarget(target) {
+  const resolved = typeof target === "function" ? target() : target;
+  return isVisibleElement(resolved) ? resolved : null;
 }
 
 function lockBodyScroll() {
@@ -88,6 +119,7 @@ export default function Modal({
   closeAnimation,
   popupAnimation,
   closeOnOutsideClick = true,
+  restoreFocusTo,
   ariaLabelledBy,
   ariaDescribedBy,
   className = "",
@@ -99,6 +131,8 @@ export default function Modal({
   const resolvedCloseAnimation = getModalAnimation(closeAnimation ?? legacyAnimation ?? variantConfig.closeAnimation);
   const closeAnimationConfig = MODAL_ANIMATIONS[resolvedCloseAnimation];
   const [shouldRender, setShouldRender] = useState(open);
+  const contentRef = useRef(null);
+  const restoreFocusRef = useRef(null);
 
   useEffect(() => {
     if (open) {
@@ -116,19 +150,69 @@ export default function Modal({
   useEffect(() => {
     if (!shouldRender) return undefined;
     const unlockBodyScroll = variantConfig.lockBodyScroll === false ? null : lockBodyScroll();
-    const handleKeyDown = (event) => { if (event.key === "Escape") onClose?.(); };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      unlockBodyScroll?.();
-    };
-  }, [shouldRender, onClose, variantConfig.lockBodyScroll]);
+    return () => unlockBodyScroll?.();
+  }, [shouldRender, variantConfig.lockBodyScroll]);
+
+  useEffect(() => {
+    if (!open || !shouldRender || variantConfig.modal === false) return undefined;
+
+    restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const frame = window.requestAnimationFrame(() => {
+      const focusable = getFocusableElements(contentRef.current);
+      (focusable[0] ?? contentRef.current)?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, shouldRender, variantConfig.modal]);
+
+  useEffect(() => {
+    if (shouldRender || !restoreFocusRef.current) return;
+    const previousFocus = restoreFocusRef.current;
+    restoreFocusRef.current = null;
+    (resolveFocusTarget(restoreFocusTo) ?? (isVisibleElement(previousFocus) ? previousFocus : null))?.focus();
+  }, [shouldRender, restoreFocusTo]);
+
+  useEffect(() => () => {
+    const previousFocus = restoreFocusRef.current;
+    (resolveFocusTarget(restoreFocusTo) ?? (isVisibleElement(previousFocus) ? previousFocus : null))?.focus();
+  }, [restoreFocusTo]);
+
+  function handleDialogKeyDown(event) {
+    if (variantConfig.modal === false) return;
+
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      onClose?.();
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const focusable = getFocusableElements(contentRef.current);
+    if (!focusable.length) {
+      event.preventDefault();
+      contentRef.current?.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (event.shiftKey && (active === first || active === contentRef.current)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 
   if (!shouldRender || typeof document === "undefined") return null;
 
   const activeAnimation = MODAL_ANIMATIONS[open ? resolvedOpenAnimation : resolvedCloseAnimation];
   return createPortal(
-    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`}>
+    <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`} onKeyDown={handleDialogKeyDown}>
       {closeOnOutsideClick ? (
         <button type="button" className={`absolute inset-0 ${backdropBackground} ${open ? activeAnimation.backdropEnter : activeAnimation.backdropExit}`} aria-label="Close modal" onClick={onClose} />
       ) : (
@@ -145,8 +229,37 @@ export default function Modal({
         contentClassName={variantConfig.content ?? ""}
         onClick={(event) => event.stopPropagation()}
       >
-        {children}
+        <div ref={contentRef} tabIndex={-1} className="h-full min-h-0 outline-none">
+          {children}
+        </div>
       </Card>
+      <style jsx global>{`
+        @keyframes modal-slide-left-in {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
+
+        @keyframes modal-slide-left-out {
+          from { transform: translateX(0); }
+          to { transform: translateX(-100%); }
+        }
+
+        .modal-slide-left-enter {
+          animation: modal-slide-left-in 180ms ease-out both;
+        }
+
+        .modal-slide-left-exit {
+          animation: modal-slide-left-out 180ms ease-in both;
+          pointer-events: none;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .modal-slide-left-enter,
+          .modal-slide-left-exit {
+            animation-duration: 1ms;
+          }
+        }
+      `}</style>
     </div>,
     document.body
   );

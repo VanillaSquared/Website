@@ -17,7 +17,7 @@ function initialOpen(nodes, selectedId, result = []) {
   return result;
 }
 
-function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
+function CategoryItem({ item, selectedId, onSelect, onNavigate, openIds, setOpenIds }) {
   const hasChildren = Boolean(item.children?.length);
   const isOpen = openIds.has(item.id);
   const selected = item.id === selectedId;
@@ -42,7 +42,15 @@ function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
     <li>
       <div className={`flex items-center rounded-md transition-colors ${selected ? "bg-category-selected" : "hover:bg-category-hover"}`}>
         {item.href ? (
-          <Link href={item.href} onClick={() => onSelect?.(item)} className={itemClasses} aria-current={selected ? "page" : undefined}>
+          <Link
+            href={item.href}
+            onClick={() => {
+              onSelect?.(item);
+              onNavigate?.(item);
+            }}
+            className={itemClasses}
+            aria-current={selected ? "page" : undefined}
+          >
             {content}
           </Link>
         ) : (
@@ -69,14 +77,24 @@ function CategoryItem({ item, selectedId, onSelect, openIds, setOpenIds }) {
       </div>
       {hasChildren && isOpen ? (
         <ul className="mt-0.5 ml-4 space-y-0.5">
-          {item.children.map((child) => <CategoryItem key={child.id} item={child} selectedId={selectedId} onSelect={onSelect} openIds={openIds} setOpenIds={setOpenIds} />)}
+          {item.children.map((child) => (
+            <CategoryItem
+              key={child.id}
+              item={child}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              onNavigate={onNavigate}
+              openIds={openIds}
+              setOpenIds={setOpenIds}
+            />
+          ))}
         </ul>
       ) : null}
     </li>
   );
 }
 
-export default function CategoryNavigation({ items = [], selectedId, onSelect, className = "" }) {
+export default function CategoryNavigation({ items = [], selectedId, onSelect, onNavigate, className = "" }) {
   const [openIds, setOpenIds] = useState(() => new Set(initialOpen(items, selectedId)));
 
   useEffect(() => {
@@ -86,7 +104,19 @@ export default function CategoryNavigation({ items = [], selectedId, onSelect, c
 
   return (
     <nav className={`w-full bg-category px-4 py-5 ${className}`} aria-label="Documentation">
-      <ul className="space-y-1">{items.map((item) => <CategoryItem key={item.id} item={item} selectedId={selectedId} onSelect={onSelect} openIds={openIds} setOpenIds={setOpenIds} />)}</ul>
+      <ul className="space-y-1">
+        {items.map((item) => (
+          <CategoryItem
+            key={item.id}
+            item={item}
+            selectedId={selectedId}
+            onSelect={onSelect}
+            onNavigate={onNavigate}
+            openIds={openIds}
+            setOpenIds={setOpenIds}
+          />
+        ))}
+      </ul>
     </nav>
   );
 }

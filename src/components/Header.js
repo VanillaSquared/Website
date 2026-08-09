@@ -4,11 +4,12 @@ import Link from "next/link";
 import discordIcon from "@cdn/discord.png";
 import vsqLogo from "@cdn/vsq-logo-circle.png";
 import Button from "@/components/Button";
+import DocsNavigationSidebar from "@/components/DocsNavigationSidebar";
 import NewsTagFilter from "@/components/NewsTagFilter";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 
-export default function TopBar({ newsTagFilter, search = {}, variant = "default" }) {
+export default function TopBar({ docsNavigation, newsTagFilter, search = {}, variant = "default" }) {
   const searchProps = {
     action: "/docs",
     placeholder: "Search documentation",
@@ -27,6 +28,7 @@ export default function TopBar({ newsTagFilter, search = {}, variant = "default"
           <Image src={vsqLogo} alt="Vanilla² logo" width={32} height={32} loading="eager" className="transition duration-200 group-hover:brightness-75" />
           <span>Vanilla²</span>
         </Link>
+        {docsNavigation ? <DocsNavigationSidebar {...docsNavigation} /> : null}
         {variant === "news" ? <NewsTagFilter {...newsTagFilter} /> : null}
         <ThemeToggle />
         <Button
