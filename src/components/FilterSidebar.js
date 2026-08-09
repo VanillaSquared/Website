@@ -5,15 +5,17 @@ import Button from "@/components/Button";
 import Modal from "@/components/Modal";
 
 export default function FilterSidebar({ open, onClose, title = "Filters", subtitle, footer, children, borderless = false }) {
+  const positioningClass = "!absolute !top-4 !right-4 !bottom-4 !left-auto !h-auto !w-[calc(100%-2rem)]";
+
   return (
     <Modal
       open={open}
       onClose={onClose}
       variant="filterSidebar"
-      className={borderless ? "!border-0" : ""}
+      className={`${positioningClass} ${borderless ? "!border-0" : ""}`}
       background="none"
       blurBackground={false}
-      closeOnOutsideClick={false}
+      closeOnOutsideClick
     >
       <div className="flex h-full min-h-0 flex-col">
         <div className={`relative shrink-0 pb-4 ${borderless ? "" : "border-b border-divider"}`}>
