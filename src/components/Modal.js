@@ -75,26 +75,25 @@ function resolveFocusTarget(target) {
 
 function lockBodyScroll() {
   if (bodyScrollLockCount === 0) {
-    const scrollY = window.scrollY;
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
     const original = {
-      position: document.body.style.position,
-      top: document.body.style.top,
-      left: document.body.style.left,
-      right: document.body.style.right,
-      width: document.body.style.width,
-      paddingRight: document.body.style.paddingRight,
+      htmlOverflow: document.documentElement.style.overflow,
+      bodyOverflow: document.body.style.overflow,
+      bodyPaddingRight: document.body.style.paddingRight,
     };
 
-    Object.assign(document.body.style, { position: "fixed", top: `-${scrollY}px`, left: "0", right: "0", width: "100%" });
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
     if (scrollbarWidth > 0) {
       const paddingRight = parseFloat(window.getComputedStyle(document.body).paddingRight) || 0;
       document.body.style.paddingRight = `${paddingRight + scrollbarWidth}px`;
     }
 
     restoreBodyScroll = () => {
-      Object.assign(document.body.style, original);
-      window.scrollTo(0, scrollY);
+      document.documentElement.style.overflow = original.htmlOverflow;
+      document.body.style.overflow = original.bodyOverflow;
+      document.body.style.paddingRight = original.bodyPaddingRight;
     };
   }
 
