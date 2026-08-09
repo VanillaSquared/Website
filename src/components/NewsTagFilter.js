@@ -30,10 +30,7 @@ export default function NewsTagFilter({ options = [], value = [] }) {
     return () => media.removeEventListener("change", handleChange);
   }, []);
 
-  function updateTag(tag, checked) {
-    const nextTags = checked
-      ? [...selectedTags, tag]
-      : selectedTags.filter((selectedTag) => selectedTag !== tag);
+  function setTags(nextTags) {
     setSelectedTags(nextTags);
 
     const params = new URLSearchParams(searchParams.toString());
@@ -44,6 +41,18 @@ export default function NewsTagFilter({ options = [], value = [] }) {
     startTransition(() => {
       router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
     });
+  }
+
+  function updateTag(tag, checked) {
+    setTags(
+      checked
+        ? [...selectedTags, tag]
+        : selectedTags.filter((selectedTag) => selectedTag !== tag)
+    );
+  }
+
+  function clearFilters() {
+    setTags([]);
   }
 
   function renderOption(option) {
@@ -125,6 +134,10 @@ export default function NewsTagFilter({ options = [], value = [] }) {
 
           <div role="group" aria-label="Filter news by tags" className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-4">
             {options.map(renderOption)}
+          </div>
+
+          <div className="mt-auto shrink-0 pt-3">
+            <Button className="w-full" variant="tertiary" onClick={clearFilters}>Clear filters</Button>
           </div>
         </div>
       </Modal>
