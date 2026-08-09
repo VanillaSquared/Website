@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import Card from "@/components/Card";
+import { isIOSDevice } from "@/utils/platform";
 
 const MODAL_ANIMATIONS = {
   none: { duration: 0, popupEnter: "", popupExit: "", backdropEnter: "", backdropExit: "" },
@@ -56,12 +57,6 @@ let restoreBodyScroll = null;
 
 function getModalAnimation(animation, fallback = "fade+pop") {
   return MODAL_ANIMATIONS[animation] ? animation : fallback;
-}
-
-function isIOSDevice() {
-  if (typeof navigator === "undefined") return false;
-  return /iPad|iPhone|iPod/.test(navigator.userAgent)
-    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
 function isVisibleElement(element) {
