@@ -103,6 +103,8 @@ export default function NewsTagFilter({ options = [], value = [] }) {
         onClose={() => setFilterModalOpen(false)}
         variant="filterSidebarLeft"
         className="!border-0"
+        background="none"
+        blurBackground={false}
         ariaLabelledBy="news-filter-modal-title"
       >
         <div className="flex h-full min-h-0 flex-col">
