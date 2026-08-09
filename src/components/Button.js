@@ -9,7 +9,7 @@ const variants = {
   red: "border-button-red-outline bg-button-red text-button-text hover:border-button-red-outline-hover hover:bg-button-red-hover",
   danger: "border-button-red-outline bg-button-red text-button-text hover:border-button-red-outline-hover hover:bg-button-red-hover",
   green: "border-button-green-outline bg-button-green text-button-text hover:border-button-green-outline-hover hover:bg-button-green-hover",
-  modrinth: "border-[#46e986] bg-[#1bd96a] text-[#101114] hover:border-[#5bed92] hover:bg-[#18c961]",
+  modrinth: "border-button-modrinth-outline bg-button-modrinth text-button-modrinth-text hover:border-button-modrinth-outline-hover hover:bg-button-modrinth-hover",
   locked: "border-locked-border bg-locked text-locked-text cursor-not-allowed"
 };
 
