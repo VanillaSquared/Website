@@ -17,6 +17,14 @@ function HamburgerIcon() {
   );
 }
 
+function getDesktopNavigationFocusTarget() {
+  return document.querySelector(
+    ".docs-layout-navigation nav[aria-label='Documentation'] [aria-current='page'], "
+      + ".docs-layout-navigation nav[aria-label='Documentation'] a[href], "
+      + ".docs-layout-navigation nav[aria-label='Documentation'] button"
+  );
+}
+
 export default function DocsNavigationSidebar({ items = [], selectedId }) {
   const [open, setOpen] = useState(false);
 
@@ -54,6 +62,7 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
         closeOnOutsideClick={false}
         openAnimation="slide-left"
         closeAnimation="slide-left"
+        restoreFocusTo={getDesktopNavigationFocusTarget}
         ariaLabelledBy="docs-navigation-title"
       >
         <div className="flex h-full min-h-0 flex-col">
