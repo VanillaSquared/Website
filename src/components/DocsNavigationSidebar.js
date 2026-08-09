@@ -18,11 +18,17 @@ function HamburgerIcon() {
 }
 
 function getDesktopNavigationFocusTarget() {
-  return document.querySelector(
+  const navigationTarget = document.querySelector(
     ".docs-layout-navigation nav[aria-label='Documentation'] [aria-current='page'], "
       + ".docs-layout-navigation nav[aria-label='Documentation'] a[href], "
       + ".docs-layout-navigation nav[aria-label='Documentation'] button"
   );
+
+  if (navigationTarget instanceof HTMLElement && navigationTarget.getClientRects().length > 0) {
+    return navigationTarget;
+  }
+
+  return document.querySelector("button[aria-label='Expand documentation navigation']");
 }
 
 export default function DocsNavigationSidebar({ items = [], selectedId }) {
