@@ -65,7 +65,6 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
         className="!mr-auto !ml-0 !border-0"
         background="none"
         blurBackground={false}
-        closeOnOutsideClick={false}
         openAnimation="slide-left"
         closeAnimation="slide-left"
         restoreFocusTo={getDesktopNavigationFocusTarget}
