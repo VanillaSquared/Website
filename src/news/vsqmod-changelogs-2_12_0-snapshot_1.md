@@ -35,5 +35,6 @@ This is the first snapshot for the -2.12.0 area. This update will focus improvin
 
 ---
 
-# [Download on Modrinth](https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.1)
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
+
+<Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.1" variant="modrinth" external>Download on Modrinth</Button>
