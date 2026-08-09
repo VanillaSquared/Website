@@ -57,6 +57,12 @@ function getModalAnimation(animation, fallback = "fade+pop") {
   return MODAL_ANIMATIONS[animation] ? animation : fallback;
 }
 
+function isIOSDevice() {
+  if (typeof navigator === "undefined") return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 function isVisibleElement(element) {
   return element instanceof HTMLElement
     && !element.hasAttribute("aria-hidden")
@@ -132,6 +138,7 @@ export default function Modal({
   const [shouldRender, setShouldRender] = useState(open);
   const contentRef = useRef(null);
   const restoreFocusRef = useRef(null);
+  const isIOS = isIOSDevice();
 
   useEffect(() => {
     if (open) {
@@ -151,6 +158,28 @@ export default function Modal({
     const unlockBodyScroll = variantConfig.lockBodyScroll === false ? null : lockBodyScroll();
     return () => unlockBodyScroll?.();
   }, [shouldRender, variantConfig.lockBodyScroll]);
+
+  useEffect(() => {
+    if (!shouldRender || !isIOS) return undefined;
+    const animationName = open ? resolvedOpenAnimation : resolvedCloseAnimation;
+    if (animationName !== "slide-right") return undefined;
+
+    const dialog = contentRef.current?.closest("[role='dialog']");
+    if (!dialog) return undefined;
+
+    const animation = dialog.animate(
+      open
+        ? [{ transform: "translateX(50%)" }, { transform: "translateX(0)" }]
+        : [{ transform: "translateX(0)" }, { transform: "translateX(50%)" }],
+      {
+        duration: MODAL_ANIMATIONS["slide-right"].duration,
+        easing: open ? "ease-out" : "ease-in",
+        fill: "both",
+      }
+    );
+
+    return () => animation.cancel();
+  }, [open, shouldRender, isIOS, resolvedOpenAnimation, resolvedCloseAnimation]);
 
   useEffect(() => {
     if (!open || !shouldRender || variantConfig.modal === false) return undefined;
@@ -209,7 +238,11 @@ export default function Modal({
 
   if (!shouldRender || typeof document === "undefined") return null;
 
-  const activeAnimation = MODAL_ANIMATIONS[open ? resolvedOpenAnimation : resolvedCloseAnimation];
+  const activeAnimationName = open ? resolvedOpenAnimation : resolvedCloseAnimation;
+  const activeAnimation = MODAL_ANIMATIONS[activeAnimationName];
+  const popupAnimationClass = isIOS && activeAnimationName === "slide-right"
+    ? ""
+    : open ? activeAnimation.popupEnter : activeAnimation.popupExit;
 
   return createPortal(
     <div className={`fixed ${variantConfig.root ?? "inset-0"} z-[100] flex ${variantConfig.overlay}`} onKeyDown={handleDialogKeyDown}>
@@ -225,7 +258,7 @@ export default function Modal({
         aria-describedby={ariaDescribedBy}
         preset="homepage"
         hoverAccent={false}
-        className={`pointer-events-auto relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${open ? activeAnimation.popupEnter : activeAnimation.popupExit} ${className}`}
+        className={`pointer-events-auto relative z-10 !border-modal-border !bg-modal ${variantConfig.card} ${popupAnimationClass} ${className}`}
         contentClassName={variantConfig.content ?? ""}
         onClick={(event) => event.stopPropagation()}
       >
