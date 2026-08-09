@@ -21,6 +21,13 @@ const MODAL_ANIMATIONS = {
     backdropEnter: "",
     backdropExit: "",
   },
+  "slide-left": {
+    duration: 180,
+    popupEnter: "modal-slide-left-enter",
+    popupExit: "modal-slide-left-exit",
+    backdropEnter: "",
+    backdropExit: "",
+  },
 };
 
 const variants = {
