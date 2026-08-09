@@ -91,7 +91,7 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
         open={open}
         onClose={() => setOpen(false)}
         variant="filterSidebar"
-        className="!mr-auto !ml-0 !border-0"
+        className="!mr-auto !ml-0 !border-0 !p-0 overflow-y-auto"
         background="none"
         blurBackground={false}
         openAnimation="slide-left"
@@ -99,33 +99,33 @@ export default function DocsNavigationSidebar({ items = [], selectedId }) {
         restoreFocusTo={getDesktopNavigationFocusTarget}
         ariaLabelledBy="docs-navigation-title"
       >
-        <div className="flex h-full min-h-0 flex-col">
-          <div className="relative shrink-0 pb-4">
-            <div>
-              <h2 id="docs-navigation-title" className="text-xl font-semibold text-heading">Documentation</h2>
+        <div className="min-h-full">
+          <div className="sticky top-0 z-10 bg-modal px-6 pt-6 pb-4">
+            <div className="relative">
+              <h2 id="docs-navigation-title" className="pr-12 text-xl font-semibold text-heading">Documentation</h2>
+              <Button
+                size="icon"
+                variant="tertiary"
+                icon={xIcon}
+                aria-label="Close documentation navigation"
+                className="absolute top-0 right-0"
+                onClick={() => setOpen(false)}
+              />
             </div>
-            <Button
-              size="icon"
-              variant="tertiary"
-              icon={xIcon}
-              aria-label="Close documentation navigation"
-              className="absolute top-0 right-0"
-              onClick={() => setOpen(false)}
-            />
+
+            <div className="mt-4 sm:hidden">
+              <SearchBar
+                placeholder="Search documentation"
+                label="Search documentation navigation"
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onSearch={() => {}}
+                showPreview={false}
+              />
+            </div>
           </div>
 
-          <div className="shrink-0 pb-2 sm:hidden">
-            <SearchBar
-              placeholder="Search documentation"
-              label="Search documentation navigation"
-              value={searchQuery}
-              onChange={setSearchQuery}
-              onSearch={() => {}}
-              showPreview={false}
-            />
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto py-4">
+          <div className="px-6 pt-2 pb-6">
             {filteredItems.length ? (
               <CategoryNavigation
                 items={filteredItems}
