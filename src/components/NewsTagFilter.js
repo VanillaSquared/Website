@@ -3,28 +3,11 @@
 import { startTransition, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import closeIcon from "@/assets/icons/close.svg";
+import filterIcon from "@/assets/icons/filter.svg";
 import Button from "@/components/Button";
 import Checkmark from "@/components/Checkmark";
 import Modal from "@/components/Modal";
-
-function FilterIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
-      <path d="M4 5h16" />
-      <path d="M7 12h10" />
-      <path d="M10 19h4" />
-    </svg>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="h-4 w-4" aria-hidden="true">
-      <path d="M6 6l12 12" />
-      <path d="M18 6L6 18" />
-    </svg>
-  );
-}
 
 export default function NewsTagFilter({ options = [], value = [] }) {
   const pathname = usePathname();
@@ -97,7 +80,7 @@ export default function NewsTagFilter({ options = [], value = [] }) {
         <Button
           variant="iconButton"
           size="iconButtonSm"
-          icon={<FilterIcon />}
+          icon={filterIcon}
           aria-label="Filter news"
           aria-haspopup="dialog"
           aria-expanded={filterModalOpen}
@@ -120,7 +103,7 @@ export default function NewsTagFilter({ options = [], value = [] }) {
             <Button
               variant="iconButton"
               size="iconButtonSm"
-              icon={<CloseIcon />}
+              icon={closeIcon}
               aria-label="Close news filters"
               onClick={() => setFilterModalOpen(false)}
               className="shrink-0"
