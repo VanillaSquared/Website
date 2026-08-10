@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
-import { getBugReportById } from "@/bugs/server";
+import { getBugReportById, getBugReportComments } from "@/bugs/server";
 import BugMarkdown from "@/components/BugMarkdown";
+import ChatBox from "@/components/ChatBox";
 import Checkmark from "@/components/Checkmark";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
@@ -64,6 +65,7 @@ export default async function BugViewPage({ params }) {
   const bug = await getBugReportById(decodeURIComponent(bugParam)).catch(() => null);
   if (!bug) notFound();
 
+  const comments = await getBugReportComments(bug.id).catch(() => []);
   const categoryLabel = categoryLabels[bug.category] ?? bug.category;
 
   return (
@@ -99,6 +101,24 @@ export default async function BugViewPage({ params }) {
           <Tag variant="accent">{bug.status}</Tag>
         </div>
         <BugMarkdown source={bug.source} />
+
+        <section className="mt-3 border-t border-divider pt-6" aria-labelledby="bug-comments-heading">
+          <h2 id="bug-comments-heading" className="mb-4 text-lg font-semibold text-heading">Comments</h2>
+          <div className="space-y-3">
+            {comments.map((comment) => (
+              <ChatBox
+                key={comment.id}
+                author={comment.author}
+                avatarUrl={comment.avatarUrl}
+                authorUrl={comment.authorUrl}
+                createdAt={comment.createdAt}
+                edited={comment.updatedAt !== comment.createdAt}
+              >
+                <BugMarkdown source={comment.source} />
+              </ChatBox>
+            ))}
+          </div>
+        </section>
       </section>
     </ElementViewTemplatePage>
   );

@@ -81,6 +81,18 @@ function issueToBug(issue) {
   };
 }
 
+function issueCommentToBugComment(comment) {
+  return {
+    id: String(comment.id),
+    author: comment.user?.login ?? "Unknown",
+    avatarUrl: comment.user?.avatar_url ?? null,
+    authorUrl: comment.user?.html_url ?? null,
+    createdAt: comment.created_at,
+    updatedAt: comment.updated_at,
+    source: String(comment.body ?? "").trim(),
+  };
+}
+
 const getAllIssues = unstable_cache(async function getAllIssues() {
   const issues = [];
 
@@ -125,6 +137,22 @@ export async function getBugReportById(id) {
     if (error.status === 404) return null;
     throw error;
   }
+}
+
+export async function getBugReportComments(id) {
+  if (!/^\d+$/.test(String(id))) return [];
+
+  const comments = [];
+
+  for (let page = 1; ; page += 1) {
+    const batch = await githubRequest(`/issues/${id}/comments?per_page=100&page=${page}`, {
+      next: { revalidate: 60, tags: [BUGS_CACHE_TAG, `${BUGS_CACHE_TAG}-${id}`] },
+    });
+    comments.push(...batch);
+    if (batch.length < 100) break;
+  }
+
+  return comments.map(issueCommentToBugComment);
 }
 
 function requiredString(value, maximum) {
