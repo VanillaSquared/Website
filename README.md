@@ -26,7 +26,7 @@ Add Markdown files under `src/news/`. Supported frontmatter fields are:
 ```yaml
 ---
 title: Article title
-tag: patchnotes
+tag: announcements
 image: "@cdn/news/article-image.svg"
 imageAlt: Description of the article image
 showImageOnPage: false

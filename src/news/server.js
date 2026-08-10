@@ -18,17 +18,23 @@ const NEWS_DIRECTORY = path.resolve(process.cwd(), "src", "news");
 let newsArticles;
 
 export const NEWS_TAGS = Object.freeze({
-  patchnotes: { label: "Patch notes" },
-  announcement: { label: "Announcement" },
-  other: { label: "Other" },
+  announcements: { label: "Announcements" },
+  "vsq-release": { label: "Vanilla² Releases" },
+  "vsq-hotfix": { label: "Vanilla² Hotfixes" },
+  "vsq-snap": { label: "Vanilla² Snapshots" },
+  "web-patchnotes": { label: "Website Patchnotes" },
 });
 
 function normalizeTags(value, relativeFile) {
-  const names = String(value || "other")
+  const names = String(value || "")
     .split(",")
     .map((tag) => tag.trim().toLowerCase())
     .filter(Boolean);
-  const uniqueNames = [...new Set(names.length ? names : ["other"])];
+  const uniqueNames = [...new Set(names)];
+
+  if (!uniqueNames.length) {
+    throw new Error(`Missing news tag in ${relativeFile}. Expected one or more of: ${Object.keys(NEWS_TAGS).join(", ")}.`);
+  }
 
   for (const name of uniqueNames) {
     if (!Object.hasOwn(NEWS_TAGS, name)) {
