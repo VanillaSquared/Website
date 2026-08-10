@@ -6,7 +6,7 @@ const variants = {
   announcement: "bg-[var(--vsq-tag-announcement-bg)] text-[var(--vsq-tag-announcement-text)]",
   other: "bg-[var(--vsq-tag-other-bg)] text-[var(--vsq-tag-other-text)]",
   announcements: "bg-[var(--vsq-tag-announcement-bg)] text-[var(--vsq-tag-announcement-text)]",
-  "vsq-release": "bg-accent/10 text-[var(--vsq-tag-patchnotes-text)]",
+  "vsq-release": "bg-[var(--vsq-tag-release-bg)] text-[var(--vsq-tag-release-text)]",
   "vsq-hotfix": "bg-[var(--vsq-tag-hotfix-bg)] text-[var(--vsq-tag-hotfix-text)]",
   "vsq-snap": "bg-[var(--vsq-tag-snapshot-bg)] text-[var(--vsq-tag-snapshot-text)]",
   "web-patchnotes": "bg-[var(--vsq-tag-web-patchnotes-bg)] text-[var(--vsq-tag-web-patchnotes-text)]",

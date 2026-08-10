@@ -40,8 +40,10 @@
   --vsq-tag-hotfix-text: #fb923c;
   --vsq-tag-snapshot-bg: rgb(248 113 113 / 0.12);
   --vsq-tag-snapshot-text: #f87171;
-  --vsq-tag-web-patchnotes-bg: rgb(194 105 194 / 0.12);
-  --vsq-tag-web-patchnotes-text: #e3a6e3;
+  --vsq-tag-release-bg: rgb(194 105 194 / 0.12);
+  --vsq-tag-release-text: #e3a6e3;
+  --vsq-tag-web-patchnotes-bg: rgb(52 211 153 / 0.1);
+  --vsq-tag-web-patchnotes-text: #34d399;
   --vsq-filter-status-fixed: #34d399;
   --vsq-filter-status-unfixable: #ef4444;
   --vsq-filter-status-unconfirmed: #a78bfa;
@@ -209,8 +211,10 @@
   --vsq-tag-hotfix-text: #c2410c;
   --vsq-tag-snapshot-bg: rgb(220 38 38 / 0.1);
   --vsq-tag-snapshot-text: #b91c1c;
-  --vsq-tag-web-patchnotes-bg: rgb(156 79 156 / 0.12);
-  --vsq-tag-web-patchnotes-text: #7e3f7e;
+  --vsq-tag-release-bg: rgb(156 79 156 / 0.12);
+  --vsq-tag-release-text: #7e3f7e;
+  --vsq-tag-web-patchnotes-bg: rgb(5 150 105 / 0.12);
+  --vsq-tag-web-patchnotes-text: #047857;
   --vsq-checkmark-unconfirmed-bg: #f3f4f6;
   --vsq-checkmark-unconfirmed-border: #d1d5db;
   --vsq-checkmark-unconfirmed-text: #6b7280;
