@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import Modal from "@/components/Modal";
 import useSecretSequence from "@/hooks/useSecretSequence";
-import { setConsentedCookie } from "@/utils/cookieConsent";
+import { hasCookieConsent, setConsentedCookie } from "@/utils/cookieConsent";
 
 const SECRET_SEQUENCE = "nexosux";
 const STATS_SEQUENCE = "stats";
@@ -39,7 +39,7 @@ export default function FrontPageSecret({ splashTexts, statsContent }) {
   const [statsOpen, setStatsOpen] = useState(false);
 
   useEffect(() => {
-    if (!hasSplashCookie()) return;
+    if (!hasCookieConsent() || !hasSplashCookie()) return;
     setSplashText(pickRandomSplash(splashTexts));
   }, [splashTexts]);
 
