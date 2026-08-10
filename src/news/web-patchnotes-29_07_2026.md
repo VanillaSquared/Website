@@ -1,6 +1,6 @@
 ---
 title: Website Patchnotes 29/07/2026
-tag: patchnotes
+tag: web-patchnotes
 image: "@cdn/news/generic-website-image.png"
 showImageOnPage: false
 author: PainterFlow11
