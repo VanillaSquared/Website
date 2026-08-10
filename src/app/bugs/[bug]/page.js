@@ -5,6 +5,7 @@ import { getBugReportById, getBugReportComments } from "@/bugs/server";
 import BugMarkdown from "@/components/BugMarkdown";
 import ChatBox from "@/components/ChatBox";
 import Checkmark from "@/components/Checkmark";
+import Markdown from "@/components/Markdown";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
@@ -79,7 +80,7 @@ export default async function BugViewPage({ params }) {
           createdAt={comment.createdAt}
           edited={comment.updatedAt !== comment.createdAt}
         >
-          <BugMarkdown source={comment.source} />
+          <Markdown value={comment.source} />
         </ChatBox>
       ))}
     </section>
