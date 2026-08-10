@@ -1,24 +1,27 @@
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { NewsCard } from "@/components/Card";
 import Tag from "@/components/Tag";
 import MarkdownContent from "@/markdown/MarkdownContent";
-import { getVisibleNewsArticles } from "@/news/server";
+import { getNewsArticle, getVisibleNewsArticles } from "@/news/server";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";
 
 export function generateStaticParams() {
   return getVisibleNewsArticles().map((article) => ({ slug: article.segments }));
 }
 
-function getVisibleNewsArticle(slug) {
-  const segments = Array.isArray(slug) ? slug : [];
-  const pathname = `/news/${segments.join("/")}`;
-  return getVisibleNewsArticles().find((article) => article.path === pathname) ?? null;
+async function getAvailableNewsArticle(slug) {
+  const article = getNewsArticle(slug);
+  if (!article) return null;
+
+  const privateUnlocked = (await cookies()).get("vsq-news-private")?.value === "1";
+  return article.private && !privateUnlocked ? null : article;
 }
 
 export async function generateMetadata({ params }) {
   const { slug = [] } = await params;
-  const article = getVisibleNewsArticle(slug);
+  const article = await getAvailableNewsArticle(slug);
   if (!article) return { title: "News article not found | Vanilla²" };
 
   return {
@@ -29,7 +32,7 @@ export async function generateMetadata({ params }) {
 
 export default async function NewsArticlePage({ params }) {
   const { slug = [] } = await params;
-  const article = getVisibleNewsArticle(slug);
+  const article = await getAvailableNewsArticle(slug);
   if (!article) notFound();
 
   return (
