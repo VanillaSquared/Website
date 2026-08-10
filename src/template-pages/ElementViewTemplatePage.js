@@ -14,6 +14,7 @@ export default function ElementViewTemplatePage({
   badges,
   meta = [],
   aside,
+  afterArticle,
   search = {},
   maxWidth = "max-w-6xl",
   className = "",
@@ -49,20 +50,23 @@ export default function ElementViewTemplatePage({
           ) : null}
 
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-            <article className={`min-w-0 overflow-hidden rounded-2xl border border-divider bg-card ${articleClassName}`}>
-              <header className={`border-b border-divider px-5 py-5 sm:px-7 ${headerClassName}`}>
-                {eyebrow ? <p className="mb-2 font-mono text-xs font-bold text-accent">{eyebrow}</p> : null}
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="min-w-0">
-                    <h1 className="text-2xl font-bold tracking-tight text-heading sm:text-3xl">{title}</h1>
-                    {subtitle ? <p className="mt-2 text-sm leading-6 text-muted">{subtitle}</p> : null}
+            <div className="min-w-0 space-y-4">
+              <article className={`min-w-0 overflow-hidden rounded-2xl border border-divider bg-card ${articleClassName}`}>
+                <header className={`border-b border-divider px-5 py-5 sm:px-7 ${headerClassName}`}>
+                  {eyebrow ? <p className="mb-2 font-mono text-xs font-bold text-accent">{eyebrow}</p> : null}
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <h1 className="text-2xl font-bold tracking-tight text-heading sm:text-3xl">{title}</h1>
+                      {subtitle ? <p className="mt-2 text-sm leading-6 text-muted">{subtitle}</p> : null}
+                    </div>
+                    {badges ? <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">{badges}</div> : null}
                   </div>
-                  {badges ? <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">{badges}</div> : null}
-                </div>
-              </header>
+                </header>
 
-              <div className={`px-5 py-6 sm:px-7 ${contentClassName}`}>{children}</div>
-            </article>
+                <div className={`px-5 py-6 sm:px-7 ${contentClassName}`}>{children}</div>
+              </article>
+              {afterArticle}
+            </div>
 
             <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
               {meta.length ? (
