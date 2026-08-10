@@ -25,7 +25,7 @@ export default async function NewsPage({ searchParams }) {
 
   return (
     <DefaultTemplatePage header={{ variant: "news", newsTagFilter: { options: tagOptions, value: selectedTags } }}>
-      <NewsPrivateSecret enabled={!privateUnlocked} />
+      <NewsPrivateSecret privateUnlocked={privateUnlocked} />
       <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
         {filteredArticles.length ? (
           <section aria-label="News articles" className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6">
