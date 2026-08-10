@@ -1,6 +1,6 @@
 ---
 title: Vanilla² -2.12.0
-tag: patchnotes
+tag: vsq-release
 image: "@cdn/news/vsq-2-12-0.png"
 showImageOnPage: true
 author: PainterFlow11
