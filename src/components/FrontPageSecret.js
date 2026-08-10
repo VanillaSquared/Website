@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import Modal from "@/components/Modal";
 import useSecretSequence from "@/hooks/useSecretSequence";
+import { setConsentedCookie } from "@/utils/cookieConsent";
 
 const SECRET_SEQUENCE = "nexosux";
 const STATS_SEQUENCE = "stats";
@@ -26,7 +27,11 @@ function hasSplashCookie() {
 }
 
 function saveSplashCookie() {
-  document.cookie = `${SPLASH_COOKIE}=1; Path=/; Max-Age=${SPLASH_COOKIE_MAX_AGE}; SameSite=Lax`;
+  setConsentedCookie(
+    SPLASH_COOKIE,
+    "1",
+    `Path=/; Max-Age=${SPLASH_COOKIE_MAX_AGE}; SameSite=Lax`,
+  );
 }
 
 export default function FrontPageSecret({ splashTexts, statsContent }) {
