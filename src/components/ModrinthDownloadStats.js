@@ -34,6 +34,7 @@ function formatCount(count, singular, plural) {
 export default async function ModrinthDownloadStats({
   showDownloads = true,
   showFollowers = true,
+  compact = false,
 }) {
   if (!showDownloads && !showFollowers) return null;
 
@@ -51,7 +52,7 @@ export default async function ModrinthDownloadStats({
   if (downloads === null && followers === null) return null;
 
   return (
-    <p className="mt-8 text-center text-base tabular-nums text-soft">
+    <p className={`${compact ? "text-sm" : "mt-8 text-base"} text-center tabular-nums text-soft`}>
       {downloads !== null && <span className="block">{downloads}</span>}
       {followers !== null && <span className="block">{followers}</span>}
     </p>
