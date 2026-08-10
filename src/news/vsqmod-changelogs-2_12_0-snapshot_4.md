@@ -1,6 +1,6 @@
 ---
 title: Vanilla² -2.12.0-snapshot.4
-tag: patchnotes
+tag: vsq-snap
 image: "@cdn/news/vsq-2-12-0-snapshot-4.png"
 showImageOnPage: true
 author: PainterFlow11
