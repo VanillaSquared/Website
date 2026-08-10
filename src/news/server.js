@@ -18,10 +18,20 @@ const NEWS_DIRECTORY = path.resolve(process.cwd(), "src", "news");
 let newsArticles;
 
 export const NEWS_TAGS = Object.freeze({
+  announcements: { label: "Announcements" },
+  "vsq-release": { label: "Vanilla² Releases" },
+  "vsq-hotfix": { label: "Vanilla² Hotfixes" },
+  "vsq-snap": { label: "Vanilla² Snapshots" },
+  "web-patchnotes": { label: "Website Patchnotes" },
+});
+
+const LEGACY_NEWS_TAGS = Object.freeze({
   patchnotes: { label: "Patch notes" },
   announcement: { label: "Announcement" },
   other: { label: "Other" },
 });
+
+const ARTICLE_NEWS_TAGS = Object.freeze({ ...LEGACY_NEWS_TAGS, ...NEWS_TAGS });
 
 function normalizeTags(value, relativeFile) {
   const names = String(value || "other")
@@ -31,12 +41,12 @@ function normalizeTags(value, relativeFile) {
   const uniqueNames = [...new Set(names.length ? names : ["other"])];
 
   for (const name of uniqueNames) {
-    if (!Object.hasOwn(NEWS_TAGS, name)) {
-      throw new Error(`Invalid news tag "${name}" in ${relativeFile}. Expected one or more of: ${Object.keys(NEWS_TAGS).join(", ")}.`);
+    if (!Object.hasOwn(ARTICLE_NEWS_TAGS, name)) {
+      throw new Error(`Invalid news tag "${name}" in ${relativeFile}. Expected one or more of: ${Object.keys(ARTICLE_NEWS_TAGS).join(", ")}.`);
     }
   }
 
-  return uniqueNames.map((name) => ({ name, label: NEWS_TAGS[name].label }));
+  return uniqueNames.map((name) => ({ name, label: ARTICLE_NEWS_TAGS[name].label }));
 }
 
 function normalizeFrontmatter(data, relativeFile, fallbackSegment) {
