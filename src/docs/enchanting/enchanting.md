@@ -30,8 +30,6 @@ The materials and experience levels are consumed, while the enchanted item stays
 
 Recipes still respect maximum levels and incompatible enchantments.
 
-The block-requirement tooltip includes a blank separator between its heading and the list of required blocks. This spacing comes from Minecraft's shared tooltip layout and does not indicate a missing or invalid requirement.
-
 ## Enchantment slots
 
 Enchantable items have a limited number of slots split into categories.
