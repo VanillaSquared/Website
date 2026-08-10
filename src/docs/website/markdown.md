@@ -204,7 +204,7 @@ Only `title`, `description`, `order` and `sidebarCard` are read by the docs. Unk
 ```yaml
 ---
 title: Website Patchnotes 29/07/2026
-tag: patchnotes
+tag: web-patchnotes
 image: "@cdn/news/generic-website-image.png"
 imageAlt: Website patchnotes
 showImageOnPage: false
@@ -217,7 +217,7 @@ private: false
 ```
 
 - `title`: The article title. If left out, the filename is turned into a title.
-- `tag`: One or more comma separated tags. Available tags are `patchnotes`, `announcement` and `other`. It defaults to `other`.
+- `tag`: One or more comma separated tags. Available tags are `announcements`, `vsq-release`, `vsq-hotfix`, `vsq-snap` and `web-patchnotes`. This field is required.
 - `image`: The article image. It has to be stored under `cdn/news/`.
 - `imageAlt`: A description of the article image.
 - `showImageOnPage`: Whether the image is also shown at the top of the article. Defaults to `true` and has to be `true` or `false`.
