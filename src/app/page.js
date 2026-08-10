@@ -79,7 +79,10 @@ export default function Home() {
     <div className="flex flex-col flex-1 font-sans">
       {/* Hero */}
       <section className="flex flex-col items-center justify-center px-6 py-24 text-center bg-background">
-        <FrontPageSecret splashTexts={splashTexts} />
+        <FrontPageSecret
+          splashTexts={splashTexts}
+          statsContent={<ModrinthDownloadStats compact />}
+        />
         <p className="mt-4 max-w-2xl text-lg text-muted">
             This Mod overhauls many of Minecrafts outdated system, like the combat system and enchanting system. 
             On top of that the mod also adds a few other features.
