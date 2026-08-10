@@ -1,6 +1,6 @@
 ---
 title: Thanks for 500 downloads
-tag: announcement
+tag: announcements
 image: "@cdn/news/ty-for-500-downloads.png"
 showImageOnPage: true
 author: PainterFlow11
