@@ -7,7 +7,6 @@ author: PainterFlow11
 authorImage: "@cdn/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 11/08/2026
-private: true
 ---
 -# Website V0.2.2
 
@@ -27,4 +26,4 @@ This update is another one shipped from Vacation. Not much to say, the update is
 
 ## Cookies
 - some secrets on the site now use cookie.
-- updated the cookies modal to now be more re-usable in the future and to include all the new cookies usages.
+- updated the cookies modal text to include the new cookies usages
