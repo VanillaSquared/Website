@@ -10,7 +10,7 @@ published_date: 11/08/2026
 ---
 -# Website V0.2.2
 
-This update is another one shipped from Vacation. Not much to say, the update is kinda all over the site without a central focus.
+This update is another one shipped from vacation. Not much to say, the update is kinda all over the site without a central focus.
 
 ## Main page
 - added a new secret
