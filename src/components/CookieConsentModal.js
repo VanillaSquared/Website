@@ -72,7 +72,7 @@ export default function CookieConsentModal() {
         <div className="min-w-0 flex-1">
           <h2 id="cookie-consent-title" className="font-semibold text-heading">Cookie usage</h2>
           <p id="cookie-consent-description" className="mt-1 text-sm leading-5 text-muted">
-            Vanilla² uses cookies for your selected theme and to remember the splash text secret. Cookies stay disabled until you accept.
+            Vanilla² uses cookies for your selected theme and to remember website secrets. Cookies stay disabled until you accept.
           </p>
         </div>
         <Button size="sm" className="shrink-0" onClick={acceptCookies}>
