@@ -20,16 +20,6 @@ export default function NewsTagFilter({ options = [], value = [] }) {
     setSelectedTags(value);
   }, [value]);
 
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 64rem)");
-    const handleChange = (event) => {
-      if (event.matches) setFilterModalOpen(false);
-    };
-
-    media.addEventListener("change", handleChange);
-    return () => media.removeEventListener("change", handleChange);
-  }, []);
-
   function setTags(nextTags) {
     setSelectedTags(nextTags);
 
@@ -73,29 +63,7 @@ export default function NewsTagFilter({ options = [], value = [] }) {
 
   return (
     <>
-      <div
-        role="group"
-        aria-label="Filter news by tags"
-        className="ml-4 hidden max-h-10 w-max max-w-[40vw] flex-wrap items-center gap-x-3 gap-y-1 overflow-hidden lg:flex"
-      >
-        {options.map((option) => {
-          const checked = selectedTags.includes(option.value);
-
-          return (
-            <span key={option.value} className="flex items-center gap-1.5 text-xs font-medium text-soft">
-              <Checkmark
-                checked={checked}
-                onChange={(nextChecked) => updateTag(option.value, nextChecked)}
-                size="sm"
-                aria-label={`${checked ? "Remove" : "Add"} ${option.label} filter`}
-              />
-              <span>{option.label}</span>
-            </span>
-          );
-        })}
-      </div>
-
-      <div className="ml-4 shrink-0 lg:hidden">
+      <div className="ml-4 shrink-0">
         <Button
           variant="iconButton"
           size="iconButtonSm"
