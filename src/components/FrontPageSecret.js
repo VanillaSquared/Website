@@ -97,7 +97,7 @@ export default function FrontPageSecret({ splashTexts, statsContent }) {
       >
         <div className="flex items-center justify-between gap-4">
           <h2 id="front-page-stats-title" className="text-base font-semibold text-heading">
-            Modrinth Stats
+            Stats
           </h2>
           <button
             type="button"
