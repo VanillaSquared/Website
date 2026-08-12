@@ -13,6 +13,7 @@ import {
   OPERATING_SYSTEMS,
 } from "@/bugs/config";
 import Button from "@/components/Button";
+import FileUpload from "@/components/FileUpload";
 import Modal from "@/components/Modal";
 import TextInput from "@/components/TextInput";
 
@@ -38,6 +39,7 @@ export default function BugReportGuide() {
   const [startedAt, setStartedAt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [files, setFiles] = useState([]);
 
   function openForm() {
     setError("");
@@ -52,27 +54,28 @@ export default function BugReportGuide() {
 
     const form = event.currentTarget;
     const fields = new FormData(form);
-    const payload = {
-      title: fields.get("title"),
-      description: fields.get("description"),
-      category: fields.get("category"),
-      minecraftVersion: fields.get("minecraftVersion"),
-      modVersion: fields.get("modVersion"),
-      operatingSystem: fields.get("operatingSystem"),
-      website: fields.get("website"),
-      startedAt,
-    };
+    const payload = new FormData();
+    payload.set("title", fields.get("title"));
+    payload.set("description", fields.get("description"));
+    payload.set("category", fields.get("category"));
+    payload.set("minecraftVersion", fields.get("minecraftVersion"));
+    payload.set("modVersion", fields.get("modVersion"));
+    payload.set("operatingSystem", fields.get("operatingSystem"));
+    payload.set("website", fields.get("website"));
+    payload.set("startedAt", String(startedAt));
+    files.forEach((file) => payload.append("files", file, file.name));
 
     try {
       const response = await fetch("/api/bugs", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload),
+        headers: { Accept: "application/json" },
+        body: payload,
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Bug report could not be created.");
 
       setOpen(false);
+      setFiles([]);
       form.reset();
       router.push(`/bugs/${result.bug.id}`);
       router.refresh();
@@ -133,6 +136,7 @@ export default function BugReportGuide() {
               maxLength={BUG_DESCRIPTION_MAX_LENGTH}
               required
             />
+            <FileUpload files={files} onChange={setFiles} disabled={submitting} className="sm:col-span-2" />
             <SelectField
               label="Category"
               name="category"

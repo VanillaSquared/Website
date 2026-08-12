@@ -5,6 +5,7 @@ import { getBugReportById, getBugReportComments } from "@/bugs/server";
 import BugMarkdown from "@/components/BugMarkdown";
 import ChatBox from "@/components/ChatBox";
 import Checkmark from "@/components/Checkmark";
+import File from "@/components/File";
 import Markdown from "@/components/Markdown";
 import Tag from "@/components/Tag";
 import ElementViewTemplatePage from "@/template-pages/ElementViewTemplatePage";
@@ -120,6 +121,27 @@ export default async function BugViewPage({ params }) {
           <Tag variant="accent">{bug.status}</Tag>
         </div>
         <BugMarkdown source={bug.source} />
+        {bug.attachments.length ? (
+          <div className="flex flex-col gap-3">
+            {bug.attachments.map((attachment) => attachment.extension === "png" ? (
+              <img
+                key={attachment.storedName}
+                src={attachment.url}
+                alt={attachment.name}
+                loading="lazy"
+                className="h-auto max-w-full rounded-lg"
+              />
+            ) : (
+              <File
+                key={attachment.storedName}
+                href={attachment.url}
+                name={attachment.name}
+                type={attachment.extension.toUpperCase()}
+                size={attachment.size}
+              />
+            ))}
+          </div>
+        ) : null}
       </section>
     </ElementViewTemplatePage>
   );

@@ -23,3 +23,17 @@ export const OPERATING_SYSTEMS = ["Windows", "macOS", "Linux", "iOS", "Other", "
 
 export const BUG_TITLE_MAX_LENGTH = 60;
 export const BUG_DESCRIPTION_MAX_LENGTH = 2000;
+
+export const BUG_ATTACHMENT_ALLOWED_EXTENSIONS = ["txt", "log", "png", "json"];
+export const BUG_ATTACHMENT_MAX_FILES = 4;
+export const BUG_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
+
+export function getBugAttachmentExtension(name) {
+  const normalizedName = String(name ?? "").trim();
+  const dotIndex = normalizedName.lastIndexOf(".");
+  return dotIndex > -1 ? normalizedName.slice(dotIndex + 1).toLowerCase() : "";
+}
+
+export function isAllowedBugAttachmentName(name) {
+  return BUG_ATTACHMENT_ALLOWED_EXTENSIONS.includes(getBugAttachmentExtension(name));
+}

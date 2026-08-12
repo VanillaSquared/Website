@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 
 import { evaluateBugSubmission } from "@/bugs/antiAbuse";
+import {
+  BUG_ATTACHMENT_MAX_BYTES,
+  BUG_ATTACHMENT_MAX_FILES,
+  isAllowedBugAttachmentName,
+} from "@/bugs/config";
 import { consumeBugSubmissionAttempt } from "@/bugs/rateLimit";
-import { createBugReport, listBugReports, validateBugSubmission } from "@/bugs/server";
+import {
+  createBugReport,
+  listBugReports,
+  prepareBugAttachments,
+  validateBugSubmission,
+} from "@/bugs/server";
 
-const MAX_REQUEST_BYTES = 6144;
+const MAX_REQUEST_BYTES = (BUG_ATTACHMENT_MAX_BYTES * BUG_ATTACHMENT_MAX_FILES) + (64 * 1024);
 const ALLOWED_FIELDS = new Set([
   "title",
   "description",
@@ -14,7 +24,18 @@ const ALLOWED_FIELDS = new Set([
   "operatingSystem",
   "startedAt",
   "website",
+  "files",
 ]);
+const REPORT_FIELDS = [
+  "title",
+  "description",
+  "category",
+  "minecraftVersion",
+  "modVersion",
+  "operatingSystem",
+  "startedAt",
+  "website",
+];
 
 function error(message, status) {
   return NextResponse.json({ error: message }, { status, headers: { "Cache-Control": "no-store" } });
@@ -39,22 +60,34 @@ export async function GET(request) {
 export async function POST(request) {
   const contentType = request.headers.get("content-type") ?? "";
   const declaredLength = Number(request.headers.get("content-length") ?? 0);
-  if (!contentType.toLowerCase().startsWith("application/json")) return error("Only JSON bug reports are accepted.", 415);
+  if (!contentType.toLowerCase().startsWith("multipart/form-data")) return error("Only multipart bug reports are accepted.", 415);
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
-  let rawBody;
-  let input;
+  let formData;
   try {
-    rawBody = await request.text();
-    if (Buffer.byteLength(rawBody, "utf8") > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
-    input = JSON.parse(rawBody);
+    formData = await request.formData();
   } catch {
     return error("Bug report validation failed.", 400);
   }
 
-  if (!input || typeof input !== "object" || Array.isArray(input) || Object.keys(input).some((key) => !ALLOWED_FIELDS.has(key))) {
+  if ([...new Set(formData.keys())].some((key) => !ALLOWED_FIELDS.has(key))) {
     return error("Bug report validation failed.", 400);
   }
+
+  if (REPORT_FIELDS.some((field) => formData.getAll(field).length !== 1)) return error("Bug report validation failed.", 400);
+
+  const input = Object.fromEntries(REPORT_FIELDS.map((field) => [field, formData.get(field)]));
+  const attachments = formData.getAll("files");
+  const isUploadedFile = (file) => file && typeof file === "object" && typeof file.name === "string" && typeof file.size === "number" && typeof file.arrayBuffer === "function";
+
+  if (attachments.some((file) => !isUploadedFile(file))) return error("Bug report validation failed.", 400);
+  if (attachments.length > BUG_ATTACHMENT_MAX_FILES) return error(`A maximum of ${BUG_ATTACHMENT_MAX_FILES} files can be attached.`, 400);
+  if (attachments.some((file) => file.size > BUG_ATTACHMENT_MAX_BYTES)) return error("Each attachment must be 10 MB or smaller.", 413);
+  if (attachments.some((file) => !isAllowedBugAttachmentName(file.name))) return error("One or more attachments use an unsupported file type.", 400);
+
+  const totalPayloadBytes = REPORT_FIELDS.reduce((total, field) => total + Buffer.byteLength(String(input[field] ?? ""), "utf8"), 0)
+    + attachments.reduce((total, file) => total + file.size, 0);
+  if (totalPayloadBytes > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
   const { ipAddress, score } = evaluateBugSubmission(request, input);
   if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
@@ -63,8 +96,11 @@ export async function POST(request) {
   const report = validateBugSubmission(input);
   if (!report) return error("Bug report validation failed.", 400);
 
+  const preparedAttachments = await prepareBugAttachments(attachments);
+  if (!preparedAttachments) return error("One or more attachments failed validation.", 400);
+
   try {
-    const bug = await createBugReport(report);
+    const bug = await createBugReport(report, preparedAttachments);
     return NextResponse.json({ bug }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch {
     return error("Bug report could not be created.", 503);
