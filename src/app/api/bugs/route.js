@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { evaluateBugSubmission } from "@/bugs/antiAbuse";
+import { evaluateBugSubmission, getBugSubmissionIp } from "@/bugs/antiAbuse";
 import {
   BUG_ATTACHMENT_MAX_BYTES,
   BUG_ATTACHMENT_MAX_FILES,
@@ -41,6 +41,37 @@ function error(message, status) {
   return NextResponse.json({ error: message }, { status, headers: { "Cache-Control": "no-store" } });
 }
 
+async function readRequestBodyWithLimit(request, maximumBytes) {
+  if (!request.body) return new Uint8Array();
+
+  const reader = request.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maximumBytes) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const body = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
 
@@ -63,9 +94,25 @@ export async function POST(request) {
   if (!contentType.toLowerCase().startsWith("multipart/form-data")) return error("Only multipart bug reports are accepted.", 415);
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
+  const ipAddress = getBugSubmissionIp(request);
+  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
+
+  let rawBody;
+  try {
+    rawBody = await readRequestBodyWithLimit(request, MAX_REQUEST_BYTES);
+  } catch {
+    return error("Bug report validation failed.", 400);
+  }
+  if (!rawBody) return error("Bug report is too large.", 413);
+
   let formData;
   try {
-    formData = await request.formData();
+    const boundedRequest = new Request(request.url, {
+      method: "POST",
+      headers: { "Content-Type": contentType },
+      body: rawBody,
+    });
+    formData = await boundedRequest.formData();
   } catch {
     return error("Bug report validation failed.", 400);
   }
@@ -89,8 +136,7 @@ export async function POST(request) {
     + attachments.reduce((total, file) => total + file.size, 0);
   if (totalPayloadBytes > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
-  const { ipAddress, score } = evaluateBugSubmission(request, input);
-  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
+  const { score } = evaluateBugSubmission(request, input);
   if (score > 6) return error("Bug report submission was rejected.", 403);
 
   const report = validateBugSubmission(input);

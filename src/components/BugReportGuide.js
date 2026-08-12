@@ -47,6 +47,12 @@ export default function BugReportGuide() {
     setOpen(true);
   }
 
+  function closeForm() {
+    setOpen(false);
+    setFiles([]);
+    setError("");
+  }
+
   async function submitReport(event) {
     event.preventDefault();
     setSubmitting(true);
@@ -74,9 +80,8 @@ export default function BugReportGuide() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Bug report could not be created.");
 
-      setOpen(false);
-      setFiles([]);
       form.reset();
+      closeForm();
       router.push(`/bugs/${result.bug.id}`);
       router.refresh();
     } catch (submissionError) {
@@ -101,7 +106,7 @@ export default function BugReportGuide() {
 
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={closeForm}
         variant="wide"
         className="!border-0"
         ariaLabelledBy="create-bug-report-title"
@@ -155,7 +160,7 @@ export default function BugReportGuide() {
           {error ? <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">{error}</p> : null}
 
           <footer className="flex justify-end gap-2">
-            <Button variant="tertiary" onClick={() => setOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button variant="tertiary" onClick={closeForm} disabled={submitting}>Cancel</Button>
             <Button type="submit" border={false} disabled={submitting}>{submitting ? "Submitting…" : "Submit report"}</Button>
           </footer>
         </form>
