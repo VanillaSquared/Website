@@ -25,7 +25,7 @@ const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSI
 const BUGS_CACHE_TAG = "bugs";
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 const ATTACHMENTS_SEPARATOR = "\n\n---\n\n### Attachments\n";
-const ATTACHMENTS_MARKER_PATTERN = /<!-- vsq-attachments:([A-Za-z0-9_-]+) -->/;
+const ATTACHMENTS_MARKER_PATTERN = /^<!-- vsq-attachments:([A-Za-z0-9_-]+) -->$/;
 const SAFE_STORAGE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 const SAFE_STORED_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/;
 const ATTACHMENT_MIME_TYPES = Object.freeze({
@@ -82,7 +82,13 @@ function safeDisplayName(value) {
 }
 
 function attachmentMetadataFromIssueBody(body) {
-  const match = String(body ?? "").match(ATTACHMENTS_MARKER_PATTERN);
+  const normalizedBody = String(body ?? "");
+  const attachmentSectionIndex = normalizedBody.lastIndexOf(ATTACHMENTS_SEPARATOR);
+  if (attachmentSectionIndex < 0) return { storageId: "", files: [] };
+
+  const attachmentSection = normalizedBody.slice(attachmentSectionIndex + ATTACHMENTS_SEPARATOR.length).trimEnd();
+  const markerLine = attachmentSection.split("\n").at(-1)?.trim() ?? "";
+  const match = markerLine.match(ATTACHMENTS_MARKER_PATTERN);
   if (!match) return { storageId: "", files: [] };
 
   try {
