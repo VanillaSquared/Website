@@ -22,6 +22,8 @@ import {
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
+const GITHUB_DEFAULT_BRANCH = "main";
+const GIT_MUTATION_RETRIES = 5;
 const BUGS_CACHE_TAG = "bugs";
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 const ATTACHMENTS_SEPARATOR = "\n\n---\n\n### Attachments\n";
@@ -283,55 +285,93 @@ function encodedRepositoryPath(...segments) {
   return segments.map((segment) => encodeURIComponent(segment)).join("/");
 }
 
+async function createGitBlob(content) {
+  return githubRequest("/git/blobs", {
+    method: "POST",
+    cache: "no-store",
+    body: JSON.stringify({ content: content.toString("base64"), encoding: "base64" }),
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+async function commitAttachmentChanges(changes, message) {
+  if (!changes.length) return;
+
+  const treeEntries = await Promise.all(changes.map(async ({ path, content }) => {
+    if (content === null) return { path, mode: "100644", type: "blob", sha: null };
+    const blob = await createGitBlob(content);
+    return { path, mode: "100644", type: "blob", sha: blob.sha };
+  }));
+
+  for (let attempt = 0; attempt < GIT_MUTATION_RETRIES; attempt += 1) {
+    const ref = await githubRequest(`/git/ref/heads/${GITHUB_DEFAULT_BRANCH}`, { cache: "no-store" });
+    const parentSha = ref.object.sha;
+    const parentCommit = await githubRequest(`/git/commits/${parentSha}`, { cache: "no-store" });
+    const tree = await githubRequest("/git/trees", {
+      method: "POST",
+      cache: "no-store",
+      body: JSON.stringify({ base_tree: parentCommit.tree.sha, tree: treeEntries }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const commit = await githubRequest("/git/commits", {
+      method: "POST",
+      cache: "no-store",
+      body: JSON.stringify({ message, tree: tree.sha, parents: [parentSha] }),
+      headers: { "Content-Type": "application/json" },
+    });
+
+    try {
+      await githubRequest(`/git/refs/heads/${GITHUB_DEFAULT_BRANCH}`, {
+        method: "PATCH",
+        cache: "no-store",
+        body: JSON.stringify({ sha: commit.sha, force: false }),
+        headers: { "Content-Type": "application/json" },
+      });
+      return;
+    } catch (error) {
+      if (error.status !== 422 || attempt === GIT_MUTATION_RETRIES - 1) throw error;
+    }
+  }
+}
+
 async function uploadBugAttachments(attachments) {
   if (!attachments.length) return { storageId: "", files: [], uploaded: [] };
 
   const storageId = crypto.randomUUID();
-  const uploaded = [];
-  const files = [];
+  const files = attachments.map((attachment) => {
+    const storedName = `${crypto.randomUUID()}.${attachment.extension}`;
+    return {
+      name: attachment.name,
+      storedName,
+      extension: attachment.extension,
+      size: attachment.size,
+      path: `attachments/${storageId}/${storedName}`,
+      content: attachment.content,
+    };
+  });
 
-  try {
-    for (const attachment of attachments) {
-      const storedName = `${crypto.randomUUID()}.${attachment.extension}`;
-      const path = encodedRepositoryPath("attachments", storageId, storedName);
-      const result = await githubRequest(`/contents/${path}`, {
-        method: "PUT",
-        cache: "no-store",
-        body: JSON.stringify({
-          message: "Store bug report attachment",
-          content: attachment.content.toString("base64"),
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
+  await commitAttachmentChanges(
+    files.map(({ path, content }) => ({ path, content })),
+    "Store bug report attachments",
+  );
 
-      uploaded.push({ path, sha: result.content.sha });
-      files.push({
-        name: attachment.name,
-        storedName,
-        extension: attachment.extension,
-        size: attachment.size,
-      });
-    }
-
-    return { storageId, files, uploaded };
-  } catch (error) {
-    await cleanupUploadedAttachments(uploaded);
-    throw error;
-  }
+  return {
+    storageId,
+    files: files.map(({ name, storedName, extension, size }) => ({ name, storedName, extension, size })),
+    uploaded: files.map(({ path }) => ({ path })),
+  };
 }
 
 async function cleanupUploadedAttachments(uploaded) {
-  for (const { path, sha } of uploaded) {
-    try {
-      await githubRequest(`/contents/${path}`, {
-        method: "DELETE",
-        cache: "no-store",
-        body: JSON.stringify({ message: "Clean up failed bug report attachment", sha }),
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch {
-      // Cleanup is best-effort; preserve the original submission error.
-    }
+  if (!uploaded.length) return;
+
+  try {
+    await commitAttachmentChanges(
+      uploaded.map(({ path }) => ({ path, content: null })),
+      "Clean up failed bug report attachments",
+    );
+  } catch {
+    // Cleanup is best-effort; preserve the original submission error.
   }
 }
 
