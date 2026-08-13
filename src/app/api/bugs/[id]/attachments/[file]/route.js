@@ -6,7 +6,11 @@ import { getBugAttachment } from "@/bugs/server";
 
 const getCachedBugAttachment = unstable_cache(async (id, file) => {
   const result = await getBugAttachment(id, file);
-  if (!result) return null;
+  if (!result) {
+    const error = new Error("Missing attachment");
+    error.status = 404;
+    throw error;
+  }
 
   return {
     attachment: result.attachment,
@@ -43,8 +47,6 @@ export async function GET(request, { params }) {
 
   try {
     const result = await getCachedBugAttachment(decodeURIComponent(id), decodeURIComponent(file));
-    if (!result) return new Response("Not found", { status: 404 });
-
     const content = Buffer.from(result.content, "base64");
     return new Response(content, {
       headers: {
@@ -55,7 +57,8 @@ export async function GET(request, { params }) {
         "X-Content-Type-Options": "nosniff",
       },
     });
-  } catch {
+  } catch (error) {
+    if (error?.status === 404) return new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
     return new Response("Attachment could not be loaded.", { status: 503 });
   }
 }
