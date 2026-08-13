@@ -28,6 +28,7 @@ export const BUG_ATTACHMENT_ALLOWED_EXTENSIONS = ["txt", "log", "png", "json"];
 export const BUG_ATTACHMENT_MAX_FILES = 4;
 export const BUG_ATTACHMENT_MAX_BYTES = 10 * 1024 * 1024;
 export const BUG_ATTACHMENT_MAX_TOTAL_BYTES = 10 * 1024 * 1024;
+export const BUG_ATTACHMENT_CHUNK_BYTES = 2 * 1024 * 1024;
 
 export function getBugAttachmentExtension(name) {
   const normalizedName = String(name ?? "").trim();
