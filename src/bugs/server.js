@@ -294,14 +294,8 @@ async function createGitBlob(content) {
   });
 }
 
-async function commitAttachmentChanges(changes, message) {
-  if (!changes.length) return;
-
-  const treeEntries = await Promise.all(changes.map(async ({ path, content }) => {
-    if (content === null) return { path, mode: "100644", type: "blob", sha: null };
-    const blob = await createGitBlob(content);
-    return { path, mode: "100644", type: "blob", sha: blob.sha };
-  }));
+async function commitStagedAttachments(treeEntries) {
+  if (!treeEntries.length) return;
 
   for (let attempt = 0; attempt < GIT_MUTATION_RETRIES; attempt += 1) {
     const ref = await githubRequest(`/git/ref/heads/${GITHUB_DEFAULT_BRANCH}`, { cache: "no-store" });
@@ -316,7 +310,7 @@ async function commitAttachmentChanges(changes, message) {
     const commit = await githubRequest("/git/commits", {
       method: "POST",
       cache: "no-store",
-      body: JSON.stringify({ message, tree: tree.sha, parents: [parentSha] }),
+      body: JSON.stringify({ message: "Store bug report attachments", tree: tree.sha, parents: [parentSha] }),
       headers: { "Content-Type": "application/json" },
     });
 
@@ -334,45 +328,29 @@ async function commitAttachmentChanges(changes, message) {
   }
 }
 
-async function uploadBugAttachments(attachments) {
-  if (!attachments.length) return { storageId: "", files: [], uploaded: [] };
+async function stageBugAttachments(attachments) {
+  if (!attachments.length) return { storageId: "", files: [], treeEntries: [] };
 
   const storageId = crypto.randomUUID();
-  const files = attachments.map((attachment) => {
+  const stagedFiles = await Promise.all(attachments.map(async (attachment) => {
     const storedName = `${crypto.randomUUID()}.${attachment.extension}`;
+    const path = `attachments/${storageId}/${storedName}`;
+    const blob = await createGitBlob(attachment.content);
+
     return {
       name: attachment.name,
       storedName,
       extension: attachment.extension,
       size: attachment.size,
-      path: `attachments/${storageId}/${storedName}`,
-      content: attachment.content,
+      treeEntry: { path, mode: "100644", type: "blob", sha: blob.sha },
     };
-  });
-
-  await commitAttachmentChanges(
-    files.map(({ path, content }) => ({ path, content })),
-    "Store bug report attachments",
-  );
+  }));
 
   return {
     storageId,
-    files: files.map(({ name, storedName, extension, size }) => ({ name, storedName, extension, size })),
-    uploaded: files.map(({ path }) => ({ path })),
+    files: stagedFiles.map(({ name, storedName, extension, size }) => ({ name, storedName, extension, size })),
+    treeEntries: stagedFiles.map(({ treeEntry }) => treeEntry),
   };
-}
-
-async function cleanupUploadedAttachments(uploaded) {
-  if (!uploaded.length) return;
-
-  try {
-    await commitAttachmentChanges(
-      uploaded.map(({ path }) => ({ path, content: null })),
-      "Clean up failed bug report attachments",
-    );
-  } catch {
-    // Cleanup is best-effort; preserve the original submission error.
-  }
 }
 
 function encodedAttachmentMarker(storageId, files) {
@@ -382,40 +360,49 @@ function encodedAttachmentMarker(storageId, files) {
   return `${ATTACHMENTS_SEPARATOR}${visibleFiles}\n\n<!-- vsq-attachments:${encoded} -->`;
 }
 
+async function updateIssueBody(issueNumber, body) {
+  return githubRequest(`/issues/${issueNumber}`, {
+    method: "PATCH",
+    cache: "no-store",
+    body: JSON.stringify({ body }),
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export async function createBugReport(report, attachments = []) {
   const category = categoryBySlug.get(report.category);
-  const uploadedAttachments = await uploadBugAttachments(attachments);
-  const attachmentSection = encodedAttachmentMarker(uploadedAttachments.storageId, uploadedAttachments.files);
-  const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachmentSection}`;
+  const baseBody = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}`;
+  const stagedAttachments = await stageBugAttachments(attachments);
 
-  let response;
-  try {
-    response = await fetch(`${GITHUB_API}/issues`, {
-      method: "POST",
-      cache: "no-store",
-      body: JSON.stringify({
-        title: report.title,
-        body,
-        labels: [category.label, "Unset", "Unconfirmed"],
-      }),
-      headers: githubHeaders({ "Content-Type": "application/json" }),
-    });
-  } catch {
-    // The request may have reached GitHub. Preserve uploads rather than risk
-    // breaking an issue that GitHub accepted before the connection failed.
-    throw new Error("Bug storage request failed.");
+  const issue = await githubRequest("/issues", {
+    method: "POST",
+    cache: "no-store",
+    body: JSON.stringify({
+      title: report.title,
+      body: baseBody,
+      labels: [category.label, "Unset", "Unconfirmed"],
+    }),
+    headers: { "Content-Type": "application/json" },
+  });
+
+  let finalIssue = issue;
+  if (stagedAttachments.files.length) {
+    const bodyWithAttachments = `${baseBody}${encodedAttachmentMarker(stagedAttachments.storageId, stagedAttachments.files)}`;
+
+    try {
+      finalIssue = await updateIssueBody(issue.number, bodyWithAttachments);
+      await commitStagedAttachments(stagedAttachments.treeEntries);
+    } catch {
+      try {
+        finalIssue = await updateIssueBody(issue.number, baseBody);
+      } catch {
+        finalIssue = { ...issue, body: baseBody };
+      }
+    }
   }
 
-  if (!response.ok) {
-    await cleanupUploadedAttachments(uploadedAttachments.uploaded);
-    const error = new Error("Bug storage request failed.");
-    error.status = response.status;
-    throw error;
-  }
-
-  const issue = await response.json();
   revalidateTag(BUGS_CACHE_TAG, { expire: 0 });
-  return issueToBug(issue);
+  return issueToBug(finalIssue);
 }
 
 export async function getBugAttachment(id, storedName) {
