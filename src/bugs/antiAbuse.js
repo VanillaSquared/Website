@@ -3,11 +3,10 @@ import "server-only";
 const MINIMUM_COMPLETION_MS = 4000;
 const MAXIMUM_COMPLETION_MS = 60 * 60 * 1000;
 
-export function getBugSubmissionIp(request) {
-  return request.headers.get("cf-connecting-ip")
-    || request.headers.get("x-real-ip")
-    || request.headers.get("x-forwarded-for")?.split(",")[0].trim()
-    || "unknown";
+export function getTrustedClientIp(request) {
+  if (process.env.VERCEL !== "1") return null;
+
+  return request.headers.get("x-vercel-forwarded-for")?.split(",")[0].trim() || null;
 }
 
 function userAgentEnvironment(userAgent) {
@@ -27,7 +26,7 @@ function userAgentEnvironment(userAgent) {
 export function evaluateBugSubmission(request, input, now = Date.now()) {
   const userAgent = request.headers.get("user-agent") ?? "";
   const origin = request.headers.get("origin");
-  const ipAddress = getBugSubmissionIp(request);
+  const ipAddress = getTrustedClientIp(request) ?? "unknown";
   const environment = userAgentEnvironment(userAgent);
   const completionTime = now - Number(input?.startedAt);
   const links = String(input?.description ?? "").match(/(?:https?:\/\/|www\.)/gi)?.length ?? 0;
