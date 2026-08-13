@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 
 import { evaluateBugSubmission, getTrustedClientIp } from "@/bugs/antiAbuse";
 import { BUG_ATTACHMENT_MAX_FILES } from "@/bugs/config";
-import { prepareChunkedBugAttachments } from "@/bugs/chunkUploads";
+import {
+  prepareChunkedBugAttachments,
+  validateBugUploadSession,
+} from "@/bugs/chunkUploads";
 import {
   allowBugSubmissionAttempt,
   allowBugSubmissionGlobalAttempt,
@@ -24,15 +27,15 @@ const ALLOWED_FIELDS = new Set([
   "startedAt",
   "website",
   "attachmentTokens",
+  "uploadSession",
 ]);
-const REPORT_FIELDS = [
+const REPORT_TEXT_FIELDS = [
   "title",
   "description",
   "category",
   "minecraftVersion",
   "modVersion",
   "operatingSystem",
-  "startedAt",
   "website",
 ];
 
@@ -71,6 +74,12 @@ async function readRequestBodyWithLimit(request, maximumBytes) {
   return body;
 }
 
+function validStartedAt(value) {
+  if (typeof value === "number") return Number.isFinite(value);
+  if (typeof value !== "string" || !value.trim()) return false;
+  return Number.isFinite(Number(value));
+}
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
 
@@ -93,15 +102,6 @@ export async function POST(request) {
   if (!contentType.toLowerCase().startsWith("application/json")) return error("Only JSON bug reports are accepted.", 415);
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
-  const ipAddress = getTrustedClientIp(request);
-  try {
-    if (!(await allowBugSubmissionAttempt(request, ipAddress)) || !(await allowBugSubmissionGlobalAttempt(request))) {
-      return error("Too many bug reports have been submitted. Please try again later.", 429);
-    }
-  } catch {
-    return error("Bug report submission protection is unavailable.", 503);
-  }
-
   let rawBody;
   try {
     rawBody = await readRequestBodyWithLimit(request, MAX_REQUEST_BYTES);
@@ -119,23 +119,55 @@ export async function POST(request) {
 
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) return error("Bug report validation failed.", 400);
   if (Object.keys(payload).some((key) => !ALLOWED_FIELDS.has(key))) return error("Bug report validation failed.", 400);
-  if (REPORT_FIELDS.some((field) => typeof payload[field] !== "string")) return error("Bug report validation failed.", 400);
+  if (REPORT_TEXT_FIELDS.some((field) => typeof payload[field] !== "string") || !validStartedAt(payload.startedAt)) {
+    return error("Bug report validation failed.", 400);
+  }
 
   const attachmentTokens = payload.attachmentTokens ?? [];
   if (!Array.isArray(attachmentTokens) || attachmentTokens.some((token) => typeof token !== "string")) {
     return error("Bug report validation failed.", 400);
   }
 
-  const input = Object.fromEntries(REPORT_FIELDS.map((field) => [field, payload[field]]));
-  const { score } = evaluateBugSubmission(request, input);
-  if (score > 6) return error("Bug report submission was rejected.", 403);
+  const input = {
+    title: payload.title,
+    description: payload.description,
+    category: payload.category,
+    minecraftVersion: payload.minecraftVersion,
+    modVersion: payload.modVersion,
+    operatingSystem: payload.operatingSystem,
+    website: payload.website,
+    startedAt: payload.startedAt,
+  };
+
+  const uploadSession = typeof payload.uploadSession === "string" ? payload.uploadSession : "";
+  const hasChunkedAttachments = attachmentTokens.length > 0;
+
+  if (hasChunkedAttachments) {
+    if (!uploadSession || !validateBugUploadSession(uploadSession, input)) {
+      return error("Attachment upload session is invalid or expired.", 400);
+    }
+  } else {
+    const ipAddress = getTrustedClientIp(request);
+    try {
+      if (!(await allowBugSubmissionAttempt(request, ipAddress)) || !(await allowBugSubmissionGlobalAttempt(request))) {
+        return error("Too many bug reports have been submitted. Please try again later.", 429);
+      }
+    } catch {
+      return error("Bug report submission protection is unavailable.", 503);
+    }
+
+    const { score } = evaluateBugSubmission(request, input);
+    if (score > 6) return error("Bug report submission was rejected.", 403);
+  }
 
   const report = validateBugSubmission(input);
   if (!report) return error("Bug report validation failed.", 400);
 
   let preparedAttachments;
   try {
-    preparedAttachments = await prepareChunkedBugAttachments(attachmentTokens);
+    preparedAttachments = hasChunkedAttachments
+      ? await prepareChunkedBugAttachments(attachmentTokens, uploadSession, input)
+      : [];
   } catch {
     return error("One or more attachments could not be loaded.", 503);
   }
