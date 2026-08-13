@@ -1,21 +1,10 @@
 import { unstable_cache } from "next/cache";
 
 import { getTrustedClientIp } from "@/bugs/antiAbuse";
-import {
-  consumeBugAttachmentRequest,
-  consumeBugAttachmentUpstreamAttempt,
-} from "@/bugs/rateLimit";
+import { allowBugAttachmentRequest } from "@/bugs/rateLimit";
 import { getBugAttachment } from "@/bugs/server";
 
-function attachmentRateLimitError() {
-  const error = new Error("Too many attachment requests.");
-  error.status = 429;
-  return error;
-}
-
 const getCachedBugAttachment = unstable_cache(async (id, file) => {
-  if (!consumeBugAttachmentUpstreamAttempt()) throw attachmentRateLimitError();
-
   const result = await getBugAttachment(id, file);
   if (!result) return null;
 
@@ -40,7 +29,15 @@ function rateLimitedResponse() {
 
 export async function GET(request, { params }) {
   const ipAddress = getTrustedClientIp(request);
-  if (!consumeBugAttachmentRequest(ipAddress)) return rateLimitedResponse();
+
+  try {
+    if (!(await allowBugAttachmentRequest(request, ipAddress))) return rateLimitedResponse();
+  } catch {
+    return new Response("Attachment protection is unavailable.", {
+      status: 503,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
 
   const { id, file } = await params;
 
@@ -58,8 +55,7 @@ export async function GET(request, { params }) {
         "X-Content-Type-Options": "nosniff",
       },
     });
-  } catch (error) {
-    if (error?.status === 429) return rateLimitedResponse();
+  } catch {
     return new Response("Attachment could not be loaded.", { status: 503 });
   }
 }
