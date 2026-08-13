@@ -62,8 +62,10 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function BugViewPage({ params }) {
+export default async function BugViewPage({ params, searchParams }) {
   const { bug: bugParam } = await params;
+  const query = await searchParams;
+  const attachmentUploadFailed = query?.attachmentUpload === "failed";
   const bug = await getBugReportById(decodeURIComponent(bugParam)).catch(() => null);
   if (!bug) notFound();
 
@@ -115,6 +117,11 @@ export default async function BugViewPage({ params }) {
       ]}
     >
       <section className="flex flex-col gap-5">
+        {attachmentUploadFailed ? (
+          <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">
+            The bug report was created, but one or more selected attachments could not be saved.
+          </p>
+        ) : null}
         <div className="flex flex-wrap gap-2">
           <Tag variant="subtle">{categoryLabel}</Tag>
           <Tag variant={priorityVariants[bug.priority] ?? "subtle"}>{priorityLabels[bug.priority] ?? bug.priority}</Tag>
