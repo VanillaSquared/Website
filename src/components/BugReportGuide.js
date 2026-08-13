@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import plusIcon from "@cdn/icons/plus.svg";
 import {
+  BUG_ATTACHMENT_CHUNK_BYTES,
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_TITLE_MAX_LENGTH,
@@ -31,6 +32,46 @@ function SelectField({ label, name, options }) {
       </select>
     </label>
   );
+}
+
+async function uploadAttachmentChunks(files) {
+  const tokens = [];
+
+  for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
+    const file = files[fileIndex];
+    const fileId = crypto.randomUUID();
+    const chunkCount = Math.max(1, Math.ceil(file.size / BUG_ATTACHMENT_CHUNK_BYTES));
+
+    for (let chunkIndex = 0; chunkIndex < chunkCount; chunkIndex += 1) {
+      const start = chunkIndex * BUG_ATTACHMENT_CHUNK_BYTES;
+      const end = Math.min(file.size, start + BUG_ATTACHMENT_CHUNK_BYTES);
+      const chunk = file.slice(start, end);
+      const searchParams = new URLSearchParams({
+        fileId,
+        fileIndex: String(fileIndex),
+        name: file.name,
+        fileSize: String(file.size),
+        chunkIndex: String(chunkIndex),
+        chunkCount: String(chunkCount),
+      });
+
+      const response = await fetch(`/api/bugs/uploads?${searchParams}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/octet-stream",
+        },
+        body: chunk,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || typeof result.token !== "string") {
+        throw new Error(result.error || `Could not upload ${file.name}.`);
+      }
+      tokens.push(result.token);
+    }
+  }
+
+  return tokens;
 }
 
 export default function BugReportGuide() {
@@ -60,22 +101,26 @@ export default function BugReportGuide() {
 
     const form = event.currentTarget;
     const fields = new FormData(form);
-    const payload = new FormData();
-    payload.set("title", fields.get("title"));
-    payload.set("description", fields.get("description"));
-    payload.set("category", fields.get("category"));
-    payload.set("minecraftVersion", fields.get("minecraftVersion"));
-    payload.set("modVersion", fields.get("modVersion"));
-    payload.set("operatingSystem", fields.get("operatingSystem"));
-    payload.set("website", fields.get("website"));
-    payload.set("startedAt", String(startedAt));
-    files.forEach((file) => payload.append("files", file, file.name));
 
     try {
+      const attachmentTokens = await uploadAttachmentChunks(files);
       const response = await fetch("/api/bugs", {
         method: "POST",
-        headers: { Accept: "application/json" },
-        body: payload,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: String(fields.get("title") ?? ""),
+          description: String(fields.get("description") ?? ""),
+          category: String(fields.get("category") ?? ""),
+          minecraftVersion: String(fields.get("minecraftVersion") ?? ""),
+          modVersion: String(fields.get("modVersion") ?? ""),
+          operatingSystem: String(fields.get("operatingSystem") ?? ""),
+          website: String(fields.get("website") ?? ""),
+          startedAt: String(startedAt),
+          attachmentTokens,
+        }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Bug report could not be created.");
