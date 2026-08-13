@@ -388,8 +388,9 @@ export async function createBugReport(report, attachments = []) {
   const attachmentSection = encodedAttachmentMarker(uploadedAttachments.storageId, uploadedAttachments.files);
   const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachmentSection}`;
 
+  let response;
   try {
-    const issue = await githubRequest("/issues", {
+    response = await fetch(`${GITHUB_API}/issues`, {
       method: "POST",
       cache: "no-store",
       body: JSON.stringify({
@@ -397,15 +398,24 @@ export async function createBugReport(report, attachments = []) {
         body,
         labels: [category.label, "Unset", "Unconfirmed"],
       }),
-      headers: { "Content-Type": "application/json" },
+      headers: githubHeaders({ "Content-Type": "application/json" }),
     });
+  } catch {
+    // The request may have reached GitHub. Preserve uploads rather than risk
+    // breaking an issue that GitHub accepted before the connection failed.
+    throw new Error("Bug storage request failed.");
+  }
 
-    revalidateTag(BUGS_CACHE_TAG, { expire: 0 });
-    return issueToBug(issue);
-  } catch (error) {
+  if (!response.ok) {
     await cleanupUploadedAttachments(uploadedAttachments.uploaded);
+    const error = new Error("Bug storage request failed.");
+    error.status = response.status;
     throw error;
   }
+
+  const issue = await response.json();
+  revalidateTag(BUGS_CACHE_TAG, { expire: 0 });
+  return issueToBug(issue);
 }
 
 export async function getBugAttachment(id, storedName) {
