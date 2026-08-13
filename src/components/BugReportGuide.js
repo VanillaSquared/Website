@@ -34,23 +34,57 @@ function SelectField({ label, name, options }) {
   );
 }
 
-async function uploadAttachmentChunks(files) {
+function createUploadManifest(files) {
+  return files.map((file, fileIndex) => ({
+    file,
+    fileId: crypto.randomUUID(),
+    fileIndex,
+    name: file.name,
+    fileSize: file.size,
+    chunkCount: Math.max(1, Math.ceil(file.size / BUG_ATTACHMENT_CHUNK_BYTES)),
+  }));
+}
+
+async function createUploadSession(reportInput, uploadManifest) {
+  const response = await fetch("/api/bugs/uploads", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...reportInput,
+      manifest: uploadManifest.map(({ fileId, fileIndex, name, fileSize, chunkCount }) => ({
+        fileId,
+        fileIndex,
+        name,
+        fileSize,
+        chunkCount,
+      })),
+    }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || typeof result.sessionToken !== "string") {
+    throw new Error(result.error || "Could not start the attachment upload.");
+  }
+  return result.sessionToken;
+}
+
+async function uploadAttachmentChunks(uploadManifest, sessionToken) {
   const tokens = [];
 
-  for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
-    const file = files[fileIndex];
-    const fileId = crypto.randomUUID();
-    const chunkCount = Math.max(1, Math.ceil(file.size / BUG_ATTACHMENT_CHUNK_BYTES));
+  for (const entry of uploadManifest) {
+    const { file, fileId, fileIndex, name, fileSize, chunkCount } = entry;
 
     for (let chunkIndex = 0; chunkIndex < chunkCount; chunkIndex += 1) {
       const start = chunkIndex * BUG_ATTACHMENT_CHUNK_BYTES;
-      const end = Math.min(file.size, start + BUG_ATTACHMENT_CHUNK_BYTES);
+      const end = Math.min(fileSize, start + BUG_ATTACHMENT_CHUNK_BYTES);
       const chunk = file.slice(start, end);
       const searchParams = new URLSearchParams({
         fileId,
         fileIndex: String(fileIndex),
-        name: file.name,
-        fileSize: String(file.size),
+        name,
+        fileSize: String(fileSize),
         chunkIndex: String(chunkIndex),
         chunkCount: String(chunkCount),
       });
@@ -60,12 +94,13 @@ async function uploadAttachmentChunks(files) {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/octet-stream",
+          "X-VSQ-Upload-Session": sessionToken,
         },
         body: chunk,
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || typeof result.token !== "string") {
-        throw new Error(result.error || `Could not upload ${file.name}.`);
+        throw new Error(result.error || `Could not upload ${name}.`);
       }
       tokens.push(result.token);
     }
@@ -101,9 +136,27 @@ export default function BugReportGuide() {
 
     const form = event.currentTarget;
     const fields = new FormData(form);
+    const reportInput = {
+      title: String(fields.get("title") ?? ""),
+      description: String(fields.get("description") ?? ""),
+      category: String(fields.get("category") ?? ""),
+      minecraftVersion: String(fields.get("minecraftVersion") ?? ""),
+      modVersion: String(fields.get("modVersion") ?? ""),
+      operatingSystem: String(fields.get("operatingSystem") ?? ""),
+      website: String(fields.get("website") ?? ""),
+      startedAt,
+    };
 
     try {
-      const attachmentTokens = await uploadAttachmentChunks(files);
+      let uploadSession = "";
+      let attachmentTokens = [];
+
+      if (files.length) {
+        const uploadManifest = createUploadManifest(files);
+        uploadSession = await createUploadSession(reportInput, uploadManifest);
+        attachmentTokens = await uploadAttachmentChunks(uploadManifest, uploadSession);
+      }
+
       const response = await fetch("/api/bugs", {
         method: "POST",
         headers: {
@@ -111,15 +164,9 @@ export default function BugReportGuide() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          title: String(fields.get("title") ?? ""),
-          description: String(fields.get("description") ?? ""),
-          category: String(fields.get("category") ?? ""),
-          minecraftVersion: String(fields.get("minecraftVersion") ?? ""),
-          modVersion: String(fields.get("modVersion") ?? ""),
-          operatingSystem: String(fields.get("operatingSystem") ?? ""),
-          website: String(fields.get("website") ?? ""),
-          startedAt: String(startedAt),
+          ...reportInput,
           attachmentTokens,
+          uploadSession,
         }),
       });
       const result = await response.json().catch(() => ({}));
