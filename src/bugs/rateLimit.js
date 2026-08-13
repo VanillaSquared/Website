@@ -8,11 +8,14 @@ const GLOBAL_SUBMISSION_WINDOW_MS = 60 * 1000;
 const MAX_GLOBAL_SUBMISSIONS = 30;
 const ATTACHMENT_WINDOW_MS = 60 * 1000;
 const MAX_ATTACHMENT_REQUESTS = 120;
+const UPLOAD_FINALIZATION_WINDOW_MS = 15 * 60 * 1000;
+const MAX_UPLOAD_FINALIZATIONS = 1;
 const MAX_STORE_ENTRIES = 2048;
 const LOCAL_GLOBAL_SUBMISSION_KEY = "bug-submission-global";
 const attemptsByClient = new Map();
 const globalSubmissionAttempts = new Map();
 const attachmentRequestsByClient = new Map();
+const uploadSessionFinalizations = new Map();
 
 function getClientKey(ipAddress) {
   return createHash("sha256").update(ipAddress).digest("hex");
@@ -103,4 +106,11 @@ export async function allowBugAttachmentRequest(request, ipAddress, now = Date.n
   }
   if (!ipAddress) return true;
   return localLimit(attachmentRequestsByClient, getClientKey(ipAddress), ATTACHMENT_WINDOW_MS, MAX_ATTACHMENT_REQUESTS, now);
+}
+
+export async function allowBugUploadSessionFinalization(request, sessionToken, now = Date.now()) {
+  if (!sessionToken) return false;
+  const sessionKey = createHash("sha256").update(sessionToken).digest("hex");
+  if (process.env.VERCEL) return checkVercelRateLimit(request, "bug-upload-finalize", sessionKey);
+  return localLimit(uploadSessionFinalizations, sessionKey, UPLOAD_FINALIZATION_WINDOW_MS, MAX_UPLOAD_FINALIZATIONS, now);
 }
