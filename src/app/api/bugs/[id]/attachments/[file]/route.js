@@ -14,20 +14,13 @@ const getCachedBugAttachment = unstable_cache(async (id, file) => {
   };
 }, ["bug-attachment-content"], { revalidate: 60 * 60 });
 
-function requestIp(request) {
-  return request.headers.get("cf-connecting-ip")
-    || request.headers.get("x-real-ip")
-    || request.headers.get("x-forwarded-for")?.split(",")[0].trim()
-    || "unknown";
-}
-
 function contentDisposition(attachment) {
   const disposition = attachment.extension === "png" ? "inline" : "attachment";
   return `${disposition}; filename*=UTF-8''${encodeURIComponent(attachment.name)}`;
 }
 
-export async function GET(request, { params }) {
-  if (!consumeBugAttachmentRequest(requestIp(request))) {
+export async function GET(_request, { params }) {
+  if (!consumeBugAttachmentRequest()) {
     return new Response("Too many attachment requests.", {
       status: 429,
       headers: { "Retry-After": "60", "Cache-Control": "no-store" },
