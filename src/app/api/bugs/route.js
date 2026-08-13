@@ -7,8 +7,8 @@ import {
   isAllowedBugAttachmentName,
 } from "@/bugs/config";
 import {
-  consumeBugSubmissionAttempt,
-  consumeBugSubmissionGlobalAttempt,
+  allowBugSubmissionAttempt,
+  allowBugSubmissionGlobalAttempt,
 } from "@/bugs/rateLimit";
 import {
   createBugReport,
@@ -98,8 +98,12 @@ export async function POST(request) {
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
   const ipAddress = getTrustedClientIp(request);
-  if (!consumeBugSubmissionAttempt(ipAddress) || !consumeBugSubmissionGlobalAttempt()) {
-    return error("Too many bug reports have been submitted. Please try again later.", 429);
+  try {
+    if (!(await allowBugSubmissionAttempt(request, ipAddress)) || !(await allowBugSubmissionGlobalAttempt(request))) {
+      return error("Too many bug reports have been submitted. Please try again later.", 429);
+    }
+  } catch {
+    return error("Bug report submission protection is unavailable.", 503);
   }
 
   let rawBody;
