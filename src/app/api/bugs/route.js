@@ -102,6 +102,15 @@ export async function POST(request) {
   if (!contentType.toLowerCase().startsWith("application/json")) return error("Only JSON bug reports are accepted.", 415);
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
+  const ipAddress = getTrustedClientIp(request);
+  try {
+    if (!(await allowBugSubmissionAttempt(request, ipAddress)) || !(await allowBugSubmissionGlobalAttempt(request))) {
+      return error("Too many bug reports have been submitted. Please try again later.", 429);
+    }
+  } catch {
+    return error("Bug report submission protection is unavailable.", 503);
+  }
+
   let rawBody;
   try {
     rawBody = await readRequestBodyWithLimit(request, MAX_REQUEST_BYTES);
@@ -142,23 +151,12 @@ export async function POST(request) {
   const uploadSession = typeof payload.uploadSession === "string" ? payload.uploadSession : "";
   const hasChunkedAttachments = attachmentTokens.length > 0;
 
-  if (hasChunkedAttachments) {
-    if (!uploadSession || !validateBugUploadSession(uploadSession, input)) {
-      return error("Attachment upload session is invalid or expired.", 400);
-    }
-  } else {
-    const ipAddress = getTrustedClientIp(request);
-    try {
-      if (!(await allowBugSubmissionAttempt(request, ipAddress)) || !(await allowBugSubmissionGlobalAttempt(request))) {
-        return error("Too many bug reports have been submitted. Please try again later.", 429);
-      }
-    } catch {
-      return error("Bug report submission protection is unavailable.", 503);
-    }
-
-    const { score } = evaluateBugSubmission(request, input);
-    if (score > 6) return error("Bug report submission was rejected.", 403);
+  if (hasChunkedAttachments && (!uploadSession || !validateBugUploadSession(uploadSession, input))) {
+    return error("Attachment upload session is invalid or expired.", 400);
   }
+
+  const { score } = evaluateBugSubmission(request, input);
+  if (score > 6) return error("Bug report submission was rejected.", 403);
 
   const report = validateBugSubmission(input);
   if (!report) return error("Bug report validation failed.", 400);
