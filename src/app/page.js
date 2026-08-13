@@ -98,7 +98,7 @@ export default function Home() {
             Download
           </Button>
           <Button
-            href="https://discord.gg/pppHybq9xT"
+            href="https://discord.gg/NrPZQbwc8Y"
             variant="blurple"
             external
           >

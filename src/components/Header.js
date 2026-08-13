@@ -32,7 +32,7 @@ export default function TopBar({ docsNavigation, newsTagFilter, search = {}, var
         {variant === "news" ? <NewsTagFilter {...newsTagFilter} /> : null}
         <ThemeToggle />
         <Button
-          href="https://discord.gg/pppHybq9xT"
+          href="https://discord.gg/NrPZQbwc8Y"
           variant="blurple"
           size="iconButtonSm"
           external

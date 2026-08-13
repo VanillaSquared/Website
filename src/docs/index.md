@@ -31,7 +31,7 @@ Vanilla Squared always tries to update to the newest version as soon as possible
 ---
 
 - You can report bugs through our own [bug reporter](../bugs). 
-- We also have a [discord server](https://discord.gg/pppHybq9xT), feel free to join.
+- We also have a [discord server](https://discord.gg/NrPZQbwc8Y), feel free to join.
 - Follow us on [bluesky](https://bsky.app/profile/painterflow11.bsky.social) for frequent updates about the mod and sneak peaks.
 - Of course you can download the mod on [Modrinth](https://modrinth.com/mod/vsq).
 - Vanilla Squared is also [open source](https://github.com/VanillaSquared/Mod) including the [backend of this website](https://github.com/VanillaSquared/Website).
