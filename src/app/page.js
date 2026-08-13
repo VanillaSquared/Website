@@ -39,7 +39,7 @@ export default function Home() {
       image: redstoneSulfurCubeImage,
       imageAlt: "Redstone Sulfur Cube",
       loading: "eager",
-      href: "/docs/items/sulfur_goo",
+      href: "https://vanillasquared.up.railway.app/docs/other-features/sulfur_cube#redstone-sulfur-cube",
     },
     {
       title: "New Enchantments.",
