@@ -82,7 +82,8 @@ export default function BugReportGuide() {
 
       form.reset();
       closeForm();
-      router.push(`/bugs/${result.bug.id}`);
+      const partialFailure = result.attachmentUploadFailed === true ? "?attachmentUpload=failed" : "";
+      router.push(`/bugs/${result.bug.id}${partialFailure}`);
       router.refresh();
     } catch (submissionError) {
       setError(submissionError.message || "Bug report could not be created.");
