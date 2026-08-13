@@ -1,10 +1,33 @@
-<h1 align="center">Vanilla² Website</h1>
+<h1 align="center">
+  <br>
+  Vanilla² Website
+  <br>
+</h1>
 
 <h4 align="center">Official Next.js website for the Vanilla² Minecraft Fabric mod.</h4>
 
+<p align="center">
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white">
+  <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white">
+  <img alt="Version" src="https://img.shields.io/badge/version-0.2.2-blue?style=flat-square">
+  <img alt="License" src="https://img.shields.io/badge/license-BLOBSFER--1.0-6B4EFF?style=flat-square">
+</p>
+
 ## Overview
 
-The site contains the Vanilla² landing page, news, documentation, a bug tracker, and reusable UI templates. News articles and documentation are stored in the repository and rendered from Markdown. Bug reports use the website's private issue backend.
+The Vanilla² website contains the mod's landing page, news, documentation, bug tracker, and reusable UI templates. News articles and documentation are stored in the repository and rendered from Markdown. Bug reports use the website's private issue backend.
+
+## License
+
+This project uses the BLOBSFER Licence 1.0. It permits private use and contributions to the official repository, but does not permit independent publication, distribution, or deployment. See [LICENSE](LICENSE).
+
+## Features
+
+- Landing page for the Vanilla² Minecraft Fabric mod.
+- Repository-backed Markdown documentation.
+- Repository-backed news articles with private-draft support.
+- Bug report form backed by a private issue backend.
+- Reusable UI component and page templates.
 
 ## Tech stack
 
@@ -45,12 +68,19 @@ Bug reports are created from the form on `/bugs` and loaded through `/api/bugs`.
 
 ## Development
 
+Install dependencies.
+
 ```sh
 npm install
+```
+
+Start the development server.
+
+```sh
 npm run dev
 ```
 
-Verify a production build with:
+Build the production website.
 
 ```sh
 npm run build
