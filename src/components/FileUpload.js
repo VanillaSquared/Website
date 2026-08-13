@@ -9,6 +9,7 @@ import {
   BUG_ATTACHMENT_ALLOWED_EXTENSIONS,
   BUG_ATTACHMENT_MAX_BYTES,
   BUG_ATTACHMENT_MAX_FILES,
+  BUG_ATTACHMENT_MAX_TOTAL_BYTES,
   getBugAttachmentExtension,
   isAllowedBugAttachmentName,
 } from "@/bugs/config";
@@ -40,6 +41,7 @@ export default function FileUpload({ files = [], onChange, disabled = false, cla
     }
 
     const accepted = [];
+    let acceptedBytes = files.reduce((total, file) => total + file.size, 0);
     let nextError = "";
 
     for (const file of incoming) {
@@ -58,7 +60,13 @@ export default function FileUpload({ files = [], onChange, disabled = false, cla
         continue;
       }
 
+      if (acceptedBytes + file.size > BUG_ATTACHMENT_MAX_TOTAL_BYTES) {
+        nextError ||= "Attachments can be up to 10 MB combined.";
+        continue;
+      }
+
       accepted.push(file);
+      acceptedBytes += file.size;
     }
 
     if (accepted.length) onChange?.([...files, ...accepted]);
@@ -97,7 +105,7 @@ export default function FileUpload({ files = [], onChange, disabled = false, cla
       >
         <Image src={fileIcon} alt="" width={30} height={30} className="mb-1" />
         <span className="text-sm font-semibold text-heading">Drop files here or click to upload</span>
-        <span className="text-xs font-normal text-muted">.txt, .log, .png, .json · Max 10 MB per file · Up to 4 files</span>
+        <span className="text-xs font-normal text-muted">.txt, .log, .png, .json · Max 10 MB combined · Up to 4 files</span>
         <input
           ref={inputRef}
           type="file"
