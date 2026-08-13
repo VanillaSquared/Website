@@ -4,6 +4,7 @@ import { evaluateBugSubmission, getTrustedClientIp } from "@/bugs/antiAbuse";
 import {
   BUG_ATTACHMENT_MAX_BYTES,
   BUG_ATTACHMENT_MAX_FILES,
+  BUG_ATTACHMENT_MAX_TOTAL_BYTES,
   isAllowedBugAttachmentName,
 } from "@/bugs/config";
 import {
@@ -17,7 +18,7 @@ import {
   validateBugSubmission,
 } from "@/bugs/server";
 
-const MAX_REQUEST_BYTES = (BUG_ATTACHMENT_MAX_BYTES * BUG_ATTACHMENT_MAX_FILES) + (64 * 1024);
+const MAX_REQUEST_BYTES = BUG_ATTACHMENT_MAX_TOTAL_BYTES + (64 * 1024);
 const ALLOWED_FIELDS = new Set([
   "title",
   "description",
@@ -141,8 +142,11 @@ export async function POST(request) {
   if (attachments.some((file) => file.size > BUG_ATTACHMENT_MAX_BYTES)) return error("Each attachment must be 10 MB or smaller.", 413);
   if (attachments.some((file) => !isAllowedBugAttachmentName(file.name))) return error("One or more attachments use an unsupported file type.", 400);
 
+  const totalAttachmentBytes = attachments.reduce((total, file) => total + file.size, 0);
+  if (totalAttachmentBytes > BUG_ATTACHMENT_MAX_TOTAL_BYTES) return error("Attachments can be up to 10 MB combined.", 413);
+
   const totalPayloadBytes = REPORT_FIELDS.reduce((total, field) => total + Buffer.byteLength(String(input[field] ?? ""), "utf8"), 0)
-    + attachments.reduce((total, file) => total + file.size, 0);
+    + totalAttachmentBytes;
   if (totalPayloadBytes > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
   const { score } = evaluateBugSubmission(request, input);
