@@ -12,7 +12,7 @@ import {
 } from "@/bugs/config";
 
 const GITHUB_API = "https://api.github.com/repos/VanillaSquared/Issues";
-const TOKEN_VERSION = 1;
+const TOKEN_VERSION = 2;
 const TOKEN_TTL_MS = 15 * 60 * 1000;
 const SAFE_FILE_ID = /^[A-Fa-f0-9-]{36}$/;
 const SAFE_GIT_SHA = /^[a-f0-9]{40}$/;
@@ -56,8 +56,8 @@ function encodeToken(payload) {
   return `${encoded}.${signature}`;
 }
 
-function decodeToken(token) {
-  if (typeof token !== "string" || token.length > 2048) return null;
+function decodeToken(token, kind) {
+  if (typeof token !== "string" || token.length > 8192) return null;
   const [encoded, signature, extra] = token.split(".");
   if (!encoded || !signature || extra !== undefined) return null;
 
@@ -72,11 +72,112 @@ function decodeToken(token) {
 
   try {
     const payload = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
-    if (!payload || payload.v !== TOKEN_VERSION || !Number.isFinite(payload.expiresAt) || payload.expiresAt < Date.now()) return null;
+    if (
+      !payload
+      || payload.v !== TOKEN_VERSION
+      || payload.kind !== kind
+      || !Number.isFinite(payload.expiresAt)
+      || payload.expiresAt < Date.now()
+    ) {
+      return null;
+    }
     return payload;
   } catch {
     return null;
   }
+}
+
+function normalizedStartedAt(value) {
+  const numeric = typeof value === "number" ? value : Number(String(value ?? "").trim());
+  return Number.isFinite(numeric) ? String(numeric) : null;
+}
+
+function normalizedReportInput(input) {
+  const startedAt = normalizedStartedAt(input?.startedAt);
+  if (!startedAt) return null;
+
+  return {
+    title: String(input?.title ?? ""),
+    description: String(input?.description ?? ""),
+    category: String(input?.category ?? ""),
+    minecraftVersion: String(input?.minecraftVersion ?? ""),
+    modVersion: String(input?.modVersion ?? ""),
+    operatingSystem: String(input?.operatingSystem ?? ""),
+    website: String(input?.website ?? ""),
+    startedAt,
+  };
+}
+
+function normalizeManifest(manifest) {
+  if (!Array.isArray(manifest) || manifest.length > BUG_ATTACHMENT_MAX_FILES) return null;
+
+  const normalized = [];
+  let totalBytes = 0;
+  const seenIds = new Set();
+
+  for (let fileIndex = 0; fileIndex < manifest.length; fileIndex += 1) {
+    const file = manifest[fileIndex];
+    const fileId = String(file?.fileId ?? "");
+    const name = safeDisplayName(file?.name);
+    const size = Number(file?.fileSize);
+    const chunkCount = Number(file?.chunkCount);
+
+    if (
+      !SAFE_FILE_ID.test(fileId)
+      || seenIds.has(fileId)
+      || !name
+      || !isAllowedBugAttachmentName(name)
+      || !Number.isInteger(size)
+      || size < 0
+      || size > BUG_ATTACHMENT_MAX_BYTES
+      || !Number.isInteger(chunkCount)
+      || chunkCount < 1
+      || chunkCount > MAX_CHUNKS_PER_FILE
+      || chunkCount !== Math.max(1, Math.ceil(size / BUG_ATTACHMENT_CHUNK_BYTES))
+    ) {
+      return null;
+    }
+
+    totalBytes += size;
+    if (totalBytes > BUG_ATTACHMENT_MAX_TOTAL_BYTES) return null;
+    seenIds.add(fileId);
+    normalized.push({ fileId, fileIndex, name, fileSize: size, chunkCount });
+  }
+
+  return normalized;
+}
+
+function sessionDigest(reportInput, manifest) {
+  return crypto.createHash("sha256")
+    .update(JSON.stringify({ report: reportInput, manifest }))
+    .digest("hex");
+}
+
+export function createBugUploadSession(input, manifest) {
+  const reportInput = normalizedReportInput(input);
+  const normalizedManifest = normalizeManifest(manifest);
+  if (!reportInput || !normalizedManifest || !normalizedManifest.length) return null;
+
+  return encodeToken({
+    v: TOKEN_VERSION,
+    kind: "session",
+    expiresAt: Date.now() + TOKEN_TTL_MS,
+    digest: sessionDigest(reportInput, normalizedManifest),
+    manifest: normalizedManifest,
+  });
+}
+
+export function validateBugUploadSession(token, input, manifest = null) {
+  const session = decodeToken(token, "session");
+  const reportInput = normalizedReportInput(input);
+  if (!session || !reportInput || !Array.isArray(session.manifest)) return null;
+
+  const normalizedManifest = manifest === null ? session.manifest : normalizeManifest(manifest);
+  if (!normalizedManifest) return null;
+
+  const digest = sessionDigest(reportInput, normalizedManifest);
+  if (digest !== session.digest || JSON.stringify(normalizedManifest) !== JSON.stringify(session.manifest)) return null;
+  return session;
 }
 
 async function createGitBlob(content) {
@@ -102,35 +203,30 @@ async function getGitBlob(sha) {
   return Buffer.from(blob.content.replace(/\s/g, ""), "base64");
 }
 
-export async function stageBugAttachmentChunk({ fileId, fileIndex, name, fileSize, chunkIndex, chunkCount, content }) {
+export async function stageBugAttachmentChunk({ sessionToken, fileId, fileIndex, name, fileSize, chunkIndex, chunkCount, content }) {
+  const session = decodeToken(sessionToken, "session");
   const displayName = safeDisplayName(name);
   const size = Number(fileSize);
   const index = Number(chunkIndex);
   const count = Number(chunkCount);
   const attachmentIndex = Number(fileIndex);
 
+  if (!session || !Array.isArray(session.manifest)) return null;
+
+  const manifestFile = session.manifest.find((file) => file.fileId === String(fileId ?? ""));
   if (
-    !SAFE_FILE_ID.test(String(fileId ?? ""))
+    !manifestFile
     || !displayName
-    || !isAllowedBugAttachmentName(displayName)
-    || !Number.isInteger(attachmentIndex)
-    || attachmentIndex < 0
-    || attachmentIndex >= BUG_ATTACHMENT_MAX_FILES
-    || !Number.isInteger(size)
-    || size < 0
-    || size > BUG_ATTACHMENT_MAX_BYTES
+    || attachmentIndex !== manifestFile.fileIndex
+    || displayName !== manifestFile.name
+    || size !== manifestFile.fileSize
+    || count !== manifestFile.chunkCount
     || !Number.isInteger(index)
-    || !Number.isInteger(count)
-    || count < 1
-    || count > MAX_CHUNKS_PER_FILE
     || index < 0
     || index >= count
   ) {
     return null;
   }
-
-  const expectedChunkCount = Math.max(1, Math.ceil(size / BUG_ATTACHMENT_CHUNK_BYTES));
-  if (count !== expectedChunkCount) return null;
 
   const expectedChunkSize = size === 0
     ? 0
@@ -144,8 +240,10 @@ export async function stageBugAttachmentChunk({ fileId, fileIndex, name, fileSiz
 
   return encodeToken({
     v: TOKEN_VERSION,
-    expiresAt: Date.now() + TOKEN_TTL_MS,
-    fileId,
+    kind: "chunk",
+    expiresAt: session.expiresAt,
+    sessionDigest: session.digest,
+    fileId: manifestFile.fileId,
     fileIndex: attachmentIndex,
     name: displayName,
     extension: getBugAttachmentExtension(displayName),
@@ -157,36 +255,33 @@ export async function stageBugAttachmentChunk({ fileId, fileIndex, name, fileSiz
   });
 }
 
-export async function prepareChunkedBugAttachments(tokens) {
+export async function prepareChunkedBugAttachments(tokens, sessionToken, input) {
   if (!Array.isArray(tokens) || tokens.length > MAX_CHUNK_TOKENS) return null;
   if (!tokens.length) return [];
 
-  const payloads = tokens.map(decodeToken);
-  if (payloads.some((payload) => !payload)) return null;
+  const session = validateBugUploadSession(sessionToken, input);
+  if (!session) return null;
+
+  const payloads = tokens.map((token) => decodeToken(token, "chunk"));
+  if (payloads.some((payload) => !payload || payload.sessionDigest !== session.digest)) return null;
 
   const filesById = new Map();
   for (const payload of payloads) {
+    const manifestFile = session.manifest.find((file) => file.fileId === payload.fileId);
     if (
-      !SAFE_FILE_ID.test(String(payload.fileId ?? ""))
+      !manifestFile
       || !SAFE_GIT_SHA.test(String(payload.sha ?? ""))
-      || !Number.isInteger(payload.fileIndex)
-      || payload.fileIndex < 0
-      || payload.fileIndex >= BUG_ATTACHMENT_MAX_FILES
-      || !Number.isInteger(payload.fileSize)
-      || payload.fileSize < 0
-      || payload.fileSize > BUG_ATTACHMENT_MAX_BYTES
+      || payload.fileIndex !== manifestFile.fileIndex
+      || payload.name !== manifestFile.name
+      || payload.fileSize !== manifestFile.fileSize
+      || payload.chunkCount !== manifestFile.chunkCount
+      || payload.extension !== getBugAttachmentExtension(manifestFile.name)
       || !Number.isInteger(payload.chunkIndex)
-      || !Number.isInteger(payload.chunkCount)
-      || payload.chunkCount < 1
-      || payload.chunkCount > MAX_CHUNKS_PER_FILE
       || payload.chunkIndex < 0
       || payload.chunkIndex >= payload.chunkCount
       || !Number.isInteger(payload.chunkSize)
       || payload.chunkSize < 0
       || payload.chunkSize > BUG_ATTACHMENT_CHUNK_BYTES
-      || !safeDisplayName(payload.name)
-      || !isAllowedBugAttachmentName(payload.name)
-      || payload.extension !== getBugAttachmentExtension(payload.name)
     ) {
       return null;
     }
@@ -196,57 +291,39 @@ export async function prepareChunkedBugAttachments(tokens) {
     filesById.set(payload.fileId, file);
   }
 
-  if (filesById.size > BUG_ATTACHMENT_MAX_FILES) return null;
+  if (filesById.size !== session.manifest.length) return null;
 
-  const usedFileIndexes = new Set();
   const prepared = [];
-  let totalBytes = 0;
-
-  for (const chunks of filesById.values()) {
-    const first = chunks[0];
-    if (usedFileIndexes.has(first.fileIndex)) return null;
-    usedFileIndexes.add(first.fileIndex);
-
-    if (chunks.length !== first.chunkCount) return null;
+  for (const manifestFile of session.manifest) {
+    const chunks = filesById.get(manifestFile.fileId);
+    if (!chunks || chunks.length !== manifestFile.chunkCount) return null;
     chunks.sort((left, right) => left.chunkIndex - right.chunkIndex);
 
     for (let index = 0; index < chunks.length; index += 1) {
-      const chunk = chunks[index];
-      if (
-        chunk.chunkIndex !== index
-        || chunk.fileIndex !== first.fileIndex
-        || chunk.name !== first.name
-        || chunk.extension !== first.extension
-        || chunk.fileSize !== first.fileSize
-        || chunk.chunkCount !== first.chunkCount
-      ) {
-        return null;
-      }
+      if (chunks[index].chunkIndex !== index) return null;
     }
 
     const declaredSize = chunks.reduce((total, chunk) => total + chunk.chunkSize, 0);
-    if (declaredSize !== first.fileSize) return null;
-    totalBytes += first.fileSize;
-    if (totalBytes > BUG_ATTACHMENT_MAX_TOTAL_BYTES) return null;
+    if (declaredSize !== manifestFile.fileSize) return null;
 
     const chunkBuffers = await Promise.all(chunks.map(async (chunk) => {
       const content = await getGitBlob(chunk.sha);
       if (content.byteLength !== chunk.chunkSize) throw new Error("Bug attachment chunk size changed.");
       return content;
     }));
-    const content = Buffer.concat(chunkBuffers, first.fileSize);
-    if (content.byteLength !== first.fileSize) return null;
-    if (first.extension === "png" && !hasPngSignature(content)) return null;
+    const content = Buffer.concat(chunkBuffers, manifestFile.fileSize);
+    if (content.byteLength !== manifestFile.fileSize) return null;
+
+    const extension = getBugAttachmentExtension(manifestFile.name);
+    if (extension === "png" && !hasPngSignature(content)) return null;
 
     prepared.push({
-      fileIndex: first.fileIndex,
-      name: first.name,
-      extension: first.extension,
+      name: manifestFile.name,
+      extension,
       size: content.byteLength,
       content,
     });
   }
 
-  prepared.sort((left, right) => left.fileIndex - right.fileIndex);
-  return prepared.map(({ name, extension, size, content }) => ({ name, extension, size, content }));
+  return prepared;
 }
