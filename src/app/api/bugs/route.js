@@ -98,7 +98,7 @@ export async function POST(request) {
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
   const ipAddress = getTrustedClientIp(request);
-  if (!consumeBugSubmissionGlobalAttempt() || !consumeBugSubmissionAttempt(ipAddress)) {
+  if (!consumeBugSubmissionAttempt(ipAddress) || !consumeBugSubmissionGlobalAttempt()) {
     return error("Too many bug reports have been submitted. Please try again later.", 429);
   }
 
