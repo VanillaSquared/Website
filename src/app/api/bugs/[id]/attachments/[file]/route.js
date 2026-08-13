@@ -1,23 +1,52 @@
+import { unstable_cache } from "next/cache";
+
+import { consumeBugAttachmentRequest } from "@/bugs/rateLimit";
 import { getBugAttachment } from "@/bugs/server";
+
+const getCachedBugAttachment = unstable_cache(async (id, file) => {
+  const result = await getBugAttachment(id, file);
+  if (!result) return null;
+
+  return {
+    attachment: result.attachment,
+    content: result.content.toString("base64"),
+    mimeType: result.mimeType,
+  };
+}, ["bug-attachment-content"], { revalidate: 60 * 60 });
+
+function requestIp(request) {
+  return request.headers.get("cf-connecting-ip")
+    || request.headers.get("x-real-ip")
+    || request.headers.get("x-forwarded-for")?.split(",")[0].trim()
+    || "unknown";
+}
 
 function contentDisposition(attachment) {
   const disposition = attachment.extension === "png" ? "inline" : "attachment";
   return `${disposition}; filename*=UTF-8''${encodeURIComponent(attachment.name)}`;
 }
 
-export async function GET(_request, { params }) {
+export async function GET(request, { params }) {
+  if (!consumeBugAttachmentRequest(requestIp(request))) {
+    return new Response("Too many attachment requests.", {
+      status: 429,
+      headers: { "Retry-After": "60", "Cache-Control": "no-store" },
+    });
+  }
+
   const { id, file } = await params;
 
   try {
-    const result = await getBugAttachment(decodeURIComponent(id), decodeURIComponent(file));
+    const result = await getCachedBugAttachment(decodeURIComponent(id), decodeURIComponent(file));
     if (!result) return new Response("Not found", { status: 404 });
 
-    return new Response(result.content, {
+    const content = Buffer.from(result.content, "base64");
+    return new Response(content, {
       headers: {
         "Content-Type": result.mimeType,
-        "Content-Length": String(result.content.byteLength),
+        "Content-Length": String(content.byteLength),
         "Content-Disposition": contentDisposition(result.attachment),
-        "Cache-Control": "public, max-age=300",
+        "Cache-Control": "public, max-age=3600, immutable",
         "X-Content-Type-Options": "nosniff",
       },
     });
