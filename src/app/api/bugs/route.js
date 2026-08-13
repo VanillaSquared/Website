@@ -160,7 +160,8 @@ export async function POST(request) {
 
   try {
     const bug = await createBugReport(report, preparedAttachments);
-    return NextResponse.json({ bug }, { status: 201, headers: { "Cache-Control": "no-store" } });
+    const attachmentUploadFailed = attachments.length > 0 && bug.attachments.length !== attachments.length;
+    return NextResponse.json({ bug, attachmentUploadFailed }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch {
     return error("Bug report could not be created.", 503);
   }
