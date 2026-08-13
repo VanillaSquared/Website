@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
 
-import { evaluateBugSubmission, getBugSubmissionIp } from "@/bugs/antiAbuse";
+import { evaluateBugSubmission, getTrustedClientIp } from "@/bugs/antiAbuse";
 import {
   BUG_ATTACHMENT_MAX_BYTES,
   BUG_ATTACHMENT_MAX_FILES,
   isAllowedBugAttachmentName,
 } from "@/bugs/config";
-import { consumeBugSubmissionAttempt } from "@/bugs/rateLimit";
+import {
+  consumeBugSubmissionAttempt,
+  consumeBugSubmissionGlobalAttempt,
+} from "@/bugs/rateLimit";
 import {
   createBugReport,
   listBugReports,
@@ -94,8 +97,10 @@ export async function POST(request) {
   if (!contentType.toLowerCase().startsWith("multipart/form-data")) return error("Only multipart bug reports are accepted.", 415);
   if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
 
-  const ipAddress = getBugSubmissionIp(request);
-  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
+  const ipAddress = getTrustedClientIp(request);
+  if (!consumeBugSubmissionGlobalAttempt() || !consumeBugSubmissionAttempt(ipAddress)) {
+    return error("Too many bug reports have been submitted. Please try again later.", 429);
+  }
 
   let rawBody;
   try {
