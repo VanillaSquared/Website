@@ -65,7 +65,7 @@ export async function POST({ request }) {
   }
 
   const { ipAddress, score } = evaluateBugSubmission(request, input);
-  if (!await consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
+  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
   if (score > 6) return error("Bug report submission was rejected.", 403);
 
   const report = validateBugSubmission(input);
