@@ -2,12 +2,14 @@
 export const prerender = false;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getBugReportById, getBugReportComments } from "@/bugs/server";
+import { BUG_PUBLIC_CACHE_CONTROL, getBugReportById, getBugReportComments } from "@/bugs/server";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
 
 const bug = await getBugReportById(decodeURIComponent(Astro.params.bug)).catch(() => null);
 if (!bug) return Astro.redirect("/404", 404);
+
+Astro.response.headers.set("Cache-Control", BUG_PUBLIC_CACHE_CONTROL);
 
 const comments = await getBugReportComments(bug.id).catch(() => []);
 const sourceHtml = await renderMarkdownToHtml(bug.source, `/bugs/${bug.id}`);
@@ -60,7 +62,7 @@ const statusIconClass = bug.status === "Fixed"
           <section class="space-y-3">
             {renderedComments.map((comment) => (
               <article class="flex items-start gap-3">
-                {comment.avatarUrl ? <img src={comment.avatarUrl} alt={`${comment.author} avatar`} class="mt-5 h-9 w-9 shrink-0 rounded-full object-cover" /> : <div class="mt-5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-control text-xs font-semibold text-muted" aria-hidden="true">{comment.author.slice(0, 1).toUpperCase()}</div>}
+                {comment.avatarUrl ? <img src={comment.avatarUrl} alt={`${comment.author} avatar`} loading="lazy" decoding="async" class="mt-5 h-9 w-9 shrink-0 rounded-full object-cover" /> : <div class="mt-5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-control text-xs font-semibold text-muted" aria-hidden="true">{comment.author.slice(0, 1).toUpperCase()}</div>}
                 <div class="min-w-0 flex-1">
                   <header class="mb-1 flex flex-wrap items-baseline gap-x-2 gap-y-1 px-1 text-xs text-muted">
                     {comment.authorUrl ? <a href={comment.authorUrl} class="font-semibold text-heading transition-colors hover:text-accent" target="_blank" rel="noreferrer">{comment.author}</a> : <span class="font-semibold text-heading">{comment.author}</span>}

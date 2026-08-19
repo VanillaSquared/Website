@@ -1,4 +1,5 @@
 import {
+  BUG_PUBLIC_CACHE_CONTROL,
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_REPORT_PRIORITIES,
@@ -8,6 +9,7 @@ import {
   MOD_VERSIONS,
   OPERATING_SYSTEMS,
 } from "@/bugs/config";
+import bugSnapshot from "@/bugs/data.json";
 
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
@@ -19,6 +21,7 @@ const categoryByLabel = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [c
 const BUGS_CACHE_TTL_MS = 60 * 1000;
 let allIssuesCache = null;
 let allIssuesCacheExpiresAt = 0;
+let allIssuesRequest = null;
 const statusLabels = new Map([
   ["Unconfirmed", "Unconfirmed"],
   ["Confirmed", "Confirmed"],
@@ -91,20 +94,45 @@ function issueCommentToBugComment(comment) {
   };
 }
 
+function getSnapshotBugById(id) {
+  if (!bugSnapshot.generatedAt || !bugSnapshot.issues.length) return null;
+  const issue = bugSnapshot.issues.find((candidate) => String(candidate.number) === String(id));
+  return issue ? issueToBug(issue) : null;
+}
+
 async function getAllIssues() {
   if (allIssuesCache && Date.now() < allIssuesCacheExpiresAt) return allIssuesCache;
 
-  const issues = [];
-
-  for (let page = 1; ; page += 1) {
-    const batch = await githubRequest(`/issues?state=all&per_page=100&page=${page}`);
-    issues.push(...batch.filter((issue) => !issue.pull_request));
-    if (batch.length < 100) break;
+  // The scheduled snapshot avoids a GitHub request for normal reads. Keep the
+  // live fallback so local development and first-time deployments still work
+  // before the sync workflow has produced its first snapshot.
+  if (bugSnapshot.generatedAt && bugSnapshot.issues.length) {
+    allIssuesCache = bugSnapshot.issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
+    allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
+    return allIssuesCache;
   }
 
-  allIssuesCache = issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
-  allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
-  return allIssuesCache;
+  if (allIssuesRequest) return allIssuesRequest;
+
+  allIssuesRequest = (async () => {
+    const issues = [];
+
+    for (let page = 1; ; page += 1) {
+      const batch = await githubRequest(`/issues?state=all&per_page=100&page=${page}`);
+      issues.push(...batch.filter((issue) => !issue.pull_request));
+      if (batch.length < 100) break;
+    }
+
+    allIssuesCache = issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
+    allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
+    return allIssuesCache;
+  })();
+
+  try {
+    return await allIssuesRequest;
+  } finally {
+    allIssuesRequest = null;
+  }
 }
 
 function normalizeFilters(value, allowedValues) {
@@ -129,6 +157,9 @@ export async function listBugReports({ q, category, priority, status } = {}) {
 
 export async function getBugReportById(id) {
   if (!/^\d+$/.test(String(id))) return null;
+
+  const snapshotBug = getSnapshotBugById(id);
+  if (snapshotBug) return snapshotBug;
 
   try {
     const issue = await githubRequest(`/issues/${id}`);
@@ -196,6 +227,7 @@ export async function createBugReport(report) {
 }
 
 export {
+  BUG_PUBLIC_CACHE_CONTROL,
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_REPORT_PRIORITIES,
   BUG_REPORT_STATUSES,

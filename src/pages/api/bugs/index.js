@@ -1,6 +1,6 @@
 import { evaluateBugSubmission } from "@/bugs/antiAbuse";
 import { consumeBugSubmissionAttempt } from "@/bugs/rateLimit";
-import { createBugReport, listBugReports, validateBugSubmission } from "@/bugs/server";
+import { BUG_PUBLIC_CACHE_CONTROL, createBugReport, listBugReports, validateBugSubmission } from "@/bugs/server";
 
 export const prerender = false;
 
@@ -38,7 +38,7 @@ export async function GET({ url }) {
       priority: url.searchParams.getAll("priority"),
       status: url.searchParams.getAll("status"),
     });
-    return json({ bugs }, { headers: { "Cache-Control": "no-store" } });
+    return json({ bugs }, { headers: { "Cache-Control": BUG_PUBLIC_CACHE_CONTROL } });
   } catch {
     return error("Bug reports could not be loaded.", 503);
   }
@@ -65,7 +65,7 @@ export async function POST({ request }) {
   }
 
   const { ipAddress, score } = evaluateBugSubmission(request, input);
-  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
+  if (!await consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
   if (score > 6) return error("Bug report submission was rejected.", 403);
 
   const report = validateBugSubmission(input);

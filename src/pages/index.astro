@@ -137,7 +137,7 @@ function tagClass(name) {
           <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {latestNews.map((article) => (
               <a href={article.path} class="block h-full overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
-                {article.image ? <div class="flex aspect-[16/9] justify-center overflow-hidden bg-img-card-image"><img src={article.image} alt={article.imageAlt} class="h-full w-full object-cover" /></div> : null}
+                {article.image ? <div class="flex aspect-[16/9] justify-center overflow-hidden bg-img-card-image"><img src={article.image} alt={article.imageAlt} loading="lazy" decoding="async" class="h-full w-full object-cover" /></div> : null}
                 <h3 class="px-4 pb-2 pt-3 text-base font-semibold leading-snug text-heading">{article.title}</h3>
                 <div class="flex flex-wrap gap-2 px-4 pb-4">
                   {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}

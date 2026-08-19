@@ -1,4 +1,4 @@
-import { getBugReportById } from "@/bugs/server";
+import { BUG_PUBLIC_CACHE_CONTROL, getBugReportById } from "@/bugs/server";
 
 export const prerender = false;
 
@@ -16,7 +16,7 @@ export async function GET({ params }) {
   try {
     const bug = await getBugReportById(decodeURIComponent(params.id));
     if (!bug) return json({ error: "Bug report not found." }, { status: 404 });
-    return json({ bug }, { headers: { "Cache-Control": "no-store" } });
+    return json({ bug }, { headers: { "Cache-Control": BUG_PUBLIC_CACHE_CONTROL } });
   } catch {
     return json({ error: "Bug report could not be loaded." }, { status: 503 });
   }
