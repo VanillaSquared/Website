@@ -9,7 +9,6 @@ import {
   MOD_VERSIONS,
   OPERATING_SYSTEMS,
 } from "@/bugs/config";
-import bugSnapshot from "@/bugs/data.json";
 
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
@@ -94,23 +93,8 @@ function issueCommentToBugComment(comment) {
   };
 }
 
-function getSnapshotBugById(id) {
-  if (!bugSnapshot.generatedAt || !bugSnapshot.issues.length) return null;
-  const issue = bugSnapshot.issues.find((candidate) => String(candidate.number) === String(id));
-  return issue ? issueToBug(issue) : null;
-}
-
 async function getAllIssues() {
   if (allIssuesCache && Date.now() < allIssuesCacheExpiresAt) return allIssuesCache;
-
-  // The scheduled snapshot avoids a GitHub request for normal reads. Keep the
-  // live fallback so local development and first-time deployments still work
-  // before the sync workflow has produced its first snapshot.
-  if (bugSnapshot.generatedAt && bugSnapshot.issues.length) {
-    allIssuesCache = bugSnapshot.issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
-    allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
-    return allIssuesCache;
-  }
 
   if (allIssuesRequest) return allIssuesRequest;
 
@@ -157,9 +141,6 @@ export async function listBugReports({ q, category, priority, status } = {}) {
 
 export async function getBugReportById(id) {
   if (!/^\d+$/.test(String(id))) return null;
-
-  const snapshotBug = getSnapshotBugById(id);
-  if (snapshotBug) return snapshotBug;
 
   try {
     const issue = await githubRequest(`/issues/${id}`);
