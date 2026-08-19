@@ -24,8 +24,10 @@ export const OPERATING_SYSTEMS = ["Windows", "macOS", "Linux", "iOS", "Other", "
 export const BUG_TITLE_MAX_LENGTH = 60;
 export const BUG_DESCRIPTION_MAX_LENGTH = 2000;
 
-// Bug reports are public content. Keep a short edge-cache window so updates become
-// visible quickly without making every page view invoke a server function.
-export const BUG_PUBLIC_CACHE_CONTROL = "public, max-age=30, s-maxage=60, stale-while-revalidate=300";
+// Bug reports are public content. Keep the edge cache long enough to reduce
+// function invocations while invalidating the server-side issue cache after a
+// successful submission.
+export const BUG_CACHE_TTL_SECONDS = 7 * 60;
+export const BUG_PUBLIC_CACHE_CONTROL = `public, max-age=${BUG_CACHE_TTL_SECONDS}, s-maxage=${BUG_CACHE_TTL_SECONDS}`;
 export const BUG_PREVIEW_MIN_QUERY_LENGTH = 2;
 export const BUG_PREVIEW_DEBOUNCE_MS = 600;

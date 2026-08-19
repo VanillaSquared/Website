@@ -1,5 +1,6 @@
 import {
   BUG_PUBLIC_CACHE_CONTROL,
+  BUG_CACHE_TTL_SECONDS,
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_REPORT_PRIORITIES,
@@ -17,10 +18,12 @@ const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 
 const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
 const categoryByLabel = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.label, category]));
-const BUGS_CACHE_TTL_MS = 60 * 1000;
+const BUGS_CACHE_TTL_MS = BUG_CACHE_TTL_SECONDS * 1000;
 let allIssuesCache = null;
 let allIssuesCacheExpiresAt = 0;
 let allIssuesRequest = null;
+let allIssuesRequestGeneration = 0;
+let allIssuesCacheGeneration = 0;
 const statusLabels = new Map([
   ["Unconfirmed", "Unconfirmed"],
   ["Confirmed", "Confirmed"],
@@ -96,7 +99,9 @@ function issueCommentToBugComment(comment) {
 async function getAllIssues() {
   if (allIssuesCache && Date.now() < allIssuesCacheExpiresAt) return allIssuesCache;
 
-  if (allIssuesRequest) return allIssuesRequest;
+  if (allIssuesRequest && allIssuesRequestGeneration === allIssuesCacheGeneration) return allIssuesRequest;
+
+  const requestGeneration = allIssuesCacheGeneration;
 
   allIssuesRequest = (async () => {
     const issues = [];
@@ -107,16 +112,26 @@ async function getAllIssues() {
       if (batch.length < 100) break;
     }
 
-    allIssuesCache = issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
-    allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
-    return allIssuesCache;
+    const reports = issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
+    if (requestGeneration === allIssuesCacheGeneration) {
+      allIssuesCache = reports;
+      allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
+    }
+    return reports;
   })();
+  allIssuesRequestGeneration = requestGeneration;
 
   try {
     return await allIssuesRequest;
   } finally {
-    allIssuesRequest = null;
+    if (allIssuesRequestGeneration === requestGeneration) allIssuesRequest = null;
   }
+}
+
+function invalidateBugReportsCache() {
+  allIssuesCache = null;
+  allIssuesCacheExpiresAt = 0;
+  allIssuesCacheGeneration += 1;
 }
 
 function normalizeFilters(value, allowedValues) {
@@ -202,8 +217,7 @@ export async function createBugReport(report) {
     headers: { "Content-Type": "application/json" },
   });
 
-  allIssuesCache = null;
-  allIssuesCacheExpiresAt = 0;
+  invalidateBugReportsCache();
   return issueToBug(issue);
 }
 
