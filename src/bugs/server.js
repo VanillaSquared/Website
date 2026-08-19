@@ -1,7 +1,3 @@
-import "server-only";
-
-import { revalidateTag, unstable_cache } from "next/cache";
-
 import {
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
@@ -16,11 +12,13 @@ import {
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
-const BUGS_CACHE_TAG = "bugs";
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 
 const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
 const categoryByLabel = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.label, category]));
+const BUGS_CACHE_TTL_MS = 60 * 1000;
+let allIssuesCache = null;
+let allIssuesCacheExpiresAt = 0;
 const statusLabels = new Map([
   ["Unconfirmed", "Unconfirmed"],
   ["Confirmed", "Confirmed"],
@@ -93,7 +91,9 @@ function issueCommentToBugComment(comment) {
   };
 }
 
-const getAllIssues = unstable_cache(async function getAllIssues() {
+async function getAllIssues() {
+  if (allIssuesCache && Date.now() < allIssuesCacheExpiresAt) return allIssuesCache;
+
   const issues = [];
 
   for (let page = 1; ; page += 1) {
@@ -102,8 +102,10 @@ const getAllIssues = unstable_cache(async function getAllIssues() {
     if (batch.length < 100) break;
   }
 
-  return issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
-}, ["all-bug-reports"], { revalidate: 60, tags: [BUGS_CACHE_TAG] });
+  allIssuesCache = issues.map(issueToBug).sort((left, right) => Number(right.id) - Number(left.id));
+  allIssuesCacheExpiresAt = Date.now() + BUGS_CACHE_TTL_MS;
+  return allIssuesCache;
+}
 
 function normalizeFilters(value, allowedValues) {
   const values = Array.isArray(value) ? value : [value];
@@ -129,9 +131,7 @@ export async function getBugReportById(id) {
   if (!/^\d+$/.test(String(id))) return null;
 
   try {
-    const issue = await githubRequest(`/issues/${id}`, {
-      next: { revalidate: 60, tags: [BUGS_CACHE_TAG, `${BUGS_CACHE_TAG}-${id}`] },
-    });
+    const issue = await githubRequest(`/issues/${id}`);
     return issue.pull_request ? null : issueToBug(issue);
   } catch (error) {
     if (error.status === 404) return null;
@@ -145,9 +145,7 @@ export async function getBugReportComments(id) {
   const comments = [];
 
   for (let page = 1; ; page += 1) {
-    const batch = await githubRequest(`/issues/${id}/comments?per_page=100&page=${page}`, {
-      next: { revalidate: 60, tags: [BUGS_CACHE_TAG, `${BUGS_CACHE_TAG}-${id}`] },
-    });
+    const batch = await githubRequest(`/issues/${id}/comments?per_page=100&page=${page}`);
     comments.push(...batch);
     if (batch.length < 100) break;
   }
@@ -192,7 +190,8 @@ export async function createBugReport(report) {
     headers: { "Content-Type": "application/json" },
   });
 
-  revalidateTag(BUGS_CACHE_TAG, { expire: 0 });
+  allIssuesCache = null;
+  allIssuesCacheExpiresAt = 0;
   return issueToBug(issue);
 }
 

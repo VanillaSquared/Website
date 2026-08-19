@@ -1,5 +1,5 @@
-import Image from "next/image";
-import Link from "next/link";
+import Image from "@/components/Image";
+import Link from "@/components/Link";
 
 import discordIcon from "@cdn/discord.png";
 import vsqLogo from "@cdn/vsq-logo-circle.png";

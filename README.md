@@ -4,10 +4,10 @@
   <br>
 </h1>
 
-<h4 align="center">Official Next.js website for the Vanilla² Minecraft Fabric mod.</h4>
+<h4 align="center">Official Astro website for the Vanilla² Minecraft Fabric mod.</h4>
 
 <p align="center">
-  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white">
+  <img alt="Astro" src="https://img.shields.io/badge/Astro-7-000000?style=flat-square&logo=astro&logoColor=white">
   <img alt="React" src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white">
   <img alt="Version" src="https://img.shields.io/badge/version-0.2.2-blue?style=flat-square">
   <img alt="License" src="https://img.shields.io/badge/license-BLOBSFER--1.0-6B4EFF?style=flat-square">
@@ -31,9 +31,9 @@ This project uses the BLOBSFER Licence 1.0. It permits private use and contribut
 
 ## Tech stack
 
-- [Next.js](https://nextjs.org/) App Router
+- [Astro](https://astro.build/) pages and server routes
 - [React](https://react.dev/)
-- [Tailwind CSS](https://tailwindcss.com/) v4 via PostCSS
+- [Tailwind CSS](https://tailwindcss.com/) v4 via Vite
 - [gray-matter](https://github.com/jonschlinkert/gray-matter) and MDX for repository content
 
 ## Content
@@ -44,7 +44,7 @@ Add Markdown files under `src/docs/`. Their paths determine their `/docs` routes
 
 ### News
 
-Add Markdown files under `src/news/`. Supported frontmatter fields are:
+Add Markdown files under `news/`. Supported frontmatter fields are:
 
 ```yaml
 ---
@@ -60,7 +60,7 @@ private: false
 ---
 ```
 
-`published_date` is required and must use `dd/mm/yyyy`. It controls the article's displayed publication date and newest-first ordering. `private: true` excludes the article from every news listing and route. Images must be stored under `cdn/news/`.
+`published_date` is required and must use `dd/mm/yyyy`. It controls the article's displayed publication date and newest-first ordering. `private: true` excludes the article from the statically generated public news listing and pages. Images must be stored under `cdn/news/` and are referenced directly as `/cdn/...` at runtime.
 
 ### Bug reports
 
@@ -68,7 +68,7 @@ Bug reports are created from the form on `/bugs` and loaded through `/api/bugs`.
 
 ## Development
 
-Install dependencies.
+Use Node.js 22.12 or newer, then install dependencies.
 
 ```sh
 npm install

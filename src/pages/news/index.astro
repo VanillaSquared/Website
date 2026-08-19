@@ -1,0 +1,77 @@
+---
+export const prerender = true;
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getVisibleNewsArticles, NEWS_TAGS } from "@/news/server";
+
+const articles = getVisibleNewsArticles();
+const requestedTags = Astro.url.searchParams.getAll("tag");
+const selectedTags = [...new Set(requestedTags)].filter((name) => Object.hasOwn(NEWS_TAGS, name));
+const tagOptions = Object.entries(NEWS_TAGS).map(([value, { label }]) => ({ value, label }));
+
+function tagClass(name) {
+  const classes = {
+    announcements: "bg-[var(--vsq-tag-announcement-bg)] text-[var(--vsq-tag-announcement-text)]",
+    "vsq-release": "bg-[var(--vsq-tag-release-bg)] text-[var(--vsq-tag-release-text)]",
+    "vsq-hotfix": "bg-[var(--vsq-tag-hotfix-bg)] text-[var(--vsq-tag-hotfix-text)]",
+    "vsq-snap": "bg-[var(--vsq-tag-snapshot-bg)] text-[var(--vsq-tag-snapshot-text)]",
+    "web-patchnotes": "bg-[var(--vsq-tag-web-patchnotes-bg)] text-[var(--vsq-tag-web-patchnotes-text)]",
+  };
+  return classes[name] ?? "bg-tag text-soft";
+}
+---
+<BaseLayout
+  title="News | Vanilla²"
+  description="News and updates from Vanilla²."
+  header={{ newsTagFilter: { options: tagOptions, value: selectedTags }, variant: "news" }}
+>
+  <main class="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
+    {articles.length ? (
+      <section aria-label="News articles" class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6">
+        {articles.map((article) => (
+          <article data-news-card data-news-tags={article.tags.map(({ name }) => name).join(" ")}>
+            <a href={article.path} class="block h-full overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              {article.image ? <div class="flex aspect-[16/9] justify-center overflow-hidden bg-img-card-image"><img src={article.image} alt={article.imageAlt} class="h-full w-full object-cover" /></div> : null}
+              <h2 class="px-4 pb-2 pt-3 text-base font-semibold leading-snug text-heading">{article.title}</h2>
+              <div class="flex flex-wrap gap-2 px-4 pb-4">
+                {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}
+              </div>
+            </a>
+          </article>
+        ))}
+      </section>
+    ) : (
+      <div class="py-10 text-center">
+        <h2 class="text-lg font-semibold text-heading">No news yet</h2>
+        <p class="mt-2 text-sm text-muted">Check back later for Vanilla² updates.</p>
+      </div>
+    )}
+    {articles.length ? (
+      <div data-news-empty class="hidden py-10 text-center">
+        <h2 class="text-lg font-semibold text-heading">No matching news</h2>
+        <p class="mt-2 text-sm text-muted">Choose different tags to see more articles.</p>
+      </div>
+    ) : null}
+  </main>
+</BaseLayout>
+
+<script>
+  const applyNewsFilters = (requestedTags = new URLSearchParams(window.location.search).getAll("tag")) => {
+    const selectedTags = new Set(requestedTags);
+    let visibleCount = 0;
+
+    document.querySelectorAll("[data-news-card]").forEach((card) => {
+      const articleTags = card.dataset.newsTags?.split(" ").filter(Boolean) ?? [];
+      const visible = selectedTags.size === 0 || articleTags.some((tag) => selectedTags.has(tag));
+      card.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+
+    const emptyState = document.querySelector("[data-news-empty]");
+    if (emptyState) emptyState.classList.toggle("hidden", visibleCount !== 0);
+  };
+
+  applyNewsFilters();
+  window.addEventListener("news-filter-change", (event) => applyNewsFilters(event.detail));
+  window.addEventListener("popstate", () => applyNewsFilters());
+</script>

@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/Image";
 
 import downloadIcon from "@cdn/icons/download.svg";
 import fileIcon from "@cdn/icons/file.svg";

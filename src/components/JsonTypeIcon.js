@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/Image";
 
 import arrayIcon from "@cdn/icons/json-types/array.svg";
 import booleanIcon from "@cdn/icons/json-types/boolean.svg";

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import Modal from "@/components/Modal";
+import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
 import useSecretSequence from "@/hooks/useSecretSequence";
 import { hasCookieConsent, setConsentedCookie } from "@/utils/cookieConsent";
 
@@ -34,7 +35,7 @@ function saveSplashCookie() {
   );
 }
 
-export default function FrontPageSecret({ splashTexts, statsContent }) {
+export default function FrontPageSecret({ splashTexts, statsContent = <ModrinthDownloadStats compact /> }) {
   const [splashText, setSplashText] = useState(null);
   const [statsOpen, setStatsOpen] = useState(false);
 

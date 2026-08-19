@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ComponentPreviewContent from "@/components/ComponentPreviewContent";
+---
+<BaseLayout title="Component Preview - Vanilla²">
+  <ComponentPreviewContent client:load />
+</BaseLayout>

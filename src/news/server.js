@@ -1,5 +1,3 @@
-import "server-only";
-
 import fs from "node:fs";
 import path from "node:path";
 
@@ -14,7 +12,7 @@ import {
   titleFromSegment,
 } from "@/markdown/server";
 
-const NEWS_DIRECTORY = path.resolve(process.cwd(), "src", "news");
+const NEWS_DIRECTORY = path.resolve(process.cwd(), "news");
 let newsArticles;
 
 export const NEWS_TAGS = Object.freeze({

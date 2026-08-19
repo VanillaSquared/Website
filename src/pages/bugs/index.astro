@@ -1,0 +1,73 @@
+---
+export const prerender = false;
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import BugFilterSidebar from "@/components/BugFilterSidebar";
+import BugList from "@/components/BugList";
+import BugReportGuide from "@/components/BugReportGuide";
+import SearchBar from "@/components/SearchBar";
+import {
+  BUG_REPORT_CATEGORY_CONFIGS,
+  BUG_REPORT_PRIORITIES,
+  BUG_REPORT_STATUSES,
+  listBugReports,
+} from "@/bugs/server";
+
+function getValues(name) {
+  return Astro.url.searchParams.getAll(name).map((value) => value.trim()).filter(Boolean);
+}
+
+const filters = {
+  q: Astro.url.searchParams.get("q")?.trim() ?? "",
+  category: getValues("category"),
+  priority: getValues("priority"),
+  status: getValues("status"),
+};
+
+let bugs;
+try {
+  bugs = await listBugReports(filters);
+} catch {
+  bugs = null;
+}
+---
+<BaseLayout title="Bugs | Vanilla²" description="Browse known Vanilla² bug reports.">
+  <section class="flex min-h-0 flex-1 justify-center bg-background px-6 pt-10 pb-10">
+    <div class="flex min-h-0 w-full max-w-6xl flex-1 flex-col">
+      <div class="mb-7 flex justify-center">
+        <div class="flex w-full max-w-3xl items-center justify-center gap-2">
+          <BugReportGuide client:load />
+          <SearchBar
+            action="/bugs"
+            defaultValue={filters.q}
+            hiddenFields={{ category: filters.category, priority: filters.priority, status: filters.status }}
+            placeholder="Search bug reports"
+            previewEndpoint="/api/bugs"
+            previewResultsKey="bugs"
+            previewTitleKey="title"
+            previewDescriptionKey="description"
+            previewMetaKey="publicId"
+            previewMetaCase="upper"
+            className="flex-1"
+            client:load
+          />
+          <BugFilterSidebar
+            categories={BUG_REPORT_CATEGORY_CONFIGS}
+            priorities={BUG_REPORT_PRIORITIES}
+            statuses={BUG_REPORT_STATUSES}
+            client:load
+          />
+        </div>
+      </div>
+
+      <div class="mx-auto min-h-0 w-full max-w-4xl flex-1">
+        {bugs ? <BugList bugs={bugs} /> : (
+          <div class="px-4 py-8 text-center">
+            <p class="text-lg font-semibold text-heading">Bug reports could not be loaded</p>
+            <p class="mt-2 text-sm text-muted">Please try again later.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

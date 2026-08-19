@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/Link";
 
 import Card from "@/components/Card";
 import DefaultTemplatePage from "@/template-pages/DefaultTemplatePage";

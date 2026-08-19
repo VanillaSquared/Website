@@ -1,0 +1,152 @@
+---
+export const prerender = true;
+
+import fs from "node:fs";
+import path from "node:path";
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import FrontPageSecret from "@/components/FrontPageSecret";
+import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
+import { getVisibleNewsArticles } from "@/news/server";
+import { resolveAssetUrl } from "@/utils/serverAssets";
+
+const splashTexts = fs
+  .readFileSync(path.resolve(process.cwd(), "cdn", "frontpage", "super-secret-splash-texts.txt"), "utf8")
+  .split(/\r?\n/)
+  .map((splashText) => splashText.trim())
+  .filter(Boolean);
+
+const features = [
+  {
+    title: "Rebalanced armor, tools and weapons.",
+    image: "@cdn/frontpage/rebalance-showcase.png",
+    imageAlt: "Rebalanced Vanilla² equipment",
+    href: "/docs/items",
+  },
+  {
+    title: "New Redstone Sulfur Cube.",
+    image: "@cdn/frontpage/redstone-sulfur-cube.png",
+    imageAlt: "Redstone Sulfur Cube",
+    href: "/docs/other-features/sulfur_cube#redstone-sulfur-cube",
+  },
+  {
+    title: "New Enchantments.",
+    image: "@cdn/frontpage/swirling-showcase.png",
+    imageAlt: "Swirling enchantment in action",
+    href: "/docs/enchanting",
+  },
+  {
+    title: "Remade enchantment system.",
+    image: "@cdn/frontpage/enchanting-system.png",
+    imageAlt: "Vanilla² enchanting system",
+    href: "/docs/enchanting",
+  },
+  {
+    title: "Sulfur Goo & craftable gunpowder.",
+    image: "@cdn/frontpage/craftable-gunpowder-showcase.png",
+    imageAlt: "Craftable gunpowder recipe",
+    href: "/docs/items/sulfur_goo",
+  },
+  {
+    title: "Lots of new Datapack features.",
+    image: "@cdn/frontpage/datapack-showcase.png",
+    imageAlt: "Vanilla² datapack features",
+    href: "/docs/datapacks/enchanting/custom_enchantments",
+  },
+];
+
+const enchantments = [
+  { name: "Dash", desc: "Burst forward and strike entities caught in the lunge.", href: "/docs/enchanting/dash" },
+  { name: "Ruthless", desc: "Greatly increases attack damage at a self-damage cost.", href: "/docs/enchanting/ruthless" },
+  { name: "Swirling", desc: "Spin with your weapon and repeatedly strike nearby enemies.", href: "/docs/enchanting/swirling" },
+  { name: "Void Strike", desc: "Applies the Voided effect to targets.", href: "/docs/enchanting/void_strike" },
+];
+
+const latestNews = getVisibleNewsArticles().slice(0, 6);
+
+function tagClass(name) {
+  const classes = {
+    announcements: "bg-[var(--vsq-tag-announcement-bg)] text-[var(--vsq-tag-announcement-text)]",
+    "vsq-release": "bg-[var(--vsq-tag-release-bg)] text-[var(--vsq-tag-release-text)]",
+    "vsq-hotfix": "bg-[var(--vsq-tag-hotfix-bg)] text-[var(--vsq-tag-hotfix-text)]",
+    "vsq-snap": "bg-[var(--vsq-tag-snapshot-bg)] text-[var(--vsq-tag-snapshot-text)]",
+    "web-patchnotes": "bg-[var(--vsq-tag-web-patchnotes-bg)] text-[var(--vsq-tag-web-patchnotes-text)]",
+  };
+  return classes[name] ?? "bg-tag text-soft";
+}
+---
+<BaseLayout>
+  <div class="flex flex-col flex-1 font-sans">
+    <section class="flex flex-col items-center justify-center px-6 py-24 text-center bg-background">
+      <FrontPageSecret splashTexts={splashTexts} client:load />
+      <p class="mt-4 max-w-2xl text-lg text-muted">
+        This mod overhauls many of Minecraft's outdated systems, like the combat and enchanting systems. On top of that, the mod also adds a few other features.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold bg-tag text-soft">Minecraft 26.2</span>
+        <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold bg-tag text-soft">Fabric Loader ≥0.19.3</span>
+        <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold bg-tag text-soft">Java ≥25</span>
+      </div>
+      <ModrinthDownloadStats showFollowers={false} client:load />
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+        <a href="https://modrinth.com/mod/vsq" target="_blank" rel="noopener noreferrer" class="rounded-xl border-2 border-button-primary-outline bg-button-primary px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-primary-outline-hover hover:bg-button-primary-hover">Download</a>
+        <a href="https://discord.gg/NrPZQbwc8Y" target="_blank" rel="noopener noreferrer" class="rounded-xl border-2 border-button-blurple-outline bg-button-blurple px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-blurple-outline-hover hover:bg-button-blurple-hover">Discord</a>
+        <a href="/docs" class="rounded-xl border-2 border-button-blue-outline bg-button-blue px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-blue-outline-hover hover:bg-button-blue-hover">Docs</a>
+        <a href="/bugs" class="rounded-xl border-2 border-button-purple-outline bg-button-purple px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-purple-outline-hover hover:bg-button-purple-hover">Bug Reporter</a>
+        <a href="/news" class="rounded-xl border-2 border-button-secondary-outline bg-button-secondary px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-secondary-outline-hover hover:bg-button-secondary-hover">News</a>
+      </div>
+    </section>
+
+    <section class="px-6 py-20 bg-background">
+      <div class="mx-auto max-w-5xl">
+        <h2 class="text-center text-3xl font-bold text-heading">Features</h2>
+        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <a href={feature.href} class="block overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+              <div class="flex aspect-[16/9] justify-center overflow-hidden bg-img-card-image">
+                <img src={resolveAssetUrl(feature.image)} alt={feature.imageAlt} loading="eager" class="h-full w-full object-cover" />
+              </div>
+              <h3 class="px-4 pb-4 pt-3 text-base font-semibold leading-snug text-heading">{feature.title}</h3>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-background px-6 py-18">
+      <div class="mx-auto max-w-5xl">
+        <h2 class="text-center text-3xl font-bold text-heading">Enchanting Overhaul</h2>
+        <p class="mx-auto mt-4 max-w-2xl text-center text-muted">
+          Vanilla² replaces much of vanilla enchanting with a recipe-based enchantment table and an enchantment recipe book. Discover recipes through loot, fishing, piglin bartering, villager librarians, and structure chests.
+        </p>
+        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {enchantments.map((enchantment) => (
+            <a href={enchantment.href} class="block rounded-xl border-2 border-transparent bg-card p-6 transition-colors hover:border-accent">
+              <h3 class="text-lg font-semibold text-accent">{enchantment.name}</h3>
+              <p class="mt-2 text-sm text-muted">{enchantment.desc}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {latestNews.length ? (
+      <section class="mt-1 bg-background px-6 py-20">
+        <div class="mx-auto max-w-5xl">
+          <h2 class="text-center text-3xl font-bold text-heading">Latest News</h2>
+          <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {latestNews.map((article) => (
+              <a href={article.path} class="block h-full overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+                {article.image ? <div class="flex aspect-[16/9] justify-center overflow-hidden bg-img-card-image"><img src={article.image} alt={article.imageAlt} class="h-full w-full object-cover" /></div> : null}
+                <h3 class="px-4 pb-2 pt-3 text-base font-semibold leading-snug text-heading">{article.title}</h3>
+                <div class="flex flex-wrap gap-2 px-4 pb-4">
+                  {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    ) : null}
+  </div>
+</BaseLayout>

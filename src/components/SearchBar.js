@@ -5,6 +5,7 @@ import { useEffect, useId, useState } from "react";
 import searchIcon from "@cdn/icons/search.svg";
 import xIcon from "@cdn/icons/x.svg";
 import Preview from "@/components/Preview";
+import { getAssetUrl } from "@/utils/assets";
 
 const EMPTY_HIDDEN_FIELDS = Object.freeze({});
 
@@ -183,7 +184,7 @@ export default function SearchBar({
           })}
           <div className="relative flex items-center">
             <img
-              src={searchIcon.src}
+              src={getAssetUrl(searchIcon)}
               alt=""
               aria-hidden="true"
               className="pointer-events-none absolute left-3 z-10 h-4 w-4"
@@ -215,8 +216,8 @@ export default function SearchBar({
                   aria-hidden="true"
                   className="block h-4 w-4 bg-current"
                   style={{
-                    WebkitMask: `url(${xIcon.src}) center / contain no-repeat`,
-                    mask: `url(${xIcon.src}) center / contain no-repeat`,
+                    WebkitMask: `url(${getAssetUrl(xIcon)}) center / contain no-repeat`,
+                    mask: `url(${getAssetUrl(xIcon)}) center / contain no-repeat`,
                   }}
                 />
               </button>
@@ -272,7 +273,7 @@ export default function SearchBar({
               onClick={(event) => submitSearch(event, close)}
               className="flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-sm font-normal text-heading transition-colors hover:bg-control-hover focus-visible:bg-control-hover focus-visible:outline-none"
             >
-              <img src={searchIcon.src} alt="" aria-hidden="true" className="h-4 w-4" />
+              <img src={getAssetUrl(searchIcon)} alt="" aria-hidden="true" className="h-4 w-4" />
               <span className="truncate">Search for “{value}”</span>
             </button>
           </div>

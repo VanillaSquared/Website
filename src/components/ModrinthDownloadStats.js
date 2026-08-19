@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 const MODRINTH_API_URL = "https://api.modrinth.com/v2/project/vsq";
 
 function getCount(value) {
@@ -9,9 +13,7 @@ async function getProjectStats() {
     const response = await fetch(MODRINTH_API_URL, {
       headers: {
         Accept: "application/json",
-        "User-Agent": "VanillaSquaredWebsite/1.0 (https://vanillasquared.org)",
       },
-      next: { revalidate: 3600 },
     });
 
     if (!response.ok) return null;
@@ -31,14 +33,28 @@ function formatCount(count, singular, plural) {
   return `${formattedCount} ${count === 1 ? singular : plural}`;
 }
 
-export default async function ModrinthDownloadStats({
+export default function ModrinthDownloadStats({
   showDownloads = true,
   showFollowers = true,
   compact = false,
+  initialStats = null,
 }) {
-  if (!showDownloads && !showFollowers) return null;
+  const [stats, setStats] = useState(initialStats);
 
-  const stats = await getProjectStats();
+  useEffect(() => {
+    if (initialStats) return undefined;
+
+    let active = true;
+    getProjectStats().then((nextStats) => {
+      if (active) setStats(nextStats);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [initialStats]);
+
+  if (!showDownloads && !showFollowers) return null;
 
   if (stats === null) return null;
 

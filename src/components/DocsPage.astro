@@ -1,0 +1,75 @@
+---
+import CategoryNavigation from "@/components/CategoryNavigation";
+import CopyDocumentButton from "@/components/CopyDocumentButton";
+import Footer from "@/components/Footer";
+import OnThisPage from "@/components/OnThisPage";
+
+const { document, navigation, breadcrumbs, html } = Astro.props;
+---
+<div class="docs-layout-grid grid w-full flex-1 grid-cols-1" style="--docs-left-width: 280px; --docs-right-width: 300px;">
+  <div class="docs-layout-slot docs-layout-navigation-slot">
+    <aside class="docs-layout-navigation hidden bg-category lg:block">
+      <div class="sticky top-16 max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <CategoryNavigation items={navigation} selectedId={document.path} client:load />
+      </div>
+    </aside>
+  </div>
+
+  <div class="docs-layout-slot docs-layout-content-slot">
+    <main class="docs-layout-content min-w-0 px-5 py-8 lg:px-8 xl:px-10">
+      <nav aria-label="Breadcrumb" class="mb-5 text-sm text-muted">
+        <ol class="flex flex-wrap items-center gap-2">
+          {breadcrumbs.map((breadcrumb, index) => (
+            <li class="flex items-center gap-2">
+              {index ? <span aria-hidden="true" class="text-subtle">/</span> : null}
+              {breadcrumb.href && index < breadcrumbs.length - 1 ? (
+                <a href={breadcrumb.href} class="transition-colors hover:text-heading">{breadcrumb.title}</a>
+              ) : <span aria-current={index === breadcrumbs.length - 1 ? "page" : undefined}>{breadcrumb.title}</span>}
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <header class="mb-8 border-b border-divider pb-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{document.title}</h1>
+            {document.description ? <p class="mt-3 max-w-3xl text-lg text-muted">{document.description}</p> : null}
+          </div>
+          <CopyDocumentButton source={document.source} client:load />
+        </div>
+      </header>
+
+      <div class="docs-content" set:html={html}></div>
+    </main>
+  </div>
+
+  <div class="docs-layout-slot docs-layout-information-slot">
+    <aside class="docs-layout-information hidden bg-category px-6 py-8 lg:block">
+      <div class="sticky top-24 max-h-[calc(100vh-7rem)] space-y-8 overflow-y-auto">
+        {document.sidebarCard ? (
+          <div class="overflow-hidden rounded-lg border border-category-card-border bg-card">
+            <h2 class="bg-category-selected px-4 py-3 text-center text-base font-semibold text-heading">{document.sidebarCard.title}</h2>
+            {document.sidebarCard.image ? <div class="flex justify-center p-4"><img src={document.sidebarCard.image} alt={document.sidebarCard.imageAlt} class={document.sidebarCard.imageDisplay === "item" ? "my-6 h-32 w-32 object-contain [image-rendering:pixelated]" : "h-auto w-full object-contain"} /></div> : null}
+            {document.sidebarCard.description ? <p class="border-t border-category-card-border px-4 py-3 text-sm text-muted">{document.sidebarCard.description}</p> : null}
+            {document.sidebarCard.details.length ? (
+              <dl class="border-t border-category-card-border text-sm">
+                {document.sidebarCard.details.map((detail) => (
+                  <div class="grid grid-cols-[minmax(min-content,2fr)_minmax(0,3fr)] gap-3 border-b border-category-card-border px-4 py-2.5 last:border-b-0">
+                    <dt class="font-medium text-accent">{detail.label}</dt>
+                    <dd class="min-w-0 [overflow-wrap:anywhere] text-soft">{detail.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+          </div>
+        ) : null}
+        <OnThisPage headings={document.headings} client:load />
+      </div>
+    </aside>
+  </div>
+
+  <div class="docs-layout-footer-slot">
+    <Footer />
+  </div>
+</div>

@@ -1,7 +1,6 @@
 "use client";
 
-import { startTransition, useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import closeIcon from "@cdn/icons/x.svg";
 import filterIcon from "@cdn/icons/filter.svg";
@@ -10,27 +9,33 @@ import Checkmark from "@/components/Checkmark";
 import Modal from "@/components/Modal";
 
 export default function NewsTagFilter({ options = [], value = [] }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [selectedTags, setSelectedTags] = useState(value);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
 
   useEffect(() => {
+    const validTags = new Set(options.map((option) => option.value));
+    const syncFromLocation = () => {
+      const tags = [...new Set(new URLSearchParams(window.location.search).getAll("tag"))]
+        .filter((tag) => validTags.has(tag));
+      setSelectedTags(tags);
+    };
+
     setSelectedTags(value);
-  }, [value]);
+    syncFromLocation();
+    window.addEventListener("popstate", syncFromLocation);
+    return () => window.removeEventListener("popstate", syncFromLocation);
+  }, [options, value]);
 
   function setTags(nextTags) {
     setSelectedTags(nextTags);
 
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete("tag");
     nextTags.forEach((selectedTag) => params.append("tag", selectedTag));
 
     const query = params.toString();
-    startTransition(() => {
-      router.replace(`${pathname}${query ? `?${query}` : ""}`, { scroll: false });
-    });
+    window.history.pushState({}, "", `${window.location.pathname}${query ? `?${query}` : ""}`);
+    window.dispatchEvent(new CustomEvent("news-filter-change", { detail: nextTags }));
   }
 
   function updateTag(tag, checked) {

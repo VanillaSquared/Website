@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import plusIcon from "@cdn/icons/plus.svg";
@@ -33,7 +32,6 @@ function SelectField({ label, name, options }) {
 }
 
 export default function BugReportGuide() {
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [startedAt, setStartedAt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
@@ -74,8 +72,7 @@ export default function BugReportGuide() {
 
       setOpen(false);
       form.reset();
-      router.push(`/bugs/${result.bug.id}`);
-      router.refresh();
+      window.location.assign(`/bugs/${result.bug.id}`);
     } catch (submissionError) {
       setError(submissionError.message || "Bug report could not be created.");
     } finally {

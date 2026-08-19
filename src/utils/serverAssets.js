@@ -1,5 +1,3 @@
-import "server-only";
-
 import fs from "node:fs";
 import path from "node:path";
 
@@ -45,5 +43,5 @@ export function resolveAssetUrl(source, assetDirectory = "") {
   const descriptor = getAssetDescriptor(segments);
   if (!descriptor || (assetDirectory && segments[0] !== assetDirectory)) return null;
 
-  return `/media/${segments.map(encodeURIComponent).join("/")}`;
+  return `/cdn/${segments.map(encodeURIComponent).join("/")}`;
 }

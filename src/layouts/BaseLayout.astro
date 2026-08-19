@@ -1,0 +1,39 @@
+---
+import "../styles/globals.css";
+
+import CookieConsentModal from "@/components/CookieConsentModal";
+import Footer from "@/components/Footer";
+import Header from "@/components/Header";
+import ScrollbarVisibility from "@/components/ScrollbarVisibility";
+import { COOKIE_CONSENT_STORAGE_KEY } from "@/utils/cookieConsent";
+
+const {
+  title = "Vanilla² - Minecraft Fabric Mod",
+  description = "A Fabric combat and progression overhaul that keeps Minecraft close to vanilla while expanding weapons, armor, enchantments, and combat utility.",
+  header = {},
+  search = {},
+  showFooter = true,
+} = Astro.props;
+
+const themeInitializer = `try{if(localStorage.getItem(${JSON.stringify(COOKIE_CONSENT_STORAGE_KEY)})==="accepted"){const theme=document.cookie.split("; ").find((cookie)=>cookie.startsWith("vsq-theme="))?.split("=")[1];if(theme==="light"){document.documentElement.dataset.theme="light"}}}catch{}`;
+---
+<!doctype html>
+<html lang="en" class="scrollbar-while-scrolling h-full antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" />
+    <title>{title}</title>
+    <script is:inline set:html={themeInitializer}></script>
+  </head>
+  <body class="min-h-full flex flex-col">
+    <ScrollbarVisibility client:load />
+    <CookieConsentModal client:load />
+    <Header search={search} {...header} client:load />
+    <main class="flex flex-1 flex-col">
+      <slot />
+    </main>
+    {showFooter ? <Footer /> : null}
+  </body>
+</html>

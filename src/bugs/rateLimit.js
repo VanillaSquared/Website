@@ -1,5 +1,3 @@
-import "server-only";
-
 import { createHash } from "node:crypto";
 
 const WINDOW_MS = 15 * 60 * 1000;

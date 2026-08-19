@@ -1,5 +1,3 @@
-import "server-only";
-
 import { resolveAssetUrl } from "@/markdown/server";
 
 const SUBHEADER_MARKER = "VSQ_SUBHEADER:";

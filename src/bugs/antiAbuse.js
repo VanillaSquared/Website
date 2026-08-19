@@ -1,5 +1,3 @@
-import "server-only";
-
 const MINIMUM_COMPLETION_MS = 4000;
 const MAXIMUM_COMPLETION_MS = 60 * 60 * 1000;
 

@@ -1,0 +1,15 @@
+---
+export const prerender = true;
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+<BaseLayout title="Template Preview - Vanilla²" search={{ placeholder: "Search the preview..." }}>
+  <section class="bg-background px-6 py-20">
+    <div class="mx-auto max-w-5xl">
+      <h1 class="text-4xl font-bold text-heading">Template Preview</h1>
+      <p class="mt-4 max-w-2xl text-muted">
+        This page previews the default template page and its top header with the reusable SearchBar component.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

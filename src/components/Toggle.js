@@ -2,6 +2,8 @@
 
 import { useId, useState } from "react";
 
+import { getAssetUrl } from "@/utils/assets";
+
 export default function Toggle({
   label,
   description,
@@ -44,7 +46,7 @@ export default function Toggle({
 
   const iconElement = activeIcon ? (
     <img
-      src={typeof activeIcon === "string" ? activeIcon : activeIcon.src}
+      src={getAssetUrl(activeIcon)}
       alt=""
       aria-hidden="true"
       className={`block ${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"}`}

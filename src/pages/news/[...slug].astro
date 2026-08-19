@@ -1,0 +1,64 @@
+---
+export const prerender = true;
+
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getNewsArticle, getVisibleNewsArticles } from "@/news/server";
+import { renderMarkdownToHtml } from "@/markdown/render.jsx";
+
+export function getStaticPaths() {
+  return getVisibleNewsArticles().map((article) => ({
+    params: { slug: article.segments.join("/") },
+    props: { article },
+  }));
+}
+
+const article = Astro.props.article ?? getNewsArticle(Astro.params.slug?.split("/").filter(Boolean) ?? []);
+
+if (!article || article.private) {
+  return Astro.redirect("/404", 404);
+}
+
+const articleHtml = await renderMarkdownToHtml(article.source, article.linkBase);
+
+function tagClass(name) {
+  const classes = {
+    announcements: "bg-[var(--vsq-tag-announcement-bg)] text-[var(--vsq-tag-announcement-text)]",
+    "vsq-release": "bg-[var(--vsq-tag-release-bg)] text-[var(--vsq-tag-release-text)]",
+    "vsq-hotfix": "bg-[var(--vsq-tag-hotfix-bg)] text-[var(--vsq-tag-hotfix-text)]",
+    "vsq-snap": "bg-[var(--vsq-tag-snapshot-bg)] text-[var(--vsq-tag-snapshot-text)]",
+    "web-patchnotes": "bg-[var(--vsq-tag-web-patchnotes-bg)] text-[var(--vsq-tag-web-patchnotes-text)]",
+  };
+  return classes[name] ?? "bg-tag text-soft";
+}
+
+const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(article.publishedAt));
+---
+<BaseLayout title={`${article.title} | Vanilla² News`} description={`${article.tags.map((tag) => tag.label).join(", ")} from Vanilla²: ${article.title}.`}>
+  <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
+    <article>
+      <header class="mb-8 border-b border-divider pb-7">
+        {article.image && article.showImageOnPage ? <img src={article.image} alt={article.imageAlt} class="mb-7 aspect-[16/9] w-full rounded-xl object-cover" /> : null}
+        <h1 class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{article.title}</h1>
+        <div class="mt-4 flex flex-wrap gap-2" aria-label="Article tags">
+          {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}
+        </div>
+      </header>
+
+      {article.author ? (
+        <div class="lg:grid lg:grid-cols-[8rem_minmax(0,1fr)] lg:gap-8">
+          <aside class="mb-6 lg:mb-0" aria-label="Article author">
+            <div class="w-32 shrink-0 overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface">
+              {article.authorImage ? <img src={article.authorImage} alt={`${article.author} author portrait`} class="aspect-square w-full object-cover" /> : null}
+              <div class="px-2 pb-3 text-center">
+                <p class="pt-3 text-xs leading-tight text-muted">{article.author}</p>
+                <p class="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>
+                <time datetime={article.publishedAt} class="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
+              </div>
+            </div>
+          </aside>
+          <div class="docs-content" set:html={articleHtml}></div>
+        </div>
+      ) : <div class="docs-content" set:html={articleHtml}></div>}
+    </article>
+  </main>
+</BaseLayout>
