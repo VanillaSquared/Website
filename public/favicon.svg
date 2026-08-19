@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
-  <title>Vanilla²</title>
-  <rect width="64" height="64" rx="14" fill="#171717" />
-  <path fill="#c269c2" d="M17 18h8l7 18 7-18h8L36 46h-8z" />
-  <circle cx="47" cy="15" r="4" fill="#e3a6e3" />
-</svg>
