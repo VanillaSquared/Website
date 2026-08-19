@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import searchIcon from "@cdn/icons/search.svg";
 import xIcon from "@cdn/icons/x.svg";
 import Preview from "@/components/Preview";
+import { BUG_PREVIEW_DEBOUNCE_MS, BUG_PREVIEW_MIN_QUERY_LENGTH } from "@/bugs/config";
 import { getAssetUrl } from "@/utils/assets";
 
 const EMPTY_HIDDEN_FIELDS = Object.freeze({});
@@ -77,10 +78,12 @@ export default function SearchBar({
   };
   const [previewItems, setPreviewItems] = useState([]);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const previewCache = useRef(new Map());
   const variantConfig = variants[variant] ?? variants.default;
 
   useEffect(() => {
-    if (!showPreview || locked || !previewEndpoint || !value.trim()) {
+    const query = value.trim();
+    if (!showPreview || locked || !previewEndpoint || query.length < BUG_PREVIEW_MIN_QUERY_LENGTH) {
       setPreviewItems([]);
       setPreviewLoading(false);
       return undefined;
@@ -88,18 +91,28 @@ export default function SearchBar({
 
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
+      const url = new URL(previewEndpoint, window.location.origin);
+      Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
+        appendParamValues(url.searchParams, fieldName, fieldValue);
+      });
+      url.searchParams.set(name, query);
+      const cacheKey = url.toString();
+      const cachedItems = previewCache.current.get(cacheKey);
+      if (cachedItems) {
+        setPreviewItems(cachedItems);
+        setPreviewLoading(false);
+        return;
+      }
+
       setPreviewLoading(true);
 
       try {
-        const url = new URL(previewEndpoint, window.location.origin);
-        Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
-          appendParamValues(url.searchParams, fieldName, fieldValue);
-        });
-        url.searchParams.set(name, value.trim());
-        const response = await fetch(url, { signal: controller.signal });
+        const response = await fetch(url, { signal: controller.signal, cache: "force-cache" });
         const json = await response.json();
         const results = previewResultsKey ? json?.[previewResultsKey] : json;
-        setPreviewItems(Array.isArray(results) ? results.slice(0, 6) : []);
+        const items = Array.isArray(results) ? results.slice(0, 6) : [];
+        previewCache.current.set(cacheKey, items);
+        setPreviewItems(items);
       } catch (error) {
         if (error.name !== "AbortError") {
           setPreviewItems([]);
@@ -109,7 +122,7 @@ export default function SearchBar({
           setPreviewLoading(false);
         }
       }
-    }, 250);
+    }, BUG_PREVIEW_DEBOUNCE_MS);
 
     return () => {
       controller.abort();

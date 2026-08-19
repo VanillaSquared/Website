@@ -37,7 +37,7 @@ const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", ti
   <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
     <article>
       <header class="mb-8 border-b border-divider pb-7">
-        {article.image && article.showImageOnPage ? <img src={article.image} alt={article.imageAlt} class="mb-7 aspect-[16/9] w-full rounded-xl object-cover" /> : null}
+        {article.image && article.showImageOnPage ? <img src={article.image} alt={article.imageAlt} loading="lazy" decoding="async" class="mb-7 aspect-[16/9] w-full rounded-xl object-cover" /> : null}
         <h1 class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{article.title}</h1>
         <div class="mt-4 flex flex-wrap gap-2" aria-label="Article tags">
           {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}
@@ -48,7 +48,7 @@ const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", ti
         <div class="lg:grid lg:grid-cols-[8rem_minmax(0,1fr)] lg:gap-8">
           <aside class="mb-6 lg:mb-0" aria-label="Article author">
             <div class="w-32 shrink-0 overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface">
-              {article.authorImage ? <img src={article.authorImage} alt={`${article.author} author portrait`} class="aspect-square w-full object-cover" /> : null}
+              {article.authorImage ? <img src={article.authorImage} alt={`${article.author} author portrait`} loading="lazy" decoding="async" class="aspect-square w-full object-cover" /> : null}
               <div class="px-2 pb-3 text-center">
                 <p class="pt-3 text-xs leading-tight text-muted">{article.author}</p>
                 <p class="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>

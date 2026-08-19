@@ -64,7 +64,9 @@ private: false
 
 ### Bug reports
 
-Bug reports are created from the form on `/bugs` and loaded through `/api/bugs`. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable.
+Bug reports are created from the form on `/bugs`. Public bug data is synchronized hourly into `src/bugs/data.json` by `.github/workflows/sync-bugs.yml`, so normal page views do not need to call the private issue backend. The workflow requires a fine-grained `BUGS_GITHUB_TOKEN` repository secret with read access to the `VanillaSquared/Issues` repository.
+
+The live GitHub fallback is retained for local development and first-time deployments. Server-side report creation requires a fine-grained token in the `github` environment variable. For rate limiting across Vercel serverless instances, configure `KV_REST_API_URL` and `KV_REST_API_TOKEN` (or the equivalent `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`) and set `BUG_RATE_LIMIT_SALT` to a private random value.
 
 ## Development
 

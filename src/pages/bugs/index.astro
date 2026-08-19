@@ -10,6 +10,7 @@ import {
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_REPORT_PRIORITIES,
   BUG_REPORT_STATUSES,
+  BUG_PUBLIC_CACHE_CONTROL,
   listBugReports,
 } from "@/bugs/server";
 
@@ -23,6 +24,8 @@ const filters = {
   priority: getValues("priority"),
   status: getValues("status"),
 };
+
+Astro.response.headers.set("Cache-Control", BUG_PUBLIC_CACHE_CONTROL);
 
 let bugs;
 try {
