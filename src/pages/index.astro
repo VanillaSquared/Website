@@ -1,20 +1,11 @@
 ---
 export const prerender = true;
 
-import fs from "node:fs";
-import path from "node:path";
-
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import FrontPageSecret from "@/components/FrontPageSecret";
 import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
 import { getVisibleNewsArticles } from "@/news/server";
 import { resolveAssetUrl } from "@/utils/serverAssets";
-
-const splashTexts = fs
-  .readFileSync(path.resolve(process.cwd(), "cdn", "frontpage", "super-secret-splash-texts.txt"), "utf8")
-  .split(/\r?\n/)
-  .map((splashText) => splashText.trim())
-  .filter(Boolean);
 
 const features = [
   {
@@ -78,7 +69,7 @@ function tagClass(name) {
 <BaseLayout>
   <div class="flex flex-col flex-1 font-sans">
     <section class="flex flex-col items-center justify-center px-6 py-24 text-center bg-background">
-      <FrontPageSecret splashTexts={splashTexts} client:load />
+      <FrontPageSecret client:load />
       <p class="mt-4 max-w-2xl text-lg text-muted">
         This mod overhauls many of Minecraft's outdated systems, like the combat and enchanting systems. On top of that, the mod also adds a few other features.
       </p>

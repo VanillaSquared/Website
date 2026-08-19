@@ -1,80 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Modal from "@/components/Modal";
 import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
 import useSecretSequence from "@/hooks/useSecretSequence";
-import { hasCookieConsent, setConsentedCookie } from "@/utils/cookieConsent";
 
-const SECRET_SEQUENCE = "nexosux";
 const STATS_SEQUENCE = "stats";
-const NEXT_SPLASH_SEQUENCE = "1";
-const SPLASH_INTERVAL_MS = 67_000;
-const SPLASH_COOKIE = "vsq-splash-secret";
-const SPLASH_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
-function pickRandomSplash(splashTexts, previousSplash = null) {
-  if (splashTexts.length < 2) return splashTexts[0] ?? "";
-
-  const choices = splashTexts.filter((splashText) => splashText !== previousSplash);
-  return choices[Math.floor(Math.random() * choices.length)];
-}
-
-function hasSplashCookie() {
-  return document.cookie
-    .split("; ")
-    .some((cookie) => cookie === `${SPLASH_COOKIE}=1`);
-}
-
-function saveSplashCookie() {
-  setConsentedCookie(
-    SPLASH_COOKIE,
-    "1",
-    `Path=/; Max-Age=${SPLASH_COOKIE_MAX_AGE}; SameSite=Lax`,
-  );
-}
-
-export default function FrontPageSecret({ splashTexts, statsContent = <ModrinthDownloadStats compact /> }) {
-  const [splashText, setSplashText] = useState(null);
+export default function FrontPageSecret({ statsContent = <ModrinthDownloadStats compact /> }) {
   const [statsOpen, setStatsOpen] = useState(false);
-
-  useEffect(() => {
-    if (!hasCookieConsent() || !hasSplashCookie()) return;
-    setSplashText(pickRandomSplash(splashTexts));
-  }, [splashTexts]);
-
-  useSecretSequence({
-    sequence: SECRET_SEQUENCE,
-    enabled: splashText === null,
-    onMatch: () => {
-      saveSplashCookie();
-      setSplashText(pickRandomSplash(splashTexts));
-    },
-  });
 
   useSecretSequence({
     sequence: STATS_SEQUENCE,
     onMatch: () => setStatsOpen(true),
   });
-
-  useSecretSequence({
-    sequence: NEXT_SPLASH_SEQUENCE,
-    enabled: splashText !== null,
-    onMatch: () => {
-      setSplashText((currentSplash) => pickRandomSplash(splashTexts, currentSplash));
-    },
-  });
-
-  useEffect(() => {
-    if (splashText === null) return undefined;
-
-    const interval = window.setInterval(() => {
-      setSplashText((currentSplash) => pickRandomSplash(splashTexts, currentSplash));
-    }, SPLASH_INTERVAL_MS);
-
-    return () => window.clearInterval(interval);
-  }, [splashText === null, splashTexts]);
 
   return (
     <>
@@ -82,11 +22,6 @@ export default function FrontPageSecret({ splashTexts, statsContent = <ModrinthD
         <h1 className="text-5xl font-bold tracking-tight text-heading sm:text-6xl">
           Vanilla²
         </h1>
-        {splashText ? (
-          <p className="front-page-secret-splash" aria-live="polite">
-            {splashText}
-          </p>
-        ) : null}
       </div>
 
       <Modal
