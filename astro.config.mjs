@@ -2,9 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import node from "@astrojs/node";
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
+import vercel from "@astrojs/vercel";
 import { defineConfig } from "astro/config";
 import { transform } from "esbuild";
 
@@ -53,7 +53,7 @@ function jsxJavaScriptPlugin() {
 
 export default defineConfig({
   output: "server",
-  adapter: node({ mode: "standalone" }),
+  adapter: vercel(),
   integrations: [react()],
   redirects: {
     "/modlicence": "/license/mod",
