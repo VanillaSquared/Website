@@ -64,7 +64,7 @@ private: false
 
 ### Bug reports
 
-Bug reports are created from the form on `/bugs` and loaded through the cached `/api/bugs` endpoint. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable. The serverless rate limiter intentionally uses in-memory state and does not require additional environment variables.
+Bug reports are created from the form on `/bugs` and loaded through cached public responses with a seven-minute browser/CDN lifetime. A successful submission invalidates the server-side issue cache so the next uncached request refreshes from GitHub. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable. The serverless rate limiter intentionally uses in-memory state and does not require additional environment variables.
 
 ## Development
 
