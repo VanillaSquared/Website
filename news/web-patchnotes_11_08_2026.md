@@ -27,3 +27,6 @@ This update is another one shipped from vacation. Not much to say, the update is
 ## Cookies
 - some secrets on the site now use cookie.
 - updated the cookies modal text to include the new cookies usages
+
+---
+-# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
