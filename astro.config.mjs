@@ -17,7 +17,13 @@ function staticCdnPlugin() {
     name: "vanillasquared-static-cdn",
     configureServer(server) {
       server.middlewares.use("/cdn", (request, response, next) => {
-        const requestPath = decodeURIComponent(request.url?.split("?")[0] ?? "");
+        const requestUrl = new URL(request.url ?? "/", "http://localhost");
+        if (requestUrl.searchParams.has("import")) {
+          next();
+          return;
+        }
+
+        const requestPath = decodeURIComponent(requestUrl.pathname);
         const absolutePath = path.resolve(cdnDirectory, `.${requestPath}`);
         if (!absolutePath.startsWith(`${cdnDirectory}${path.sep}`) || !fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
           next();
@@ -38,12 +44,14 @@ function jsxJavaScriptPlugin() {
     name: "vanillasquared-jsx-javascript",
     enforce: "pre",
     async transform(code, id) {
-      if (!id.includes(`${path.sep}src${path.sep}`) || !id.endsWith(".js")) return undefined;
+      const [fileId] = id.split(/[?#]/, 1);
+      const normalizedId = fileId.replaceAll("\\", "/");
+      if (!normalizedId.includes("/src/") || !normalizedId.endsWith(".js")) return undefined;
 
       const result = await transform(code, {
         loader: "jsx",
         jsx: "automatic",
-        sourcefile: id,
+        sourcefile: fileId,
         sourcemap: true,
       });
       return { code: result.code, map: result.map };
