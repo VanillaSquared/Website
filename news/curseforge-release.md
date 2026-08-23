@@ -1,7 +1,7 @@
 ---
 title: Vanilla² is now on curseforge!
 tag: announcements
-image: "@cdn/news/ty-for-500-downloads.png"
+image: "@cdn/news/curseforge-release.png"
 showImageOnPage: true
 author: PainterFlow11
 authorImage: "@cdn/news/painterflow11.png"
