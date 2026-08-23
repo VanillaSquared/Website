@@ -33,8 +33,9 @@ function renderIcon(icon, iconAlt, iconClassName = "h-4 w-4") {
 
   if (typeof icon === "string" || icon.src) {
     const iconSrc = typeof icon === "string" ? icon : icon.src;
+    const [iconPath] = iconSrc.split(/[?#]/, 1);
 
-    if (!iconAlt && iconSrc.endsWith(".svg")) {
+    if (!iconAlt && iconPath.toLowerCase().endsWith(".svg")) {
       return (
         <span
           aria-hidden="true"
