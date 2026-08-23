@@ -19,6 +19,7 @@ alongside some other changes related to the recent release of Vanilla² on Curse
 - migrated from next.js to astro ([the_jan_craft](https://github.com/pxlarified))
 
 # Mainpage
+- added the header to the main page ([the_jan_craft](https://github.com/pxlarified)) 
 - the download stats of Modrinth are now added together with the ones from Curseforge
 - removed super secret splashtexts ([the_jan_craft](https://github.com/pxlarified)) 
 - re-added super secret splashtexts, but with improved performance
@@ -26,6 +27,7 @@ alongside some other changes related to the recent release of Vanilla² on Curse
 
 # /news
 - added a new download button for curseforge
+- updated the `generic-website-image.png`
 
 ---
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
