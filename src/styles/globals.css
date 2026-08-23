@@ -172,6 +172,10 @@
   --vsq-button-green-hover: #2a8955;
   --vsq-button-green-outline: #43b978;
   --vsq-button-green-outline-hover: #3aa86b;
+  --vsq-button-curseforge: #000000;
+  --vsq-button-curseforge-hover: #000000;
+  --vsq-button-curseforge-outline: #1a1a1a;
+  --vsq-button-curseforge-outline-hover: #242424;
   --vsq-button-modrinth: #1bd96a;
   --vsq-button-modrinth-hover: #18c961;
   --vsq-button-modrinth-outline: #46e986;
@@ -396,6 +400,10 @@
   --color-button-green-hover: var(--vsq-button-green-hover);
   --color-button-green-outline: var(--vsq-button-green-outline);
   --color-button-green-outline-hover: var(--vsq-button-green-outline-hover);
+  --color-button-curseforge: var(--vsq-button-curseforge);
+  --color-button-curseforge-hover: var(--vsq-button-curseforge-hover);
+  --color-button-curseforge-outline: var(--vsq-button-curseforge-outline);
+  --color-button-curseforge-outline-hover: var(--vsq-button-curseforge-outline-hover);
   --color-button-modrinth: var(--vsq-button-modrinth);
   --color-button-modrinth-hover: var(--vsq-button-modrinth-hover);
   --color-button-modrinth-outline: var(--vsq-button-modrinth-outline);
