@@ -36,5 +36,10 @@
     "@tailwindcss/vite": "^4.3.3",
     "esbuild": "^0.28.2",
     "tailwindcss": "^4.3.3"
+  },
+  "overrides": {
+    "@vercel/routing-utils": {
+      "path-to-regexp": "6.3.0"
+    }
   }
 }
