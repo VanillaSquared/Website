@@ -29,6 +29,7 @@ alongside some other changes related to the recent release of Vanilla² on Curse
 # /news
 - added a new download button for curseforge
 - added super secret article
+- added icon to the modrinth button
 - updated the `generic-website-image.png`
 - fixed secrets
 
