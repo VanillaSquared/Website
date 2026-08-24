@@ -1,20 +1,12 @@
 ---
-export const prerender = true;
-
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getNewsArticle, getVisibleNewsArticles } from "@/news/server";
+import { getNewsArticle } from "@/news/server";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 
-export function getStaticPaths() {
-  return getVisibleNewsArticles().map((article) => ({
-    params: { slug: article.segments.join("/") },
-    props: { article },
-  }));
-}
+const article = getNewsArticle(Astro.params.slug?.split("/").filter(Boolean) ?? []);
+const privateUnlocked = Astro.cookies.get("vsq-news-private")?.value === "1";
 
-const article = Astro.props.article ?? getNewsArticle(Astro.params.slug?.split("/").filter(Boolean) ?? []);
-
-if (!article || article.private) {
+if (!article || (article.private && !privateUnlocked)) {
   return Astro.redirect("/404", 404);
 }
 
