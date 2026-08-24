@@ -1,6 +1,6 @@
 ---
 title: TESTIFICATE article
-tag: announcements, vsq-snap, web-patchnotes
+tag: announcements, vsq-snap, web-patchnotes, vsq-hotfix, vsq-release
 image: "@cdn/news/indian-meme.png"
 showImageOnPage: true
 author: Imposter
@@ -10,7 +10,7 @@ published_date: 11/11/2067
 private: true
 ---
 
-Test environment 
+Test environment
 
 <Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8723300" variant="curseforge" external>Download on Curseforge</Button>
 <Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8653202" variant="curseforge" external>Download on Curseforge</Button>
