@@ -121,6 +121,7 @@ export default function Modal({
   popupAnimation,
   closeOnOutsideClick = true,
   restoreFocusTo,
+  initialFocus,
   ariaLabelledBy,
   ariaDescribedBy,
   className = "",
@@ -183,11 +184,14 @@ export default function Modal({
     restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const frame = window.requestAnimationFrame(() => {
       const focusable = getFocusableElements(contentRef.current);
-      (focusable[0] ?? contentRef.current)?.focus();
+      const initialFocusTarget = initialFocus === "dialog"
+        ? contentRef.current
+        : resolveFocusTarget(initialFocus);
+      (initialFocusTarget ?? focusable[0] ?? contentRef.current)?.focus();
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [open, shouldRender, variantConfig.modal]);
+  }, [open, shouldRender, variantConfig.modal, initialFocus]);
 
   useEffect(() => {
     if (shouldRender || !restoreFocusRef.current) return;

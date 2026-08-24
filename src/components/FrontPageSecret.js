@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import xIcon from "@cdn/icons/x.svg";
+import Button from "@/components/Button";
 import Modal from "@/components/Modal";
-import ModrinthDownloadStats from "@/components/ModrinthDownloadStats";
+import ProjectStats from "@/components/ProjectStats";
 import useSecretSequence from "@/hooks/useSecretSequence";
 import { hasCookieConsent, setConsentedCookie } from "@/utils/cookieConsent";
 
@@ -59,7 +61,7 @@ function saveSplashCookie() {
   );
 }
 
-export default function FrontPageSecret({ statsContent = <ModrinthDownloadStats compact /> }) {
+export default function FrontPageSecret({ statsContent = <ProjectStats /> }) {
   const [splashActive, setSplashActive] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const splashElementRef = useRef(null);
@@ -137,22 +139,21 @@ export default function FrontPageSecret({ statsContent = <ModrinthDownloadStats 
         open={statsOpen}
         onClose={() => setStatsOpen(false)}
         variant="compact"
+        initialFocus="dialog"
         ariaLabelledBy="front-page-stats-title"
         className="!min-h-0 !max-w-xs !p-4"
       >
-        <div className="flex items-center justify-between gap-4">
-          <h2 id="front-page-stats-title" className="text-base font-semibold text-heading">
-            Stats
-          </h2>
-          <button
-            type="button"
-            onClick={() => setStatsOpen(false)}
-            className="rounded-md px-1.5 text-lg leading-none text-muted transition-colors hover:text-heading focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            aria-label="Close Modrinth stats"
-          >
-            ×
-          </button>
-        </div>
+        <h2 id="front-page-stats-title" className="pr-10 text-base font-semibold text-heading">
+          Stats
+        </h2>
+        <Button
+          size="icon"
+          variant="tertiary"
+          icon={xIcon}
+          className="absolute top-2 right-2"
+          onClick={() => setStatsOpen(false)}
+          aria-label="Close project stats"
+        />
         <div className="mt-2">
           {statsContent}
         </div>
