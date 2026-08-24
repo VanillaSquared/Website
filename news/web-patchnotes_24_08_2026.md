@@ -6,7 +6,7 @@ showImageOnPage: false
 author: PainterFlow11
 authorImage: "@cdn/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
-published_date: 23/08/2026
+published_date: 24/08/2026
 private: true
 ---
 -# Website V0.3.0
