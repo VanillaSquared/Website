@@ -12,5 +12,7 @@ private: true
 
 Test environment 
 
-<Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.1" variant="curseforge" external>Download on Curseforge</Button>
+<Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8723300" variant="curseforge" external>Download on Curseforge</Button>
+<Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8653202" variant="curseforge" external>Download on Curseforge</Button>
+<Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8645263" variant="curseforge" external>Download on Curseforge</Button>
 <Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.1" variant="modrinth" external>Download on Modrinth</Button>
