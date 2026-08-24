@@ -27,8 +27,12 @@ alongside some other changes related to the recent release of Vanilla² on Curse
 
 # /news
 - added a new download button for curseforge
+- added super secret article
 - updated the `generic-website-image.png`
 - fixed secrets
+
+# Other Changes
+- the labels of checkmarks are now clickable
 
 ---
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*

@@ -54,15 +54,14 @@ export default function NewsTagFilter({ options = [], value = [] }) {
     const checked = selectedTags.includes(option.value);
 
     return (
-      <span key={option.value} className="flex items-center gap-2 text-sm font-medium text-soft">
-        <Checkmark
-          checked={checked}
-          onChange={(nextChecked) => updateTag(option.value, nextChecked)}
-          size="sm"
-          aria-label={`${checked ? "Remove" : "Add"} ${option.label} filter`}
-        />
-        <span>{option.label}</span>
-      </span>
+      <Checkmark
+        key={option.value}
+        checked={checked}
+        onChange={(nextChecked) => updateTag(option.value, nextChecked)}
+        label={option.label}
+        size="sm"
+        className="text-sm font-medium text-soft"
+      />
     );
   }
 

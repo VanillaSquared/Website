@@ -9,6 +9,7 @@ export default function Checkmark({
   onClick,
   interactive = false,
   disabled = false,
+  label,
   className = "",
   size = "md",
   variant = "default",
@@ -19,7 +20,7 @@ export default function Checkmark({
     { checked: false, variant: "red", icon: "x" },
     { checked: false, variant: "unconfirmed", icon: "dash" },
   ],
-  "aria-label": ariaLabel = "Toggle checked state",
+  "aria-label": ariaLabel,
   ...props
 }) {
   const sizes = {
@@ -56,6 +57,8 @@ export default function Checkmark({
   const selectedVariantName = cycleState?.variant ?? variant;
   const selectedVariant = variants[selectedVariantName] ?? variants.default;
   const selectedIcon = cycleState?.icon ?? icon ?? (isChecked ? "check" : "none");
+  const hasLabel = label !== undefined && label !== null;
+  const accessibleLabel = ariaLabel ?? (hasLabel ? undefined : "Toggle checked state");
 
   function handleClick(event) {
     if (disabled) {
@@ -83,23 +86,8 @@ export default function Checkmark({
     onClick?.(event);
   }
 
-  return (
-    <Component
-      type={isInteractive ? "button" : undefined}
-      aria-hidden={isInteractive ? undefined : "true"}
-      aria-label={isInteractive ? ariaLabel : undefined}
-      aria-pressed={isInteractive ? isChecked : undefined}
-      disabled={isInteractive ? disabled : undefined}
-      onClick={isInteractive ? handleClick : undefined}
-      className={`${sizes[size] ?? sizes.md} relative inline-flex shrink-0 items-center justify-center rounded-full border transition-colors ${
-        isInteractive && !disabled ? "cursor-pointer" : ""
-      } ${
-        disabled ? "cursor-not-allowed" : ""
-      } ${
-        isChecked ? selectedVariant.checked : selectedVariant.unchecked
-      } ${className}`}
-      {...props}
-    >
+  const iconContent = (
+    <>
       {selectedIcon === "check" ? (
         <span className="absolute top-[45%] left-1/2 h-[55%] w-[32%] -translate-x-1/2 -translate-y-1/2 rotate-45 border-r-2 border-b-2 border-current" />
       ) : null}
@@ -114,6 +102,51 @@ export default function Checkmark({
           <span className="h-0.5 w-[55%] rounded-full bg-current" />
         </span>
       ) : null}
+    </>
+  );
+
+  if (hasLabel) {
+    return (
+      <Component
+        type={isInteractive ? "button" : undefined}
+        aria-label={isInteractive ? accessibleLabel : undefined}
+        aria-pressed={isInteractive ? isChecked : undefined}
+        disabled={isInteractive ? disabled : undefined}
+        onClick={isInteractive ? handleClick : undefined}
+        className={`inline-flex items-center gap-2 ${
+          isInteractive && !disabled ? "cursor-pointer" : ""
+        } ${disabled ? "cursor-not-allowed" : ""} ${className}`}
+        {...props}
+      >
+        <span
+          aria-hidden="true"
+          className={`${sizes[size] ?? sizes.md} relative inline-flex shrink-0 items-center justify-center rounded-full border transition-colors ${
+            isChecked ? selectedVariant.checked : selectedVariant.unchecked
+          }`}
+        >
+          {iconContent}
+        </span>
+        <span>{label}</span>
+      </Component>
+    );
+  }
+
+  return (
+    <Component
+      type={isInteractive ? "button" : undefined}
+      aria-hidden={isInteractive ? undefined : "true"}
+      aria-label={isInteractive ? accessibleLabel : undefined}
+      aria-pressed={isInteractive ? isChecked : undefined}
+      disabled={isInteractive ? disabled : undefined}
+      onClick={isInteractive ? handleClick : undefined}
+      className={`${sizes[size] ?? sizes.md} relative inline-flex shrink-0 items-center justify-center rounded-full border transition-colors ${
+        isInteractive && !disabled ? "cursor-pointer" : ""
+      } ${disabled ? "cursor-not-allowed" : ""} ${
+        isChecked ? selectedVariant.checked : selectedVariant.unchecked
+      } ${className}`}
+      {...props}
+    >
+      {iconContent}
     </Component>
   );
 }
