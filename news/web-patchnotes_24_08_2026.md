@@ -21,6 +21,7 @@ alongside some other changes related to the recent release of Vanilla² on Curse
 # Mainpage
 - added the header to the main page ([the_jan_craft](https://github.com/pxlarified)) 
 - the download stats of Modrinth are now added together with the ones from Curseforge
+- updated secrets
 - removed super secret splashtexts ([the_jan_craft](https://github.com/pxlarified)) 
 - re-added super secret splashtexts, but with improved performance
 *Developers Note: evil ah jan grrrr (/jk)*
