@@ -24,6 +24,7 @@ function tagClass(name) {
 }
 
 const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(article.publishedAt));
+const AuthorCard = article.authorLink ? "a" : "div";
 ---
 <BaseLayout title={`${article.title} | Vanilla² News`} description={`${article.tags.map((tag) => tag.label).join(", ")} from Vanilla²: ${article.title}.`}>
   <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
@@ -39,14 +40,20 @@ const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", ti
       {article.author ? (
         <div class="lg:grid lg:grid-cols-[8rem_minmax(0,1fr)] lg:gap-8">
           <aside class="mb-6 lg:mb-0" aria-label="Article author">
-            <div class="w-32 shrink-0 overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface">
+            <AuthorCard
+              href={article.authorLink || undefined}
+              class:list={[
+                "block w-32 shrink-0 overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface",
+                article.authorLink && "transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+              ]}
+            >
               {article.authorImage ? <img src={article.authorImage} alt={`${article.author} author portrait`} loading="lazy" decoding="async" class="aspect-square w-full object-cover" /> : null}
               <div class="px-2 pb-3 text-center">
                 <p class="pt-3 text-xs leading-tight text-muted">{article.author}</p>
                 <p class="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>
                 <time datetime={article.publishedAt} class="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
               </div>
-            </div>
+            </AuthorCard>
           </aside>
           <div class="docs-content" set:html={articleHtml}></div>
         </div>
