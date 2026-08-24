@@ -37,13 +37,11 @@ function SelectField({ label, name, options }) {
 
 export default function BugReportGuide() {
   const [open, setOpen] = useState(false);
-  const [startedAt, setStartedAt] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   function openForm() {
     setError("");
-    setStartedAt(Date.now());
     setOpen(true);
   }
 
@@ -54,7 +52,6 @@ export default function BugReportGuide() {
 
     const form = event.currentTarget;
     const fields = new FormData(form);
-    fields.set("startedAt", String(startedAt));
 
     try {
       const response = await fetch("/api/bugs", {
@@ -149,11 +146,6 @@ export default function BugReportGuide() {
               </span>
             </label>
           </div>
-
-          <label className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
-            Website
-            <input name="website" tabIndex={-1} autoComplete="off" />
-          </label>
 
           {error ? <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">{error}</p> : null}
 

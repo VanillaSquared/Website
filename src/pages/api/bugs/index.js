@@ -1,4 +1,3 @@
-import { evaluateBugSubmission } from "@/bugs/antiAbuse";
 import { consumeBugSubmissionAttempt } from "@/bugs/rateLimit";
 import { BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES } from "@/bugs/config";
 import {
@@ -21,8 +20,6 @@ const ALLOWED_FIELDS = new Set([
   "minecraftVersion",
   "modVersion",
   "operatingSystem",
-  "startedAt",
-  "website",
 ]);
 
 function json(data, init = {}) {
@@ -103,9 +100,7 @@ export async function POST({ request }) {
     return error("Bug report validation failed.", 400);
   }
 
-  const { ipAddress, score } = evaluateBugSubmission(request, input);
-  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
-  if (score > 6) return error("Bug report submission was rejected.", 403);
+  if (!consumeBugSubmissionAttempt(request)) return error("Too many bug reports have been submitted. Please try again later.", 429);
 
   const report = validateBugSubmission(input);
   const validatedAttachments = validateBugAttachments(attachments);
