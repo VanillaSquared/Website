@@ -10,9 +10,9 @@ published_date: 24/08/2026
 private: true
 ---
 
-With the recent achievement of rushing to the 600 downloads milestone while I was on vacation(*thx btw :D*), I have decided to publish Vanilla² to Curseforge to allow Curseforge users to also download the mod directly from their launcher.
+With the recent achievement of rushing to the 700 downloads milestone while I was on vacation(*thx btw :D*), I have decided to publish Vanilla² to Curseforge to allow Curseforge users to also download the mod directly from their launcher.
 
-## Will there be any changes to the mod6website? 
+## Will there be any changes to the mod&website? 
 
 The mod will not experience any changes(*except for Curseforge being linked in the mod menu of the mod*), but the Website will receive a few changes here and there to also include links to Curseforge, but thats it.
 
