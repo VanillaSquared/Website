@@ -25,7 +25,7 @@ import Tabs from "@/components/Tabs";
 import TextInput from "@/components/TextInput";
 import Toggle from "@/components/Toggle";
 
-const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple", "green", "red", "curseforge"];
+const buttonVariants = ["primary", "secondary", "tertiary", "iconButton", "blue", "purple", "blurple", "green", "red", "curseforge", "modrinth"];
 const buttonSizes = ["sm", "md", "icon", "iconButton"];
 const cardSizes = ["sm", "md", "lg", "popup"];
 const checkmarkCycleStates = [

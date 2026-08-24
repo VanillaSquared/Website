@@ -1,3 +1,6 @@
+import curseforgeIcon from "@cdn/icons/curseforge.png";
+import modrinthIcon from "@cdn/icons/modrinth.png";
+
 const variants = {
   primary: "border-button-primary-outline bg-button-primary text-button-text hover:border-button-primary-outline-hover hover:bg-button-primary-hover",
   secondary: "border-button-secondary-outline bg-button-secondary text-button-text hover:border-button-secondary-outline-hover hover:bg-button-secondary-hover",
@@ -12,6 +15,11 @@ const variants = {
   curseforge: "border-button-curseforge-outline bg-button-curseforge text-button-text hover:border-button-curseforge-outline-hover hover:bg-button-curseforge-hover",
   modrinth: "border-button-modrinth-outline bg-button-modrinth text-button-modrinth-text hover:border-button-modrinth-outline-hover hover:bg-button-modrinth-hover",
   locked: "border-locked-border bg-locked text-locked-text cursor-not-allowed"
+};
+
+const variantIcons = {
+  curseforge: { icon: curseforgeIcon, className: "h-5 w-5" },
+  modrinth: { icon: modrinthIcon, className: "h-5 w-5 brightness-0" },
 };
 
 const variantBorders = {
@@ -125,7 +133,12 @@ export default function Button({
   ...props
 }) {
   const isLocked = locked || variant === "locked";
-  const iconElement = renderIcon(icon, iconAlt, iconClassName);
+  const variantIcon = variantIcons[variant];
+  const iconElement = renderIcon(
+    icon ?? variantIcon?.icon,
+    iconAlt,
+    iconClassName ?? (icon == null ? variantIcon?.className : undefined),
+  );
   const hasBorder = border ?? variantBorders[variant] ?? true;
   const borderClass = hasBorder ? "border-[2.0px]" : "border-0";
   const content = (
