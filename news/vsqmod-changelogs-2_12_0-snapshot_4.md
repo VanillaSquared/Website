@@ -11,7 +11,7 @@ published_date: 24/08/2026
 
 # Changelogs
 
-This is the final snapshot for -2.12.0, I wanted to add a bit more but I didn't really have any ideas that are worth implementing(some of them were things Mojang might add themselves very soon). There is a new Sponge Sulfur Cube which drains water and dries in the nether.   
+This is the final snapshot for -2.12.0, I wanted to add a bit more but I didn't really have any ideas that are worth implementing(some of them were things Mojang might add themselves very soon). There is a new Sponge Sulfur Cube which drains water and dries in the nether.
 
 # Gameplay
 
