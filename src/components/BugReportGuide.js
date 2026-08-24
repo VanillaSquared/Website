@@ -4,6 +4,10 @@ import { useState } from "react";
 
 import plusIcon from "@cdn/icons/plus.svg";
 import {
+  BUG_ATTACHMENT_ACCEPT,
+  BUG_ATTACHMENT_MAX_FILES,
+  BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES,
+  BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES,
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_TITLE_MAX_LENGTH,
@@ -50,22 +54,13 @@ export default function BugReportGuide() {
 
     const form = event.currentTarget;
     const fields = new FormData(form);
-    const payload = {
-      title: fields.get("title"),
-      description: fields.get("description"),
-      category: fields.get("category"),
-      minecraftVersion: fields.get("minecraftVersion"),
-      modVersion: fields.get("modVersion"),
-      operatingSystem: fields.get("operatingSystem"),
-      website: fields.get("website"),
-      startedAt,
-    };
+    fields.set("startedAt", String(startedAt));
 
     try {
       const response = await fetch("/api/bugs", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload),
+        headers: { Accept: "application/json" },
+        body: fields,
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Bug report could not be created.");
@@ -138,6 +133,21 @@ export default function BugReportGuide() {
             <SelectField label="Minecraft version" name="minecraftVersion" options={MINECRAFT_VERSIONS} />
             <SelectField label="Mod version" name="modVersion" options={MOD_VERSIONS} />
             <SelectField label="Operating system" name="operatingSystem" options={OPERATING_SYSTEMS} />
+            <label className="flex flex-col gap-2 text-sm font-semibold text-soft sm:col-span-2" htmlFor="attachments">
+              Attachments
+              <input
+                id="attachments"
+                name="attachments"
+                type="file"
+                multiple
+                accept={BUG_ATTACHMENT_ACCEPT}
+                className="rounded-lg bg-input px-3 py-2 text-sm font-normal text-heading outline-none transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-button-tertiary file:px-3 file:py-1 file:font-semibold file:text-button-tertiary-text hover:bg-input-hover hover:file:bg-button-tertiary-hover focus:bg-input-focus"
+                aria-describedby="attachments-help"
+              />
+              <span id="attachments-help" className="text-xs font-normal leading-5 text-muted">
+                Optional. Up to {BUG_ATTACHMENT_MAX_FILES} files, {BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES / 1024 / 1024} MB each and {BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES / 1024 / 1024} MB total. Screenshots, logs, and ZIP files are supported.
+              </span>
+            </label>
           </div>
 
           <label className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">

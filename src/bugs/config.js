@@ -24,6 +24,40 @@ export const OPERATING_SYSTEMS = ["Windows", "macOS", "Linux", "iOS", "Other", "
 export const BUG_TITLE_MAX_LENGTH = 60;
 export const BUG_DESCRIPTION_MAX_LENGTH = 2000;
 
+export const BUG_ATTACHMENT_MAX_FILES = 5;
+export const BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024;
+export const BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES = 4 * 1024 * 1024;
+export const BUG_ATTACHMENT_EXTENSIONS = [
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".bmp",
+  ".txt",
+  ".log",
+  ".md",
+  ".json",
+  ".zip",
+  ".gz",
+];
+export const BUG_ATTACHMENT_MIME_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+  "image/bmp",
+  "text/plain",
+  "text/markdown",
+  "application/json",
+  "application/zip",
+  "application/gzip",
+  "application/x-gzip",
+  "application/x-zip-compressed",
+  "application/octet-stream",
+];
+export const BUG_ATTACHMENT_ACCEPT = BUG_ATTACHMENT_EXTENSIONS.join(",");
+
 // Bug reports are public content. Keep the edge cache long enough to reduce
 // function invocations while invalidating the server-side issue cache after a
 // successful submission.

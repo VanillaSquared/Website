@@ -1,4 +1,11 @@
+import { randomUUID } from "node:crypto";
+
 import {
+  BUG_ATTACHMENT_EXTENSIONS,
+  BUG_ATTACHMENT_MAX_FILES,
+  BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES,
+  BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES,
+  BUG_ATTACHMENT_MIME_TYPES,
   BUG_PUBLIC_CACHE_CONTROL,
   BUG_CACHE_TTL_SECONDS,
   BUG_DESCRIPTION_MAX_LENGTH,
@@ -14,6 +21,7 @@ import {
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
+const GITHUB_WEB = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 
 const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
@@ -185,6 +193,87 @@ function requiredString(value, maximum) {
   return normalized && normalized.length <= maximum ? normalized : null;
 }
 
+function isFileLike(value) {
+  return value
+    && typeof value === "object"
+    && typeof value.name === "string"
+    && Number.isSafeInteger(value.size)
+    && value.size >= 0
+    && typeof value.arrayBuffer === "function";
+}
+
+function attachmentExtension(name) {
+  const fileName = name.split(/[\\/]/).pop() ?? "";
+  return fileName.match(/\.[a-z0-9]+$/i)?.[0].toLowerCase() ?? "";
+}
+
+export function validateBugAttachments(files) {
+  if (!Array.isArray(files)) return null;
+
+  const attachments = [];
+  for (const file of files) {
+    if (isFileLike(file) && file.name === "" && file.size === 0) continue;
+    if (!isFileLike(file) || !file.name.trim() || file.size > BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES) return null;
+
+    const extension = attachmentExtension(file.name);
+    if (!BUG_ATTACHMENT_EXTENSIONS.includes(extension)) return null;
+
+    const mimeType = String(file.type ?? "").toLowerCase().split(";", 1)[0];
+    if (mimeType && !BUG_ATTACHMENT_MIME_TYPES.includes(mimeType)) return null;
+    attachments.push(file);
+  }
+
+  if (attachments.length > BUG_ATTACHMENT_MAX_FILES) return null;
+  const totalSize = attachments.reduce((total, file) => total + file.size, 0);
+  return totalSize <= BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES ? attachments : null;
+}
+
+function safeAttachmentName(name, index) {
+  const fileName = name.split(/[\\/]/).pop() ?? "attachment";
+  const extension = attachmentExtension(fileName);
+  const stem = fileName
+    .slice(0, -extension.length)
+    .normalize("NFKC")
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64) || "attachment";
+
+  return `${String(index + 1).padStart(2, "0")}-${stem}${extension}`;
+}
+
+function encodeGithubPath(path) {
+  return path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+}
+
+async function uploadBugAttachments(files) {
+  if (!files.length) return [];
+
+  const directory = `bug-assets/${randomUUID()}`;
+  const assets = [];
+  for (const [index, file] of files.entries()) {
+    const fileName = safeAttachmentName(file.name, index);
+    const path = `${directory}/${fileName}`;
+    const response = await githubRequest(`/contents/${encodeGithubPath(path)}`, {
+      method: "PUT",
+      cache: "no-store",
+      body: JSON.stringify({
+        message: "Add bug report attachment",
+        content: Buffer.from(await file.arrayBuffer()).toString("base64"),
+      }),
+      headers: { "Content-Type": "application/json" },
+    });
+    const commitSha = response.commit?.sha;
+    if (typeof commitSha !== "string" || !commitSha) throw new Error("Bug attachment upload failed.");
+
+    assets.push({
+      name: fileName,
+      url: `${GITHUB_WEB}/blob/${encodeURIComponent(commitSha)}/${encodeGithubPath(path)}`,
+    });
+  }
+
+  return assets;
+}
+
 function allowedChoice(value, choices) {
   return typeof value === "string" && choices.includes(value) ? value : null;
 }
@@ -203,9 +292,13 @@ export function validateBugSubmission(input) {
   return { title, description, category, minecraftVersion, modVersion, operatingSystem };
 }
 
-export async function createBugReport(report) {
+export async function createBugReport(report, attachments = []) {
   const category = categoryBySlug.get(report.category);
-  const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}`;
+  const assets = await uploadBugAttachments(attachments);
+  const attachedAssets = assets.length
+    ? `\n\n<!-- Attached Assets -->\n\n${assets.map(({ name, url }) => `- [${name}](${url})`).join("\n")}`
+    : "";
+  const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachedAssets}`;
   const issue = await githubRequest("/issues", {
     method: "POST",
     cache: "no-store",
