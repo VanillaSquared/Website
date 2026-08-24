@@ -32,4 +32,5 @@ This is the final snapshot for -2.12.0, I wanted to add a bit more but I didn't 
 ---
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
 
+<Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8723300" variant="curseforge" external>Download on Curseforge</Button>
 <Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.4" variant="modrinth" external>Download on Modrinth</Button>

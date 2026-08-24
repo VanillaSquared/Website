@@ -42,4 +42,5 @@ The second snapshot for -2.12.0 is coming with a some new functionality for sulf
 ---
 -# *Note: changelogs without any credits are made by [PainterFlow11](https://github.com/PainterFlow).*
 
+<Button href="https://www.curseforge.com/minecraft/mc-mods/vsq/files/8645263" variant="curseforge" external>Download on Curseforge</Button>
 <Button href="https://modrinth.com/mod/vsq/version/-2.12.0-snapshot.2" variant="modrinth" external>Download on Modrinth</Button>

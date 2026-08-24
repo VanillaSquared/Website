@@ -7,7 +7,6 @@ author: PainterFlow11
 authorImage: "@cdn/news/painterflow11.png"
 authorLink: https://bsky.app/profile/painterflow11.bsky.social
 published_date: 24/08/2026
-private: true
 ---
 
 With the recent achievement of rushing to the 700 downloads milestone while I was on vacation(*thx btw :D*), I have decided to publish Vanilla² to Curseforge to allow Curseforge users to also download the mod directly from their launcher.
