@@ -5,9 +5,11 @@ import { useState } from "react";
 import plusIcon from "@cdn/icons/plus.svg";
 import {
   BUG_ATTACHMENT_ACCEPT,
+  BUG_ATTACHMENT_EXTENSIONS,
   BUG_ATTACHMENT_MAX_FILES,
   BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES,
   BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES,
+  BUG_ATTACHMENT_MIME_TYPES,
   BUG_DESCRIPTION_MAX_LENGTH,
   BUG_REPORT_CATEGORY_CONFIGS,
   BUG_TITLE_MAX_LENGTH,
@@ -35,14 +37,68 @@ function SelectField({ label, name, options }) {
   );
 }
 
+function supportsAttachment(file) {
+  const fileName = file.name.split(/[\\/]/).pop() ?? "";
+  const extension = fileName.match(/\.[a-z0-9]+$/i)?.[0].toLowerCase() ?? "";
+  const mimeType = String(file.type ?? "").toLowerCase().split(";", 1)[0];
+  return BUG_ATTACHMENT_EXTENSIONS.includes(extension)
+    && (!mimeType || BUG_ATTACHMENT_MIME_TYPES.includes(mimeType));
+}
+
 export default function BugReportGuide() {
   const [open, setOpen] = useState(false);
+  const [selectedAttachments, setSelectedAttachments] = useState([]);
+  const [attachmentError, setAttachmentError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   function openForm() {
     setError("");
     setOpen(true);
+  }
+
+  function closeForm() {
+    setOpen(false);
+    setSelectedAttachments([]);
+    setAttachmentError("");
+  }
+
+  function handleAttachmentChange(event) {
+    const accepted = [...selectedAttachments];
+    let acceptedSize = accepted.reduce((total, file) => total + file.size, 0);
+    const rejected = [];
+
+    for (const file of event.currentTarget.files) {
+      let reason = "";
+      if (accepted.length >= BUG_ATTACHMENT_MAX_FILES) {
+        reason = `the ${BUG_ATTACHMENT_MAX_FILES}-file limit was reached`;
+      } else if (file.size > BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES) {
+        reason = `it exceeds the ${BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES / 1024 / 1024} MB per-file limit`;
+      } else if (!supportsAttachment(file)) {
+        reason = "its file type is not supported";
+      } else if (acceptedSize + file.size > BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES) {
+        reason = `it would exceed the ${BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES / 1024 / 1024} MB total limit`;
+      }
+
+      if (reason) {
+        rejected.push(`${file.name || "Unnamed file"} (${reason})`);
+        continue;
+      }
+
+      accepted.push(file);
+      acceptedSize += file.size;
+    }
+
+    setSelectedAttachments(accepted);
+    if (rejected.length) {
+      const shownRejected = rejected.slice(0, 3).join(", ");
+      const remainingCount = rejected.length - 3;
+      setAttachmentError(`Not added: ${shownRejected}${remainingCount > 0 ? ` and ${remainingCount} more` : ""}. The remaining files can still be submitted with the bug report.`);
+    } else {
+      setAttachmentError("");
+    }
+
+    event.currentTarget.value = "";
   }
 
   async function submitReport(event) {
@@ -52,6 +108,8 @@ export default function BugReportGuide() {
 
     const form = event.currentTarget;
     const fields = new FormData(form);
+    fields.delete("attachments");
+    for (const file of selectedAttachments) fields.append("attachments", file);
 
     try {
       const response = await fetch("/api/bugs", {
@@ -62,7 +120,7 @@ export default function BugReportGuide() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "Bug report could not be created.");
 
-      setOpen(false);
+      closeForm();
       form.reset();
       window.location.assign(`/bugs/${result.bug.id}`);
     } catch (submissionError) {
@@ -87,7 +145,7 @@ export default function BugReportGuide() {
 
       <Modal
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={closeForm}
         variant="wide"
         className="!border-0"
         ariaLabelledBy="create-bug-report-title"
@@ -138,9 +196,16 @@ export default function BugReportGuide() {
                 type="file"
                 multiple
                 accept={BUG_ATTACHMENT_ACCEPT}
+                onChange={handleAttachmentChange}
                 className="rounded-lg bg-input px-3 py-2 text-sm font-normal text-heading outline-none transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-button-tertiary file:px-3 file:py-1 file:font-semibold file:text-button-tertiary-text hover:bg-input-hover hover:file:bg-button-tertiary-hover focus:bg-input-focus"
                 aria-describedby="attachments-help"
               />
+              {selectedAttachments.length ? (
+                <span className="break-all text-xs font-normal leading-5 text-muted">
+                  Selected: {selectedAttachments.map((file) => file.name).join(", ")}
+                </span>
+              ) : null}
+              {attachmentError ? <span role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-xs font-normal leading-5 text-error">{attachmentError}</span> : null}
               <span id="attachments-help" className="text-xs font-normal leading-5 text-muted">
                 Optional. Up to {BUG_ATTACHMENT_MAX_FILES} files, {BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES / 1024 / 1024} MB each and {BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES / 1024 / 1024} MB total. Screenshots, logs, and ZIP files are supported.
               </span>
@@ -150,7 +215,7 @@ export default function BugReportGuide() {
           {error ? <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">{error}</p> : null}
 
           <footer className="flex justify-end gap-2">
-            <Button variant="tertiary" onClick={() => setOpen(false)} disabled={submitting}>Cancel</Button>
+            <Button variant="tertiary" onClick={closeForm} disabled={submitting}>Cancel</Button>
             <Button type="submit" border={false} disabled={submitting}>{submitting ? "Submitting…" : "Submit report"}</Button>
           </footer>
         </form>

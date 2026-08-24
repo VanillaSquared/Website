@@ -109,7 +109,11 @@ export async function POST({ request }) {
   try {
     const bug = await createBugReport(report, validatedAttachments);
     return json({ bug }, { status: 201, headers: { "Cache-Control": "no-store" } });
-  } catch {
+  } catch (creationError) {
+    console.error("Bug report creation failed.", {
+      message: creationError instanceof Error ? creationError.message : "Unknown error",
+      status: creationError?.status ?? null,
+    });
     return error("Bug report could not be created.", 503);
   }
 }
