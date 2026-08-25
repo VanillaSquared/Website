@@ -90,7 +90,12 @@ function issueToBug(issue) {
       .map((match) => [match[1], match[2].trim()])
   );
   const normalizedDescription = description.trim();
-  const source = [normalizedDescription, attachedAssets.trim()].filter(Boolean).join("\n\n");
+  const normalizedAttachedAssets = attachedAssets
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*-\s+/, "").trim())
+    .filter(Boolean)
+    .join("\n\n");
+  const source = [normalizedDescription, normalizedAttachedAssets].filter(Boolean).join("\n\n");
 
   return {
     id: String(issue.number),
@@ -343,7 +348,7 @@ export async function createBugReport(report, attachments = []) {
   const category = categoryBySlug.get(report.category);
   const assets = await uploadBugAttachments(attachments);
   const attachedAssets = assets.length
-    ? `${ATTACHED_ASSETS_SEPARATOR}${assets.map(({ name, url, contentType }) => `- ${contentType.startsWith("image/") ? `![${name}](${url})` : `[${name}](${url})`}`).join("\n")}`
+    ? `${ATTACHED_ASSETS_SEPARATOR}${assets.map(({ name, url, contentType }) => contentType.startsWith("image/") ? `![${name}](${url})` : `[${name}](${url})`).join("\n\n")}`
     : "";
   const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachedAssets}`;
   const issue = await githubRequest("/issues", {

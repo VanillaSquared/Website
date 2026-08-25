@@ -5,6 +5,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Checkmark from "@/components/Checkmark";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import { BUG_PUBLIC_CACHE_CONTROL, getBugReportById, getBugReportComments } from "@/bugs/server";
+import { bugMarkdownComponents } from "@/markdown/components";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
 
@@ -14,10 +15,10 @@ if (!bug) return Astro.redirect("/404", 404);
 Astro.response.headers.set("Cache-Control", BUG_PUBLIC_CACHE_CONTROL);
 
 const comments = await getBugReportComments(bug.id).catch(() => []);
-const sourceHtml = await renderMarkdownToHtml(bug.source, `/bugs/${bug.id}`);
+const sourceHtml = await renderMarkdownToHtml(bug.source, `/bugs/${bug.id}`, bugMarkdownComponents);
 const renderedComments = await Promise.all(comments.map(async (comment) => ({
   ...comment,
-  html: await renderMarkdownToHtml(comment.source, `/bugs/${bug.id}`),
+  html: await renderMarkdownToHtml(comment.source, `/bugs/${bug.id}`, bugMarkdownComponents),
 })));
 const categoryLabel = bug.category === "vanilla-squared" ? "Mod" : "Website";
 const priorityLabel = bug.priority === "Code Red" ? "Urgent" : bug.priority === "Unset" ? "None" : bug.priority;

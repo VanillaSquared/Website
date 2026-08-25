@@ -17,7 +17,7 @@ import {
   resolveLocalLinks,
 } from "@/markdown/plugins";
 
-export async function renderMarkdownToHtml(source, basePath = "") {
+export async function renderMarkdownToHtml(source, basePath = "", components = markdownComponents) {
   const preparedSource = prepareSubheaders(source);
   const compiled = await compile(preparedSource, {
     outputFormat: "function-body",
@@ -39,7 +39,7 @@ export async function renderMarkdownToHtml(source, basePath = "") {
   });
 
   return renderToStaticMarkup(
-    <MDXProvider components={markdownComponents}>
+    <MDXProvider components={components}>
       <Content />
     </MDXProvider>,
   );
