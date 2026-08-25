@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import plusIcon from "@cdn/icons/plus.svg";
+import xIcon from "@cdn/icons/x.svg";
 import {
   BUG_ATTACHMENT_ACCEPT,
   BUG_ATTACHMENT_EXTENSIONS,
@@ -101,6 +102,10 @@ export default function BugReportGuide() {
     event.currentTarget.value = "";
   }
 
+  function removeAttachment(index) {
+    setSelectedAttachments((attachments) => attachments.filter((_, attachmentIndex) => attachmentIndex !== index));
+  }
+
   async function submitReport(event) {
     event.preventDefault();
     setSubmitting(true);
@@ -197,13 +202,28 @@ export default function BugReportGuide() {
                 multiple
                 accept={BUG_ATTACHMENT_ACCEPT}
                 onChange={handleAttachmentChange}
-                className="rounded-lg bg-input px-3 py-2 text-sm font-normal text-heading outline-none transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-button-tertiary file:px-3 file:py-1 file:font-semibold file:text-button-tertiary-text hover:bg-input-hover hover:file:bg-button-tertiary-hover focus:bg-input-focus"
+                className="rounded-lg bg-input px-3 py-2 text-sm font-normal text-heading outline-none transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-button-primary file:px-3 file:py-1 file:font-semibold file:text-button-text hover:bg-input-hover hover:file:bg-button-primary-hover focus:bg-input-focus"
                 aria-describedby="attachments-help"
               />
               {selectedAttachments.length ? (
-                <span className="break-all text-xs font-normal leading-5 text-muted">
-                  Selected: {selectedAttachments.map((file) => file.name).join(", ")}
-                </span>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-normal leading-5 text-muted" aria-label="Selected attachments">
+                  <span>Selected:</span>
+                  {selectedAttachments.map((file, index) => (
+                    <span key={`${file.name}-${file.lastModified}-${index}`} className="group/file inline-flex min-w-0 max-w-full items-center gap-1 rounded-md bg-input px-2 py-1 transition-colors hover:bg-input-hover">
+                      <span className="break-all">{file.name || "Unnamed file"}</span>
+                      <Button
+                        type="button"
+                        variant="iconButton"
+                        size="iconButtonSm"
+                        icon={xIcon}
+                        iconClassName="h-3.5 w-3.5"
+                        aria-label={`Remove ${file.name || "attachment"}`}
+                        className="!h-5 !w-5 !rounded !bg-transparent !text-muted opacity-0 transition-opacity group-hover/file:opacity-100 group-focus-within/file:opacity-100 hover:!bg-button-tertiary-hover hover:!text-heading focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                        onClick={() => removeAttachment(index)}
+                      />
+                    </span>
+                  ))}
+                </div>
               ) : null}
               {attachmentError ? <span role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-xs font-normal leading-5 text-error">{attachmentError}</span> : null}
               <span id="attachments-help" className="text-xs font-normal leading-5 text-muted">

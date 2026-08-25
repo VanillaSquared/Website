@@ -21,6 +21,7 @@ const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
 const GITHUB_UPLOADS = "https://uploads.github.com";
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
+const ATTACHED_ASSETS_SEPARATOR = "\n\n<!-- Attached Assets -->\n\n";
 
 const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
 const categoryByLabel = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.label, category]));
@@ -83,10 +84,13 @@ function issueToBug(issue) {
   const priority = BUG_REPORT_PRIORITIES.find((value) => labels.includes(value)) ?? "Unset";
   const status = [...statusLabels].find(([label]) => labels.includes(label))?.[1] ?? "Unconfirmed";
   const [description, environment = ""] = String(issue.body ?? "").split(ENVIRONMENT_SEPARATOR, 2);
+  const [environmentDetails, attachedAssets = ""] = environment.split(ATTACHED_ASSETS_SEPARATOR, 2);
   const environmentValues = Object.fromEntries(
-    [...environment.matchAll(/^- \*\*(Minecraft version|Mod version|Operating system):\*\* (.+)$/gim)]
+    [...environmentDetails.matchAll(/^- \*\*(Minecraft version|Mod version|Operating system):\*\* (.+)$/gim)]
       .map((match) => [match[1], match[2].trim()])
   );
+  const normalizedDescription = description.trim();
+  const source = [normalizedDescription, attachedAssets.trim()].filter(Boolean).join("\n\n");
 
   return {
     id: String(issue.number),
@@ -99,8 +103,8 @@ function issueToBug(issue) {
     modVersion: environmentValues["Mod version"] ?? "Unknown",
     operatingSystem: environmentValues["Operating system"] ?? "Unknown",
     createdAt: issue.created_at,
-    description: description.trim(),
-    source: description.trim(),
+    description: normalizedDescription,
+    source,
   };
 }
 
@@ -339,7 +343,7 @@ export async function createBugReport(report, attachments = []) {
   const category = categoryBySlug.get(report.category);
   const assets = await uploadBugAttachments(attachments);
   const attachedAssets = assets.length
-    ? `\n\n<!-- Attached Assets -->\n\n${assets.map(({ name, url, contentType }) => `- ${contentType.startsWith("image/") ? `![${name}](${url})` : `[${name}](${url})`}`).join("\n")}`
+    ? `${ATTACHED_ASSETS_SEPARATOR}${assets.map(({ name, url, contentType }) => `- ${contentType.startsWith("image/") ? `![${name}](${url})` : `[${name}](${url})`}`).join("\n")}`
     : "";
   const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachedAssets}`;
   const issue = await githubRequest("/issues", {
