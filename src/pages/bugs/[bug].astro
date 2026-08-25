@@ -2,6 +2,8 @@
 export const prerender = false;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Checkmark from "@/components/Checkmark";
+import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
 import { BUG_PUBLIC_CACHE_CONTROL, getBugReportById, getBugReportComments } from "@/bugs/server";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
@@ -28,12 +30,7 @@ const statusColor = {
   "Vanilla bug": "var(--vsq-filter-status-vanilla)",
 }[bug.status];
 const created = formatEuropeanDateTime(bug.createdAt, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }, "Unknown").replace(/^(\d{1,2}) /, "$1. ");
-const statusIcon = bug.status === "Fixed" ? "✓" : bug.status === "Unconfirmed" ? "—" : "×";
-const statusIconClass = bug.status === "Fixed"
-  ? "border-transparent bg-[var(--vsq-checkmark-green-bg)] text-[var(--vsq-checkmark-green-text)]"
-  : bug.status === "Unconfirmed"
-    ? "border-[1.5px] border-[var(--vsq-checkmark-unconfirmed-border)] bg-[var(--vsq-checkmark-unconfirmed-bg)] text-[var(--vsq-checkmark-unconfirmed-text)]"
-    : "border-transparent bg-[var(--vsq-checkmark-red-bg)] text-[var(--vsq-checkmark-red-text)]";
+const statusCheckmarkProps = getBugStatusCheckmarkProps(bug);
 ---
 <BaseLayout title={`${bug.publicId.toUpperCase()} | Vanilla² Bugs`} description={bug.title}>
   <section class="flex flex-1 justify-center bg-background px-6 py-10">
@@ -45,7 +42,7 @@ const statusIconClass = bug.status === "Fixed"
             <header class="border-b border-divider px-5 py-5 sm:px-7">
               <p class="mb-2 font-mono text-xs font-bold text-accent">{bug.publicId.toUpperCase()}</p>
               <h1 class="flex items-start gap-3 text-2xl font-bold tracking-tight text-heading sm:text-3xl">
-                <span class={`mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-bold ${statusIconClass}`} aria-hidden="true">{statusIcon}</span>
+                <Checkmark {...statusCheckmarkProps} className="mt-1.5 sm:mt-2" />
                 <span>{bug.title}</span>
               </h1>
             </header>
