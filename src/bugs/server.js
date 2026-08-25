@@ -1,5 +1,3 @@
-import { randomUUID } from "node:crypto";
-
 import {
   BUG_ATTACHMENT_EXTENSIONS,
   BUG_ATTACHMENT_MAX_FILES,
@@ -21,7 +19,7 @@ import {
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
-const GITHUB_WEB = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
+const GITHUB_UPLOADS = "https://uploads.github.com";
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 
 const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
@@ -59,6 +57,20 @@ async function githubRequest(path, options = {}) {
 
   if (!response.ok) {
     const error = new Error("Bug storage request failed.");
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
+async function githubUploadRequest(path, options = {}) {
+  const response = await fetch(`${GITHUB_UPLOADS}${path}`, {
+    ...options,
+    headers: { ...githubHeaders(), ...options.headers },
+  });
+
+  if (!response.ok) {
+    const error = new Error("Bug attachment upload failed.");
     error.status = response.status;
     throw error;
   }
@@ -241,34 +253,65 @@ function safeAttachmentName(name, index) {
   return `${String(index + 1).padStart(2, "0")}-${stem}${extension}`;
 }
 
-function encodeGithubPath(path) {
-  return path.split("/").map((segment) => encodeURIComponent(segment)).join("/");
+const attachmentContentTypes = new Map([
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".gif", "image/gif"],
+  [".webp", "image/webp"],
+  [".bmp", "image/bmp"],
+  [".txt", "text/plain"],
+  [".log", "text/x-log"],
+  [".md", "text/markdown"],
+  [".json", "application/json"],
+  [".zip", "application/zip"],
+  [".gz", "application/gzip"],
+]);
+
+function attachmentContentType(file) {
+  return attachmentContentTypes.get(attachmentExtension(file.name)) ?? "application/octet-stream";
+}
+
+function githubAttachmentUrl(value) {
+  if (typeof value !== "string") return null;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:"
+      && url.hostname === "github.com"
+      && url.pathname.startsWith("/user-attachments/")
+      ? value
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 async function uploadBugAttachments(files) {
   if (!files.length) return [];
 
-  const directory = `bug-assets/${randomUUID()}`;
+  const repository = await githubRequest("", { cache: "no-store" });
+  if (!Number.isSafeInteger(repository?.id) || repository.id <= 0) throw new Error("Bug repository lookup failed.");
+
   const assets = [];
   for (const [index, file] of files.entries()) {
     const fileName = safeAttachmentName(file.name, index);
-    const path = `${directory}/${fileName}`;
-    const response = await githubRequest(`/contents/${encodeGithubPath(path)}`, {
-      method: "PUT",
-      cache: "no-store",
-      body: JSON.stringify({
-        message: "Add bug report attachment",
-        content: Buffer.from(await file.arrayBuffer()).toString("base64"),
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-    const commitSha = response.commit?.sha;
-    if (typeof commitSha !== "string" || !commitSha) throw new Error("Bug attachment upload failed.");
-
-    assets.push({
+    const contentType = attachmentContentType(file);
+    const query = new URLSearchParams({
       name: fileName,
-      url: `${GITHUB_WEB}/blob/${encodeURIComponent(commitSha)}/${encodeGithubPath(path)}`,
+      content_type: contentType,
+      repository_id: String(repository.id),
     });
+    const response = await githubUploadRequest(`/user-attachments/assets?${query}`, {
+      method: "POST",
+      cache: "no-store",
+      body: Buffer.from(await file.arrayBuffer()),
+      headers: { Accept: "application/json", "Content-Type": contentType },
+    });
+    const url = githubAttachmentUrl(response?.url);
+    if (!url) throw new Error("Bug attachment upload failed.");
+
+    assets.push({ name: fileName, url, contentType });
   }
 
   return assets;
@@ -296,7 +339,7 @@ export async function createBugReport(report, attachments = []) {
   const category = categoryBySlug.get(report.category);
   const assets = await uploadBugAttachments(attachments);
   const attachedAssets = assets.length
-    ? `\n\n<!-- Attached Assets -->\n\n${assets.map(({ name, url }) => `- [${name}](${url})`).join("\n")}`
+    ? `\n\n<!-- Attached Assets -->\n\n${assets.map(({ name, url, contentType }) => `- ${contentType.startsWith("image/") ? `![${name}](${url})` : `[${name}](${url})`}`).join("\n")}`
     : "";
   const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachedAssets}`;
   const issue = await githubRequest("/issues", {

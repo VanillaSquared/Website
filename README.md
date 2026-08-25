@@ -64,7 +64,7 @@ private: false
 
 ### Bug reports
 
-Bug reports are created from the form on `/bugs` and loaded through cached public responses with a seven-minute browser/CDN lifetime. A successful submission invalidates the server-side issue cache so the next uncached request refreshes from GitHub. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable with Issues and Contents read/write permissions. Uploaded attachments are committed to the issue repository and linked from the created issue. The serverless rate limiter is the only automated abuse prevention and intentionally uses in-memory state without additional environment variables.
+Bug reports are created from the form on `/bugs` and loaded through cached public responses with a seven-minute browser/CDN lifetime. A successful submission invalidates the server-side issue cache so the next uncached request refreshes from GitHub. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable with Issues read/write permissions. Uploaded attachments are stored as GitHub issue assets and linked from the created issue without adding files to the repository. The serverless rate limiter is the only automated abuse prevention and intentionally uses in-memory state without additional environment variables.
 
 ## Development
 
