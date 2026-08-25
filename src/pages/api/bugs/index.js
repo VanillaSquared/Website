@@ -1,10 +1,18 @@
-import { evaluateBugSubmission } from "@/bugs/antiAbuse";
 import { consumeBugSubmissionAttempt } from "@/bugs/rateLimit";
-import { BUG_PUBLIC_CACHE_CONTROL, createBugReport, listBugReports, validateBugSubmission } from "@/bugs/server";
+import { BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES } from "@/bugs/config";
+import {
+  BUG_PUBLIC_CACHE_CONTROL,
+  createBugReport,
+  listBugReports,
+  validateBugAttachments,
+  validateBugSubmission,
+} from "@/bugs/server";
 
 export const prerender = false;
 
-const MAX_REQUEST_BYTES = 6144;
+const MAX_JSON_REQUEST_BYTES = 6144;
+const MAX_MULTIPART_REQUEST_BYTES = BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES + 128 * 1024;
+const ATTACHMENT_FIELD = "attachments";
 const ALLOWED_FIELDS = new Set([
   "title",
   "description",
@@ -12,8 +20,6 @@ const ALLOWED_FIELDS = new Set([
   "minecraftVersion",
   "modVersion",
   "operatingSystem",
-  "startedAt",
-  "website",
 ]);
 
 function json(data, init = {}) {
@@ -44,18 +50,48 @@ export async function GET({ url }) {
   }
 }
 
+function parseMultipartSubmission(formData) {
+  const input = {};
+  const attachments = [];
+
+  for (const [key, value] of formData.entries()) {
+    if (key === ATTACHMENT_FIELD) {
+      if (typeof value === "string") return null;
+      attachments.push(value);
+      continue;
+    }
+
+    if (!ALLOWED_FIELDS.has(key) || typeof value !== "string" || Object.hasOwn(input, key)) return null;
+    input[key] = value;
+  }
+
+  return { input, attachments };
+}
+
 export async function POST({ request }) {
   const contentType = request.headers.get("content-type") ?? "";
+  const normalizedContentType = contentType.toLowerCase();
+  const isJson = normalizedContentType.startsWith("application/json");
+  const isMultipart = normalizedContentType.startsWith("multipart/form-data");
   const declaredLength = Number(request.headers.get("content-length") ?? 0);
-  if (!contentType.toLowerCase().startsWith("application/json")) return error("Only JSON bug reports are accepted.", 415);
-  if (declaredLength > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
+  const maxRequestBytes = isMultipart ? MAX_MULTIPART_REQUEST_BYTES : MAX_JSON_REQUEST_BYTES;
 
-  let rawBody;
+  if (!isJson && !isMultipart) return error("Only JSON or multipart bug reports are accepted.", 415);
+  if (declaredLength > maxRequestBytes) return error("Bug report is too large.", 413);
+
   let input;
+  let attachments = [];
   try {
-    rawBody = await request.text();
-    if (Buffer.byteLength(rawBody, "utf8") > MAX_REQUEST_BYTES) return error("Bug report is too large.", 413);
-    input = JSON.parse(rawBody);
+    if (isJson) {
+      const rawBody = await request.text();
+      if (Buffer.byteLength(rawBody, "utf8") > MAX_JSON_REQUEST_BYTES) return error("Bug report is too large.", 413);
+      input = JSON.parse(rawBody);
+    } else {
+      const parsed = parseMultipartSubmission(await request.formData());
+      if (!parsed) return error("Bug report validation failed.", 400);
+      input = parsed.input;
+      attachments = parsed.attachments;
+    }
   } catch {
     return error("Bug report validation failed.", 400);
   }
@@ -64,17 +100,20 @@ export async function POST({ request }) {
     return error("Bug report validation failed.", 400);
   }
 
-  const { ipAddress, score } = evaluateBugSubmission(request, input);
-  if (!consumeBugSubmissionAttempt(ipAddress)) return error("Too many bug reports have been submitted. Please try again later.", 429);
-  if (score > 6) return error("Bug report submission was rejected.", 403);
+  if (!consumeBugSubmissionAttempt(request)) return error("Too many bug reports have been submitted. Please try again later.", 429);
 
   const report = validateBugSubmission(input);
-  if (!report) return error("Bug report validation failed.", 400);
+  const validatedAttachments = validateBugAttachments(attachments);
+  if (!report || !validatedAttachments) return error("Bug report validation failed.", 400);
 
   try {
-    const bug = await createBugReport(report);
+    const bug = await createBugReport(report, validatedAttachments);
     return json({ bug }, { status: 201, headers: { "Cache-Control": "no-store" } });
-  } catch {
+  } catch (creationError) {
+    console.error("Bug report creation failed.", {
+      message: creationError instanceof Error ? creationError.message : "Unknown error",
+      status: creationError?.status ?? null,
+    });
     return error("Bug report could not be created.", 503);
   }
 }

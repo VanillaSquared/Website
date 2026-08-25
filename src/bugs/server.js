@@ -1,4 +1,9 @@
 import {
+  BUG_ATTACHMENT_EXTENSIONS,
+  BUG_ATTACHMENT_MAX_FILES,
+  BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES,
+  BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES,
+  BUG_ATTACHMENT_MIME_TYPES,
   BUG_PUBLIC_CACHE_CONTROL,
   BUG_CACHE_TTL_SECONDS,
   BUG_DESCRIPTION_MAX_LENGTH,
@@ -14,6 +19,7 @@ import {
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
+const GITHUB_UPLOADS = "https://uploads.github.com";
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 
 const categoryBySlug = new Map(BUG_REPORT_CATEGORY_CONFIGS.map((category) => [category.slug, category]));
@@ -51,6 +57,20 @@ async function githubRequest(path, options = {}) {
 
   if (!response.ok) {
     const error = new Error("Bug storage request failed.");
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
+async function githubUploadRequest(path, options = {}) {
+  const response = await fetch(`${GITHUB_UPLOADS}${path}`, {
+    ...options,
+    headers: { ...githubHeaders(), ...options.headers },
+  });
+
+  if (!response.ok) {
+    const error = new Error("Bug attachment upload failed.");
     error.status = response.status;
     throw error;
   }
@@ -185,6 +205,118 @@ function requiredString(value, maximum) {
   return normalized && normalized.length <= maximum ? normalized : null;
 }
 
+function isFileLike(value) {
+  return value
+    && typeof value === "object"
+    && typeof value.name === "string"
+    && Number.isSafeInteger(value.size)
+    && value.size >= 0
+    && typeof value.arrayBuffer === "function";
+}
+
+function attachmentExtension(name) {
+  const fileName = name.split(/[\\/]/).pop() ?? "";
+  return fileName.match(/\.[a-z0-9]+$/i)?.[0].toLowerCase() ?? "";
+}
+
+export function validateBugAttachments(files) {
+  if (!Array.isArray(files)) return null;
+
+  const attachments = [];
+  for (const file of files) {
+    if (isFileLike(file) && file.name === "" && file.size === 0) continue;
+    if (!isFileLike(file) || !file.name.trim() || file.size > BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES) return null;
+
+    const extension = attachmentExtension(file.name);
+    if (!BUG_ATTACHMENT_EXTENSIONS.includes(extension)) return null;
+
+    const mimeType = String(file.type ?? "").toLowerCase().split(";", 1)[0];
+    if (mimeType && !BUG_ATTACHMENT_MIME_TYPES.includes(mimeType)) return null;
+    attachments.push(file);
+  }
+
+  if (attachments.length > BUG_ATTACHMENT_MAX_FILES) return null;
+  const totalSize = attachments.reduce((total, file) => total + file.size, 0);
+  return totalSize <= BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES ? attachments : null;
+}
+
+function safeAttachmentName(name, index) {
+  const fileName = name.split(/[\\/]/).pop() ?? "attachment";
+  const extension = attachmentExtension(fileName);
+  const stem = fileName
+    .slice(0, -extension.length)
+    .normalize("NFKC")
+    .replace(/[^a-zA-Z0-9_-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 64) || "attachment";
+
+  return `${String(index + 1).padStart(2, "0")}-${stem}${extension}`;
+}
+
+const attachmentContentTypes = new Map([
+  [".png", "image/png"],
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".gif", "image/gif"],
+  [".webp", "image/webp"],
+  [".bmp", "image/bmp"],
+  [".txt", "text/plain"],
+  [".log", "text/x-log"],
+  [".md", "text/markdown"],
+  [".json", "application/json"],
+  [".zip", "application/zip"],
+  [".gz", "application/gzip"],
+]);
+
+function attachmentContentType(file) {
+  return attachmentContentTypes.get(attachmentExtension(file.name)) ?? "application/octet-stream";
+}
+
+function githubAttachmentUrl(value) {
+  if (typeof value !== "string") return null;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:"
+      && url.hostname === "github.com"
+      && url.pathname.startsWith("/user-attachments/")
+      ? value
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function uploadBugAttachments(files) {
+  if (!files.length) return [];
+
+  const repository = await githubRequest("", { cache: "no-store" });
+  if (!Number.isSafeInteger(repository?.id) || repository.id <= 0) throw new Error("Bug repository lookup failed.");
+
+  const assets = [];
+  for (const [index, file] of files.entries()) {
+    const fileName = safeAttachmentName(file.name, index);
+    const contentType = attachmentContentType(file);
+    const query = new URLSearchParams({
+      name: fileName,
+      content_type: contentType,
+      repository_id: String(repository.id),
+    });
+    const response = await githubUploadRequest(`/user-attachments/assets?${query}`, {
+      method: "POST",
+      cache: "no-store",
+      body: Buffer.from(await file.arrayBuffer()),
+      headers: { Accept: "application/json", "Content-Type": contentType },
+    });
+    const url = githubAttachmentUrl(response?.url);
+    if (!url) throw new Error("Bug attachment upload failed.");
+
+    assets.push({ name: fileName, url, contentType });
+  }
+
+  return assets;
+}
+
 function allowedChoice(value, choices) {
   return typeof value === "string" && choices.includes(value) ? value : null;
 }
@@ -203,9 +335,13 @@ export function validateBugSubmission(input) {
   return { title, description, category, minecraftVersion, modVersion, operatingSystem };
 }
 
-export async function createBugReport(report) {
+export async function createBugReport(report, attachments = []) {
   const category = categoryBySlug.get(report.category);
-  const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}`;
+  const assets = await uploadBugAttachments(attachments);
+  const attachedAssets = assets.length
+    ? `\n\n<!-- Attached Assets -->\n\n${assets.map(({ name, url, contentType }) => `- ${contentType.startsWith("image/") ? `![${name}](${url})` : `[${name}](${url})`}`).join("\n")}`
+    : "";
+  const body = `${report.description}${ENVIRONMENT_SEPARATOR}\n- **Category:** ${category.label}\n- **Minecraft version:** ${report.minecraftVersion}\n- **Mod version:** ${report.modVersion}\n- **Operating system:** ${report.operatingSystem}${attachedAssets}`;
   const issue = await githubRequest("/issues", {
     method: "POST",
     cache: "no-store",

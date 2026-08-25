@@ -26,6 +26,6 @@ How to reproduce:
 The recipe should still be selected, but no recipe is selected.
 ```
 
-Attachments are not supported. Do not include access tokens, private server addresses, personal information, or any other sensitive data. Bug descriptions support standard sanitized Markdown, but not raw HTML, JSX, MDX expressions, imports, exports, or custom components.
+You can attach screenshots, logs, and ZIP files directly from the report form. Attachments are saved as GitHub issue assets and linked under an `<!-- Attached Assets -->` section on GitHub; they are not added to the repository. You can add up to five files, with a 2 MB limit per file and a 4 MB total limit. Do not include access tokens, private server addresses, personal information, or any other sensitive data. Bug descriptions support standard sanitized Markdown, but not raw HTML, JSX, MDX expressions, imports, exports, or custom components.
 
 New reports always begin with an unconfirmed status and no assigned priority. These fields cannot be selected by the reporter.
