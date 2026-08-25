@@ -193,43 +193,46 @@ export default function BugReportGuide() {
             <SelectField label="Minecraft version" name="minecraftVersion" options={MINECRAFT_VERSIONS} />
             <SelectField label="Mod version" name="modVersion" options={MOD_VERSIONS} />
             <SelectField label="Operating system" name="operatingSystem" options={OPERATING_SYSTEMS} />
-            <label className="flex flex-col gap-2 text-sm font-semibold text-soft sm:col-span-2" htmlFor="attachments">
-              Attachments
-              <input
-                id="attachments"
-                name="attachments"
-                type="file"
-                multiple
-                accept={BUG_ATTACHMENT_ACCEPT}
-                onChange={handleAttachmentChange}
-                className="rounded-lg bg-input px-3 py-2 text-sm font-normal text-heading outline-none transition-colors file:mr-3 file:rounded-md file:border-0 file:bg-button-primary file:px-3 file:py-1 file:font-semibold file:text-button-text hover:bg-input-hover hover:file:bg-button-primary-hover focus:bg-input-focus"
-                aria-describedby="attachments-help"
-              />
-              {selectedAttachments.length ? (
-                <div className="flex flex-wrap items-center gap-2 text-xs font-normal leading-5 text-muted" aria-label="Selected attachments">
-                  <span>Selected:</span>
-                  {selectedAttachments.map((file, index) => (
-                    <span key={`${file.name}-${file.lastModified}-${index}`} className="group/file inline-flex min-w-0 max-w-full items-center gap-1 rounded-md bg-input px-2 py-1 transition-colors hover:bg-input-hover">
-                      <span className="break-all">{file.name || "Unnamed file"}</span>
-                      <Button
-                        type="button"
-                        variant="iconButton"
-                        size="iconButtonSm"
-                        icon={xIcon}
-                        iconClassName="h-3.5 w-3.5"
-                        aria-label={`Remove ${file.name || "attachment"}`}
-                        className="!h-5 !w-5 !rounded !bg-transparent !text-muted opacity-0 transition-opacity group-hover/file:opacity-100 group-focus-within/file:opacity-100 hover:!bg-button-tertiary-hover hover:!text-heading focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
-                        onClick={() => removeAttachment(index)}
-                      />
-                    </span>
-                  ))}
-                </div>
-              ) : null}
+            <div className="flex flex-col gap-2 text-sm font-semibold text-soft sm:col-span-2">
+              <span>Attachments</span>
+              <div className="flex min-h-10 flex-wrap items-center gap-2 rounded-lg bg-input px-3 py-2 font-normal text-heading outline-none transition-colors hover:bg-input-hover focus-within:bg-input-focus focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-accent">
+                <input
+                  id="attachments"
+                  name="attachments"
+                  type="file"
+                  multiple
+                  accept={BUG_ATTACHMENT_ACCEPT}
+                  onChange={handleAttachmentChange}
+                  className="sr-only"
+                  aria-describedby="attachments-help"
+                />
+                <label
+                  htmlFor="attachments"
+                  className="inline-flex shrink-0 cursor-pointer items-center rounded-md bg-button-primary px-3 py-1 text-sm font-semibold text-button-text transition-colors hover:bg-button-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                >
+                  Choose files
+                </label>
+                {selectedAttachments.map((file, index) => (
+                  <span key={`${file.name}-${file.lastModified}-${index}`} className="group/file relative inline-flex min-w-0 max-w-full items-center overflow-hidden rounded-md bg-input-hover px-2 py-1 transition-colors hover:bg-input-focus">
+                    <span className="min-w-0 max-w-52 truncate">{file.name || "Unnamed file"}</span>
+                    <Button
+                      type="button"
+                      variant="iconButton"
+                      size="iconButtonSm"
+                      icon={xIcon}
+                      iconClassName="h-3.5 w-3.5"
+                      aria-label={`Remove ${file.name || "attachment"}`}
+                      className="!absolute top-1/2 right-1 z-10 !h-5 !w-5 -translate-y-1/2 !rounded !bg-input-hover !text-muted opacity-0 transition-opacity group-hover/file:opacity-100 group-focus-within/file:opacity-100 hover:!bg-input-focus hover:!text-heading focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
+                      onClick={() => removeAttachment(index)}
+                    />
+                  </span>
+                ))}
+              </div>
               {attachmentError ? <span role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-xs font-normal leading-5 text-error">{attachmentError}</span> : null}
               <span id="attachments-help" className="text-xs font-normal leading-5 text-muted">
                 Optional. Up to {BUG_ATTACHMENT_MAX_FILES} files, {BUG_ATTACHMENT_MAX_FILE_SIZE_BYTES / 1024 / 1024} MB each and {BUG_ATTACHMENT_MAX_TOTAL_SIZE_BYTES / 1024 / 1024} MB total. Screenshots, logs, and ZIP files are supported.
               </span>
-            </label>
+            </div>
           </div>
 
           {error ? <p role="alert" className="rounded-lg bg-error-surface px-3 py-2 text-sm text-error">{error}</p> : null}
