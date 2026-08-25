@@ -214,7 +214,7 @@ export default function BugReportGuide() {
                 </label>
                 {selectedAttachments.map((file, index) => (
                   <span key={`${file.name}-${file.lastModified}-${index}`} className="group/file relative inline-flex min-w-0 max-w-full items-center overflow-hidden rounded-md bg-input-hover px-2 py-1 transition-colors hover:bg-input-focus">
-                    <span className="min-w-0 max-w-52 truncate">{file.name || "Unnamed file"}</span>
+                    <span className="min-w-0 max-w-52 truncate text-soft">{file.name || "Unnamed file"}</span>
                     <Button
                       type="button"
                       variant="iconButton"
