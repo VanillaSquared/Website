@@ -10,6 +10,8 @@ published_date: 25/08/2026
 ---
 -# Website V0.3.1
 
+This is a smaller update that adds a variety of smaller features. On top of that Jan also added file uploading to bug reports.
+
 ## /news
 - added back button when inside an article
 
