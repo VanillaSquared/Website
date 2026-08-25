@@ -26,7 +26,11 @@ function tagClass(name) {
 const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(article.publishedAt));
 const AuthorCard = article.authorLink ? "a" : "div";
 ---
-<BaseLayout title={`${article.title} | Vanilla² News`} description={`${article.tags.map((tag) => tag.label).join(", ")} from Vanilla²: ${article.title}.`}>
+<BaseLayout
+  title={`${article.title} | Vanilla² News`}
+  description={`${article.tags.map((tag) => tag.label).join(", ")} from Vanilla²: ${article.title}.`}
+  header={{ backHref: "/news", backLabel: "Back to news" }}
+>
   <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
     <article>
       <header class="mb-8 border-b border-divider pb-7">

@@ -3,13 +3,14 @@ import Link from "@/components/Link";
 
 import discordIcon from "@cdn/discord.png";
 import vsqLogo from "@cdn/vsq-logo-circle.png";
+import arrowLeftIcon from "@/assets/icons/arrow-left.svg";
 import Button from "@/components/Button";
 import DocsNavigationSidebar from "@/components/DocsNavigationSidebar";
 import NewsTagFilter from "@/components/NewsTagFilter";
 import SearchBar from "@/components/SearchBar";
 import ThemeToggle from "@/components/ThemeToggle";
 
-export default function TopBar({ docsNavigation, newsTagFilter, search = {}, variant = "default" }) {
+export default function TopBar({ backHref, backLabel = "Go back", docsNavigation, newsTagFilter, search = {}, variant = "default" }) {
   const searchProps = {
     action: "/docs",
     placeholder: "Search documentation",
@@ -28,6 +29,17 @@ export default function TopBar({ docsNavigation, newsTagFilter, search = {}, var
           <Image src={vsqLogo} alt="Vanilla² logo" width={32} height={32} loading="eager" className="transition duration-200 group-hover:brightness-75" />
           <span>Vanilla²</span>
         </Link>
+        {backHref ? (
+          <Button
+            href={backHref}
+            variant="iconOnly"
+            size="iconButtonSm"
+            icon={arrowLeftIcon}
+            iconClassName="h-5 w-5"
+            aria-label={backLabel}
+            className="shrink-0"
+          />
+        ) : null}
         {docsNavigation ? <DocsNavigationSidebar {...docsNavigation} /> : null}
         {variant === "news" ? <NewsTagFilter {...newsTagFilter} /> : null}
         <ThemeToggle />

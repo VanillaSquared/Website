@@ -6,6 +6,7 @@ const variants = {
   secondary: "border-button-secondary-outline bg-button-secondary text-button-text hover:border-button-secondary-outline-hover hover:bg-button-secondary-hover",
   tertiary: "border-button-tertiary-outline bg-button-tertiary text-button-tertiary-text hover:border-button-tertiary-outline-hover hover:bg-button-tertiary-hover focus-visible:bg-button-tertiary-hover focus-visible:outline-none",
   iconButton: "border-button-tertiary-outline bg-button-tertiary text-button-tertiary-text hover:border-button-tertiary-outline-hover hover:bg-button-tertiary-hover focus-visible:bg-button-tertiary-hover focus-visible:outline-none",
+  iconOnly: "text-button-tertiary-text hover:text-heading focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
   blue: "border-button-blue-outline bg-button-blue text-button-text hover:border-button-blue-outline-hover hover:bg-button-blue-hover",
   purple: "border-button-purple-outline bg-button-purple text-button-text hover:border-button-purple-outline-hover hover:bg-button-purple-hover",
   blurple: "border-button-blurple-outline bg-button-blurple text-button-text hover:border-button-blurple-outline-hover hover:bg-button-blurple-hover",
@@ -25,6 +26,7 @@ const variantIcons = {
 const variantBorders = {
   tertiary: false,
   iconButton: false,
+  iconOnly: false,
 };
 
 const sizes = {
