@@ -2,13 +2,11 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Checkmark from "@/components/Checkmark";
 import { getBugStatusCheckmarkProps } from "@/bugs/checkmark";
-import { getBugReportComments } from "@/bugs/server";
 import { bugMarkdownComponents } from "@/markdown/components";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 import { formatEuropeanDateTime } from "@/utils/dateTime";
 
-const { bug } = Astro.props;
-const comments = await getBugReportComments(bug.id).catch(() => []);
+const { bug, comments } = Astro.props;
 const sourceHtml = await renderMarkdownToHtml(bug.source, `/bugs/${bug.id}`, bugMarkdownComponents);
 const renderedComments = await Promise.all(comments.map(async (comment) => ({
   ...comment,

@@ -19,7 +19,45 @@ import {
 const GITHUB_OWNER = "VanillaSquared";
 const GITHUB_REPOSITORY = "Issues";
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPOSITORY}`;
+const GITHUB_GRAPHQL_API = "https://api.github.com/graphql";
 const GITHUB_UPLOADS = "https://uploads.github.com";
+const BUG_DETAILS_QUERY = `
+  query BugDetails($owner: String!, $repository: String!, $number: Int!, $commentsCursor: String) {
+    repository(owner: $owner, name: $repository) {
+      issueOrPullRequest(number: $number) {
+        __typename
+        ... on Issue {
+          number
+          title
+          body
+          createdAt
+          labels(first: 100) {
+            nodes {
+              name
+            }
+          }
+          comments(first: 100, after: $commentsCursor) {
+            nodes {
+              id
+              body
+              createdAt
+              updatedAt
+              author {
+                login
+                avatarUrl
+                url
+              }
+            }
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+          }
+        }
+      }
+    }
+  }
+`;
 const ENVIRONMENT_SEPARATOR = "\n\n---\n\n### Environment\n";
 const ATTACHED_ASSETS_SEPARATOR = "\n\n<!-- Attached Assets -->\n\n";
 
@@ -62,6 +100,23 @@ async function githubRequest(path, options = {}) {
     throw error;
   }
   return response.json();
+}
+
+async function githubGraphqlRequest(query, variables) {
+  const response = await fetch(GITHUB_GRAPHQL_API, {
+    method: "POST",
+    headers: { ...githubHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+  });
+  const payload = await response.json();
+
+  if (!response.ok || payload.errors?.length) {
+    const error = new Error("Bug storage request failed.");
+    error.status = response.status;
+    throw error;
+  }
+
+  return payload.data;
 }
 
 async function githubUploadRequest(path, options = {}) {
@@ -195,18 +250,61 @@ export async function getBugReportById(id) {
   }
 }
 
-export async function getBugReportComments(id) {
-  if (!/^\d+$/.test(String(id))) return [];
+function graphqlIssueToBug(issue) {
+  return issueToBug({
+    number: issue.number,
+    title: issue.title,
+    body: issue.body,
+    created_at: issue.createdAt,
+    labels: issue.labels.nodes,
+  });
+}
 
+function graphqlCommentToBugComment(comment) {
+  return issueCommentToBugComment({
+    id: comment.id,
+    body: comment.body,
+    created_at: comment.createdAt,
+    updated_at: comment.updatedAt,
+    user: comment.author
+      ? {
+        login: comment.author.login,
+        avatar_url: comment.author.avatarUrl,
+        html_url: comment.author.url,
+      }
+      : null,
+  });
+}
+
+export async function getBugReportDetails(id) {
+  const number = Number(id);
+  if (!/^\d+$/.test(String(id)) || !Number.isSafeInteger(number)) return null;
+
+  let commentsCursor = null;
+  let issue;
   const comments = [];
 
-  for (let page = 1; ; page += 1) {
-    const batch = await githubRequest(`/issues/${id}/comments?per_page=100&page=${page}`);
-    comments.push(...batch);
-    if (batch.length < 100) break;
-  }
+  do {
+    const data = await githubGraphqlRequest(BUG_DETAILS_QUERY, {
+      owner: GITHUB_OWNER,
+      repository: GITHUB_REPOSITORY,
+      number,
+      commentsCursor,
+    });
+    const pageIssue = data?.repository?.issueOrPullRequest;
+    if (!pageIssue || pageIssue.__typename !== "Issue") return null;
 
-  return comments.map(issueCommentToBugComment);
+    issue ??= pageIssue;
+    comments.push(...pageIssue.comments.nodes);
+    commentsCursor = pageIssue.comments.pageInfo.hasNextPage
+      ? pageIssue.comments.pageInfo.endCursor
+      : null;
+  } while (commentsCursor);
+
+  return {
+    bug: graphqlIssueToBug(issue),
+    comments: comments.map(graphqlCommentToBugComment),
+  };
 }
 
 function requiredString(value, maximum) {

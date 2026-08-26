@@ -3,9 +3,10 @@ export const prerender = false;
 
 import BugReportPage from "@/components/BugReportPage.astro";
 import NotFoundPage from "@/components/NotFoundPage.astro";
-import { BUG_PUBLIC_CACHE_CONTROL, getBugReportById } from "@/bugs/server";
+import { BUG_PUBLIC_CACHE_CONTROL, getBugReportDetails } from "@/bugs/server";
 
-const bug = await getBugReportById(decodeURIComponent(Astro.params.bug)).catch(() => null);
+const details = await getBugReportDetails(decodeURIComponent(Astro.params.bug)).catch(() => null);
+const bug = details?.bug ?? null;
 if (bug) Astro.response.headers.set("Cache-Control", BUG_PUBLIC_CACHE_CONTROL);
 ---
-{bug ? <BugReportPage bug={bug} /> : <NotFoundPage />}
+{bug ? <BugReportPage bug={bug} comments={details.comments} /> : <NotFoundPage />}
