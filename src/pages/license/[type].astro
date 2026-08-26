@@ -2,6 +2,7 @@
 export const prerender = true;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import NotFoundPage from "@/components/NotFoundPage.astro";
 import { getLicence } from "@/licences/server";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 
@@ -11,15 +12,12 @@ export function getStaticPaths() {
 
 const type = Astro.params.type;
 const licence = getLicence({ mod: "modlicence", website: "licence" }[type]);
-
-if (!licence) {
-  return Astro.redirect("/404", 404);
-}
-
-const html = await renderMarkdownToHtml(licence.source, `/license/${type}`);
+const html = licence ? await renderMarkdownToHtml(licence.source, `/license/${type}`) : null;
 ---
-<BaseLayout title={`${licence.title} | Vanilla²`} description={licence.description}>
-  <article class="mx-auto w-full max-w-3xl flex-1 px-6 py-16 sm:py-20">
-    <div class="docs-content" set:html={html}></div>
-  </article>
-</BaseLayout>
+{licence ? (
+  <BaseLayout title={`${licence.title} | Vanilla²`} description={licence.description}>
+    <article class="mx-auto w-full max-w-3xl flex-1 px-6 py-16 sm:py-20">
+      <div class="docs-content" set:html={html}></div>
+    </article>
+  </BaseLayout>
+) : <NotFoundPage />}

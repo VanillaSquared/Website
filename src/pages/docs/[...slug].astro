@@ -3,6 +3,7 @@ export const prerender = true;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import DocsPage from "@/components/DocsPage.astro";
+import NotFoundPage from "@/components/NotFoundPage.astro";
 import { getBreadcrumbs, getDocsData, getDocument } from "@/docs/server";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 
@@ -16,19 +17,17 @@ export function getStaticPaths() {
 }
 
 const document = Astro.props.document ?? getDocument(Astro.params.slug?.split("/") ?? []);
-if (!document) {
-  return Astro.redirect("/404", 404);
-}
-
 const { navigation } = getDocsData();
-const breadcrumbs = getBreadcrumbs(document);
-const html = await renderMarkdownToHtml(document.source, document.linkBase);
+const breadcrumbs = document ? getBreadcrumbs(document) : [];
+const html = document ? await renderMarkdownToHtml(document.source, document.linkBase) : null;
 ---
-<BaseLayout
-  title={`${document.title} | Vanilla² Docs`}
-  description={document.description || `Vanilla² documentation: ${document.title}.`}
-  showFooter={false}
-  header={{ docsNavigation: { items: navigation, selectedId: document.path } }}
->
-  <DocsPage document={document} navigation={navigation} breadcrumbs={breadcrumbs} html={html} />
-</BaseLayout>
+{document ? (
+  <BaseLayout
+    title={`${document.title} | Vanilla² Docs`}
+    description={document.description || `Vanilla² documentation: ${document.title}.`}
+    showFooter={false}
+    header={{ docsNavigation: { items: navigation, selectedId: document.path } }}
+  >
+    <DocsPage document={document} navigation={navigation} breadcrumbs={breadcrumbs} html={html} />
+  </BaseLayout>
+) : <NotFoundPage />}

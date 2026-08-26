@@ -1,0 +1,17 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import NotFoundSecret from "@/components/NotFoundSecret";
+---
+<BaseLayout title="404 - Vanilla²">
+  <section class="flex flex-1 items-center justify-center bg-background px-6 py-24 text-center">
+    <div class="mx-auto max-w-2xl">
+      <h1 class="text-6xl font-bold uppercase tracking-[0.08em] text-accent sm:text-7xl">404</h1>
+      <h2 class="mt-4 text-4xl font-bold tracking-tight text-heading sm:text-5xl">Page not found</h2>
+      <p class="mt-4 text-lg text-muted">The page you are looking for does not exist or has been moved.</p>
+      <div class="mt-8 flex justify-center">
+        <a href="/" class="rounded-xl border-2 border-button-primary-outline bg-button-primary px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-primary-outline-hover hover:bg-button-primary-hover">Return home</a>
+      </div>
+    </div>
+  </section>
+  <NotFoundSecret client:load />
+</BaseLayout>
