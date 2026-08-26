@@ -1,10 +1,10 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import NewsPrivateSecret from "@/components/NewsPrivateSecret";
-import { getNewsArticles, getVisibleNewsArticles, NEWS_TAGS } from "@/news/server";
+export const prerender = true;
 
-const privateUnlocked = Astro.cookies.get("vsq-news-private")?.value === "1";
-const articles = privateUnlocked ? getNewsArticles() : getVisibleNewsArticles();
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getVisibleNewsArticles, NEWS_TAGS } from "@/news/server";
+
+const articles = getVisibleNewsArticles();
 const requestedTags = Astro.url.searchParams.getAll("tag");
 const selectedTags = [...new Set(requestedTags)].filter((name) => Object.hasOwn(NEWS_TAGS, name));
 const tagOptions = Object.entries(NEWS_TAGS).map(([value, { label }]) => ({ value, label }));
@@ -25,7 +25,6 @@ function tagClass(name) {
   description="News and updates from Vanilla²."
   header={{ newsTagFilter: { options: tagOptions, value: selectedTags }, variant: "news" }}
 >
-  <NewsPrivateSecret privateUnlocked={privateUnlocked} client:load />
   <main class="mx-auto w-full max-w-7xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
     {articles.length ? (
       <section aria-label="News articles" class="grid grid-cols-[repeat(auto-fill,minmax(min(100%,18rem),1fr))] gap-6">

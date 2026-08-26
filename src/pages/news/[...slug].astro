@@ -1,16 +1,21 @@
 ---
+export const prerender = true;
+
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getNewsArticle } from "@/news/server";
+import NotFoundPage from "@/components/NotFoundPage.astro";
+import { getNewsArticle, getVisibleNewsArticles } from "@/news/server";
 import { renderMarkdownToHtml } from "@/markdown/render.jsx";
 
-const article = getNewsArticle(Astro.params.slug?.split("/").filter(Boolean) ?? []);
-const privateUnlocked = Astro.cookies.get("vsq-news-private")?.value === "1";
-
-if (!article || (article.private && !privateUnlocked)) {
-  return Astro.redirect("/404", 404);
+export function getStaticPaths() {
+  return getVisibleNewsArticles().map((article) => ({
+    params: { slug: article.segments.join("/") },
+    props: { article },
+  }));
 }
 
-const articleHtml = await renderMarkdownToHtml(article.source, article.linkBase);
+const candidate = Astro.props.article ?? getNewsArticle(Astro.params.slug?.split("/").filter(Boolean) ?? []);
+const article = candidate?.private ? null : candidate;
+const articleHtml = article ? await renderMarkdownToHtml(article.source, article.linkBase) : null;
 
 function tagClass(name) {
   const classes = {
@@ -23,45 +28,47 @@ function tagClass(name) {
   return classes[name] ?? "bg-tag text-soft";
 }
 
-const publishedDate = new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(article.publishedAt));
-const AuthorCard = article.authorLink ? "a" : "div";
+const publishedDate = article ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(article.publishedAt)) : "";
+const AuthorCard = article?.authorLink ? "a" : "div";
 ---
-<BaseLayout
-  title={`${article.title} | Vanilla² News`}
-  description={`${article.tags.map((tag) => tag.label).join(", ")} from Vanilla²: ${article.title}.`}
-  header={{ backHref: "/news", backLabel: "Back to news" }}
->
-  <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
-    <article>
-      <header class="mb-8 border-b border-divider pb-7">
-        {article.image && article.showImageOnPage ? <img src={article.image} alt={article.imageAlt} loading="lazy" decoding="async" class="mb-7 aspect-[16/9] w-full rounded-xl object-cover" /> : null}
-        <h1 class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{article.title}</h1>
-        <div class="mt-4 flex flex-wrap gap-2" aria-label="Article tags">
-          {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}
-        </div>
-      </header>
+{article ? (
+  <BaseLayout
+    title={`${article.title} | Vanilla² News`}
+    description={`${article.tags.map((tag) => tag.label).join(", ")} from Vanilla²: ${article.title}.`}
+    header={{ backHref: "/news", backLabel: "Back to news" }}
+  >
+    <main class="mx-auto w-full max-w-6xl flex-1 px-5 py-10 sm:px-8 lg:px-10">
+      <article>
+        <header class="mb-8 border-b border-divider pb-7">
+          {article.image && article.showImageOnPage ? <img src={article.image} alt={article.imageAlt} loading="lazy" decoding="async" class="mb-7 aspect-[16/9] w-full rounded-xl object-cover" /> : null}
+          <h1 class="text-3xl font-bold tracking-tight text-heading sm:text-4xl">{article.title}</h1>
+          <div class="mt-4 flex flex-wrap gap-2" aria-label="Article tags">
+            {article.tags.map((tag) => <span class={`inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold ${tagClass(tag.name)}`}>{tag.label}</span>)}
+          </div>
+        </header>
 
-      {article.author ? (
-        <div class="lg:grid lg:grid-cols-[8rem_minmax(0,1fr)] lg:gap-8">
-          <aside class="mb-6 lg:mb-0" aria-label="Article author">
-            <AuthorCard
-              href={article.authorLink || undefined}
-              class:list={[
-                "block w-32 shrink-0 overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface",
-                article.authorLink && "transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-              ]}
-            >
-              {article.authorImage ? <img src={article.authorImage} alt={`${article.author} author portrait`} loading="lazy" decoding="async" class="aspect-square w-full object-cover" /> : null}
-              <div class="px-2 pb-3 text-center">
-                <p class="pt-3 text-xs leading-tight text-muted">{article.author}</p>
-                <p class="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>
-                <time datetime={article.publishedAt} class="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
-              </div>
-            </AuthorCard>
-          </aside>
-          <div class="docs-content" set:html={articleHtml}></div>
-        </div>
-      ) : <div class="docs-content" set:html={articleHtml}></div>}
-    </article>
-  </main>
-</BaseLayout>
+        {article.author ? (
+          <div class="lg:grid lg:grid-cols-[8rem_minmax(0,1fr)] lg:gap-8">
+            <aside class="mb-6 lg:mb-0" aria-label="Article author">
+              <AuthorCard
+                href={article.authorLink || undefined}
+                class:list={[
+                  "block w-32 shrink-0 overflow-hidden rounded-xl border-2 border-img-card bg-img-card-surface",
+                  article.authorLink && "transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                ]}
+              >
+                {article.authorImage ? <img src={article.authorImage} alt={`${article.author} author portrait`} loading="lazy" decoding="async" class="aspect-square w-full object-cover" /> : null}
+                <div class="px-2 pb-3 text-center">
+                  <p class="pt-3 text-xs leading-tight text-muted">{article.author}</p>
+                  <p class="mt-2 text-sm font-semibold leading-tight text-heading">Published</p>
+                  <time datetime={article.publishedAt} class="mt-0.5 block text-xs leading-tight text-muted">{publishedDate}</time>
+                </div>
+              </AuthorCard>
+            </aside>
+            <div class="docs-content" set:html={articleHtml}></div>
+          </div>
+        ) : <div class="docs-content" set:html={articleHtml}></div>}
+      </article>
+    </main>
+  </BaseLayout>
+) : <NotFoundPage />}
