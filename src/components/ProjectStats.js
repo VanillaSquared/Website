@@ -2,36 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const PROJECT_STATS_URL = "/api/project-stats";
-
-function getCount(value) {
-  return Number.isSafeInteger(value) && value >= 0 ? value : null;
-}
-
-function normalizeProviderStats(stats) {
-  if (!stats || typeof stats !== "object") return null;
-
-  const downloads = getCount(stats.downloads);
-  const followers = getCount(stats.followers);
-  return downloads === null && followers === null ? null : { downloads, followers };
-}
-
-async function getProjectStats() {
-  try {
-    const response = await fetch(PROJECT_STATS_URL, {
-      headers: { Accept: "application/json" },
-    });
-    if (!response.ok) return null;
-
-    const stats = await response.json();
-    return {
-      modrinth: normalizeProviderStats(stats.modrinth),
-      curseforge: normalizeProviderStats(stats.curseforge),
-    };
-  } catch {
-    return null;
-  }
-}
+import { getCombinedStats, getProjectStats } from "@/utils/projectStats";
 
 function formatCount(count) {
   return new Intl.NumberFormat("en-US").format(count);
@@ -57,23 +28,17 @@ function StatSection({ title, stats }) {
   );
 }
 
-function combineStats(modrinth, curseforge) {
-  const providers = [modrinth, curseforge].filter(Boolean);
-  if (!providers.length) return null;
-
-  return {
-    downloads: providers.reduce((total, stats) => total + (stats.downloads ?? 0), 0),
-    followers: providers.reduce((total, stats) => total + (stats.followers ?? 0), 0),
-  };
-}
-
 export default function ProjectStats() {
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     getProjectStats().then((nextStats) => {
-      if (active) setStats(nextStats);
+      if (active) {
+        setStats(nextStats);
+        setLoading(false);
+      }
     });
 
     return () => {
@@ -81,9 +46,10 @@ export default function ProjectStats() {
     };
   }, []);
 
+  if (loading) return <p className="py-3 text-center text-sm text-muted">Fetching...</p>;
   if (!stats) return null;
 
-  const combined = combineStats(stats.modrinth, stats.curseforge);
+  const combined = getCombinedStats(stats.modrinth, stats.curseforge);
   if (!combined) return null;
 
   return (

@@ -2,31 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const PROJECT_STATS_URL = "/api/project-stats";
-
-function getCount(value) {
-  return Number.isSafeInteger(value) && value >= 0 ? value : null;
-}
-
-async function getCombinedDownloads() {
-  try {
-    const response = await fetch(PROJECT_STATS_URL, {
-      headers: { Accept: "application/json" },
-    });
-    if (!response.ok) return null;
-
-    const stats = await response.json();
-    const downloads = [stats.modrinth?.downloads, stats.curseforge?.downloads]
-      .map(getCount)
-      .filter((count) => count !== null);
-
-    return downloads.length > 0
-      ? downloads.reduce((total, count) => total + count, 0)
-      : null;
-  } catch {
-    return null;
-  }
-}
+import { getCombinedDownloads, getProjectStats } from "@/utils/projectStats";
 
 function formatDownloads(count) {
   const formattedCount = new Intl.NumberFormat("en-US").format(count);
@@ -35,17 +11,25 @@ function formatDownloads(count) {
 
 export default function CombinedDownloadStats() {
   const [downloads, setDownloads] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
-    getCombinedDownloads().then((nextDownloads) => {
-      if (active) setDownloads(nextDownloads);
+    getProjectStats().then((stats) => {
+      if (active) {
+        setDownloads(getCombinedDownloads(stats));
+        setLoading(false);
+      }
     });
 
     return () => {
       active = false;
     };
   }, []);
+
+  if (loading) {
+    return <p className="mt-8 text-center text-base text-soft">Fetching...</p>;
+  }
 
   if (downloads === null) return null;
 
