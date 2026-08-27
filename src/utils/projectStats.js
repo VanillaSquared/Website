@@ -30,7 +30,14 @@ function loadProjectStats() {
 
 export function getProjectStats() {
   if (!globalThis[PROJECT_STATS_PROMISE_KEY]) {
-    globalThis[PROJECT_STATS_PROMISE_KEY] = loadProjectStats();
+    const request = loadProjectStats();
+    globalThis[PROJECT_STATS_PROMISE_KEY] = request;
+
+    request.finally(() => {
+      if (globalThis[PROJECT_STATS_PROMISE_KEY] === request) {
+        delete globalThis[PROJECT_STATS_PROMISE_KEY];
+      }
+    });
   }
 
   return globalThis[PROJECT_STATS_PROMISE_KEY];

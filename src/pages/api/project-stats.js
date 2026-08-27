@@ -1,8 +1,8 @@
 export const prerender = false;
 
 const MODRINTH_API_URL = "https://api.modrinth.com/v2/project/vsq";
-const CURSEFORGE_API_URL = "https://api.curse.tools/v1/cf/mods/search?gameId=432&slug=vsq";
 const CURSEFORGE_PROJECT_ID = 1651903;
+const CURSEFORGE_API_URL = `https://api.curse.tools/v1/mods/${CURSEFORGE_PROJECT_ID}`;
 
 function getCount(value) {
   return Number.isSafeInteger(value) && value >= 0 ? value : null;
@@ -26,10 +26,11 @@ async function getModrinthStats() {
 }
 
 async function getCurseForgeStats() {
-  const response = await fetchJson(CURSEFORGE_API_URL);
-  const project = response.data?.find(({ id }) => id === CURSEFORGE_PROJECT_ID);
+  const { data: project } = await fetchJson(CURSEFORGE_API_URL);
 
-  if (!project) throw new Error("CurseForge project was not found");
+  if (project?.id !== CURSEFORGE_PROJECT_ID) {
+    throw new Error("CurseForge project was not found");
+  }
 
   return {
     downloads: getCount(project.downloadCount),
