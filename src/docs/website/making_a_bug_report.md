@@ -1,12 +1,14 @@
 ---
-title: Making a Bug Report
-description: How to submit a useful bug report.
+title: Archived Bug Tracker
+description: The Vanilla² bug tracker is no longer available.
 order: 2
 ---
 
-Before creating a report, check the [bug page](/bugs) to make sure the same problem has not already been reported. Select the plus button on that page to open the bug reporter. You do not need to sign in.
+The Vanilla² bug tracker was archived on 2 September 2026. The [bug page](/bugs) remains online to explain the change, but existing reports are no longer fetched and new reports cannot be submitted.
 
-## What to Include
+The following guidance is preserved for historical reference.
+
+## What a Report Included
 
 Use a short, specific title and report one problem at a time. Explain what happened, what should have happened, and the exact steps someone else can follow to reproduce it.
 
@@ -26,6 +28,6 @@ How to reproduce:
 The recipe should still be selected, but no recipe is selected.
 ```
 
-You can attach screenshots, logs, and ZIP files directly from the report form. Attachments are saved as GitHub issue assets and linked under an `<!-- Attached Assets -->` section on GitHub; they are not added to the repository. You can add up to five files, with a 2 MB limit per file and a 4 MB total limit. Do not include access tokens, private server addresses, personal information, or any other sensitive data. Bug descriptions support standard sanitized Markdown, but not raw HTML, JSX, MDX expressions, imports, exports, or custom components.
+The former form accepted screenshots, logs, and ZIP files. It is now disabled together with the issue backend.
 
-New reports always begin with an unconfirmed status and no assigned priority. These fields cannot be selected by the reporter.
+Reports began with an unconfirmed status and no assigned priority.

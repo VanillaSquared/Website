@@ -4,7 +4,7 @@
   <br>
 </h1>
 
-<h4 align="center">Official Astro website for the Vanilla² Minecraft Fabric mod.</h4>
+<h4 align="center">Archived static Astro website for the Vanilla² Minecraft Fabric mod.</h4>
 
 <p align="center">
   <img alt="Astro" src="https://img.shields.io/badge/Astro-7-000000?style=flat-square&logo=astro&logoColor=white">
@@ -15,7 +15,7 @@
 
 ## Overview
 
-The Vanilla² website contains the mod's landing page, news, documentation, bug tracker, and reusable UI templates. News articles and documentation are stored in the repository and rendered from Markdown. Bug reports use the website's private issue backend.
+The Vanilla² website contains the mod's landing page, news, documentation, an archived bug-tracker notice, and reusable UI templates. News articles and documentation are stored in the repository and rendered from Markdown. The project was archived on 2 September 2026, so the production build contains static files only.
 
 ## License
 
@@ -26,12 +26,12 @@ This project uses the BLOBSFER Licence 1.0. It permits private use and contribut
 - Landing page for the Vanilla² Minecraft Fabric mod.
 - Repository-backed Markdown documentation.
 - Repository-backed news articles with private-draft support.
-- Bug report form backed by a private issue backend.
+- Read-only notice at the former bug-tracker route.
 - Reusable UI component and page templates.
 
 ## Tech stack
 
-- [Astro](https://astro.build/) pages and server routes
+- [Astro](https://astro.build/) static pages
 - [React](https://react.dev/)
 - [Tailwind CSS](https://tailwindcss.com/) v4 via Vite
 - [gray-matter](https://github.com/jonschlinkert/gray-matter) and MDX for repository content
@@ -64,7 +64,7 @@ private: false
 
 ### Bug reports
 
-Bug reports are created from the form on `/bugs` and loaded through cached public responses with a seven-minute browser/CDN lifetime. A successful submission invalidates the server-side issue cache so the next uncached request refreshes from GitHub. Server-side access to the private issue backend requires a fine-grained token in the `github` environment variable with Issues read/write permissions. Uploaded attachments are stored as GitHub issue assets and linked from the created issue without adding files to the repository. The serverless rate limiter is the only automated abuse prevention and intentionally uses in-memory state without additional environment variables.
+The former bug tracker is archived. `/bugs` remains as a static explanatory page, but it does not fetch reports or accept new submissions.
 
 ## Development
 

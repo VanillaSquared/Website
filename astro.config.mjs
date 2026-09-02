@@ -4,13 +4,12 @@ import { fileURLToPath } from "node:url";
 
 import react from "@astrojs/react";
 import tailwindcss from "@tailwindcss/vite";
-import vercel from "@astrojs/vercel";
 import { defineConfig } from "astro/config";
 import { transform } from "esbuild";
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 const cdnDirectory = path.join(rootDirectory, "cdn");
-const clientDirectory = path.join(rootDirectory, "dist", "client");
+const outputDirectory = path.join(rootDirectory, "dist");
 
 function staticCdnPlugin() {
   return {
@@ -34,7 +33,7 @@ function staticCdnPlugin() {
       });
     },
     writeBundle() {
-      fs.cpSync(cdnDirectory, path.join(clientDirectory, "cdn"), { recursive: true });
+      fs.cpSync(cdnDirectory, path.join(outputDirectory, "cdn"), { recursive: true });
     },
   };
 }
@@ -60,8 +59,7 @@ function jsxJavaScriptPlugin() {
 }
 
 export default defineConfig({
-  output: "server",
-  adapter: vercel(),
+  output: "static",
   integrations: [react()],
   redirects: {
     "/modlicence": "/license/mod",

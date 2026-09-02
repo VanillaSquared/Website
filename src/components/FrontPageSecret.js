@@ -2,15 +2,10 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import xIcon from "@cdn/icons/x.svg";
-import Button from "@/components/Button";
-import Modal from "@/components/Modal";
-import ProjectStats from "@/components/ProjectStats";
 import useSecretSequence from "@/hooks/useSecretSequence";
 import { hasCookieConsent, setConsentedCookie } from "@/utils/cookieConsent";
 
 const SECRET_SEQUENCE = "nexosux";
-const STATS_SEQUENCE = "stats";
 const NEXT_SPLASH_SEQUENCE = "1";
 const SPLASH_INTERVAL_MS = 67_000;
 const SPLASH_COOKIE = "vsq-splash-secret";
@@ -61,9 +56,8 @@ function saveSplashCookie() {
   );
 }
 
-export default function FrontPageSecret({ statsContent = <ProjectStats /> }) {
+export default function FrontPageSecret() {
   const [splashActive, setSplashActive] = useState(false);
-  const [statsOpen, setStatsOpen] = useState(false);
   const splashElementRef = useRef(null);
   const splashTextsRef = useRef([]);
   const splashIndexRef = useRef(-1);
@@ -114,50 +108,19 @@ export default function FrontPageSecret({ statsContent = <ProjectStats /> }) {
   });
 
   useSecretSequence({
-    sequence: STATS_SEQUENCE,
-    onMatch: () => setStatsOpen(true),
-  });
-
-  useSecretSequence({
     sequence: NEXT_SPLASH_SEQUENCE,
     enabled: splashActive,
     onMatch: showNextSplash,
   });
 
   return (
-    <>
-      <div className="front-page-secret-title">
-        <h1 className="text-5xl font-bold tracking-tight text-heading sm:text-6xl">
-          Vanilla²
-        </h1>
-        {splashActive ? (
-          <p ref={splashElementRef} className="front-page-secret-splash" aria-live="polite" />
-        ) : null}
-      </div>
-
-      <Modal
-        open={statsOpen}
-        onClose={() => setStatsOpen(false)}
-        variant="compact"
-        initialFocus="dialog"
-        ariaLabelledBy="front-page-stats-title"
-        className="!min-h-0 !max-w-xs !p-4"
-      >
-        <h2 id="front-page-stats-title" className="pr-10 text-base font-semibold text-heading">
-          Stats
-        </h2>
-        <Button
-          size="icon"
-          variant="tertiary"
-          icon={xIcon}
-          className="absolute top-2 right-2"
-          onClick={() => setStatsOpen(false)}
-          aria-label="Close project stats"
-        />
-        <div className="mt-2">
-          {statsContent}
-        </div>
-      </Modal>
-    </>
+    <div className="front-page-secret-title">
+      <h1 className="text-5xl font-bold tracking-tight text-heading sm:text-6xl">
+        Vanilla²
+      </h1>
+      {splashActive ? (
+        <p ref={splashElementRef} className="front-page-secret-splash" aria-live="polite" />
+      ) : null}
+    </div>
   );
 }

@@ -5,10 +5,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import searchIcon from "@cdn/icons/search.svg";
 import xIcon from "@cdn/icons/x.svg";
 import Preview from "@/components/Preview";
-import { BUG_PREVIEW_DEBOUNCE_MS, BUG_PREVIEW_MIN_QUERY_LENGTH } from "@/bugs/config";
 import { getAssetUrl } from "@/utils/assets";
 
 const EMPTY_HIDDEN_FIELDS = Object.freeze({});
+const PREVIEW_MIN_QUERY_LENGTH = 2;
+const PREVIEW_DEBOUNCE_MS = 600;
 
 const variants = {
   default: {
@@ -43,6 +44,25 @@ function appendParamValues(params, fieldName, fieldValue) {
   });
 }
 
+function selectPreviewItems(results, query, staticIndex) {
+  if (!Array.isArray(results)) return [];
+  if (!staticIndex) return results.slice(0, 6);
+
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  return results
+    .map((item) => {
+      const searchable = getPathValue(item, "searchText").toLowerCase();
+      if (!terms.every((term) => searchable.includes(term))) return null;
+      const title = getPathValue(item, "title").toLowerCase();
+      const score = terms.reduce((total, term) => total + (title.includes(term) ? 5 : 1), 0);
+      return { item, score };
+    })
+    .filter(Boolean)
+    .sort((left, right) => right.score - left.score || getPathValue(left.item, "title").localeCompare(getPathValue(right.item, "title")))
+    .slice(0, 6)
+    .map(({ item }) => item);
+}
+
 export default function SearchBar({
   action,
   className = "",
@@ -54,6 +74,7 @@ export default function SearchBar({
   onSearch,
   placeholder = "Search...",
   previewEndpoint,
+  previewStaticIndex = false,
   previewResultsKey = "results",
   previewTitleKey = "title",
   previewDescriptionKey = "description",
@@ -83,7 +104,7 @@ export default function SearchBar({
 
   useEffect(() => {
     const query = value.trim();
-    if (!showPreview || locked || !previewEndpoint || query.length < BUG_PREVIEW_MIN_QUERY_LENGTH) {
+    if (!showPreview || locked || !previewEndpoint || query.length < PREVIEW_MIN_QUERY_LENGTH) {
       setPreviewItems([]);
       setPreviewLoading(false);
       return undefined;
@@ -92,14 +113,16 @@ export default function SearchBar({
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
       const url = new URL(previewEndpoint, window.location.origin);
-      Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
-        appendParamValues(url.searchParams, fieldName, fieldValue);
-      });
-      url.searchParams.set(name, query);
+      if (!previewStaticIndex) {
+        Object.entries(hiddenFields).forEach(([fieldName, fieldValue]) => {
+          appendParamValues(url.searchParams, fieldName, fieldValue);
+        });
+        url.searchParams.set(name, query);
+      }
       const cacheKey = url.toString();
-      const cachedItems = previewCache.current.get(cacheKey);
-      if (cachedItems) {
-        setPreviewItems(cachedItems);
+      const cachedResults = previewCache.current.get(cacheKey);
+      if (cachedResults) {
+        setPreviewItems(selectPreviewItems(cachedResults, query, previewStaticIndex));
         setPreviewLoading(false);
         return;
       }
@@ -110,9 +133,9 @@ export default function SearchBar({
         const response = await fetch(url, { signal: controller.signal, cache: "force-cache" });
         const json = await response.json();
         const results = previewResultsKey ? json?.[previewResultsKey] : json;
-        const items = Array.isArray(results) ? results.slice(0, 6) : [];
-        previewCache.current.set(cacheKey, items);
-        setPreviewItems(items);
+        const normalizedResults = Array.isArray(results) ? results : [];
+        previewCache.current.set(cacheKey, normalizedResults);
+        setPreviewItems(selectPreviewItems(normalizedResults, query, previewStaticIndex));
       } catch (error) {
         if (error.name !== "AbortError") {
           setPreviewItems([]);
@@ -122,13 +145,13 @@ export default function SearchBar({
           setPreviewLoading(false);
         }
       }
-    }, BUG_PREVIEW_DEBOUNCE_MS);
+    }, PREVIEW_DEBOUNCE_MS);
 
     return () => {
       controller.abort();
       window.clearTimeout(timeout);
     };
-  }, [hiddenFields, name, previewEndpoint, previewResultsKey, showPreview, value]);
+  }, [hiddenFields, name, previewEndpoint, previewResultsKey, previewStaticIndex, showPreview, value]);
 
   function getSearchHref(nextValue) {
     const params = new URLSearchParams();

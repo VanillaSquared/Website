@@ -14,7 +14,8 @@ export default function TopBar({ backHref, backLabel = "Go back", docsNavigation
   const searchProps = {
     action: "/docs",
     placeholder: "Search documentation",
-    previewEndpoint: "/api/docs/search",
+    previewEndpoint: "/docs/search-index.json",
+    previewStaticIndex: true,
     previewResultsKey: "results",
     previewTitleKey: "title",
     previewDescriptionKey: "description",
@@ -23,7 +24,7 @@ export default function TopBar({ backHref, backLabel = "Go back", docsNavigation
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--vsq-surface-header)] backdrop-blur-xl after:pointer-events-none after:fixed after:top-16 after:left-0 after:right-0 after:h-px after:bg-[var(--vsq-border-header)]">
+    <header className="sticky top-0 z-50 bg-[var(--vsq-surface-header)] backdrop-blur-xl after:pointer-events-none after:absolute after:right-0 after:bottom-0 after:left-0 after:h-px after:bg-[var(--vsq-border-header)]">
       <nav className="flex min-h-16 w-full items-center gap-3 px-4 py-3">
         <Link href="/" className="group flex shrink-0 items-center gap-2 text-base font-semibold tracking-wide text-soft transition-colors hover:text-muted">
           <Image src={vsqLogo} alt="Vanilla² logo" width={32} height={32} loading="eager" className="transition duration-200 group-hover:brightness-75" />

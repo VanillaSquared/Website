@@ -1,10 +1,12 @@
 ---
 import "../styles/globals.css";
 
+import ArchiveBanner from "@/components/ArchiveBanner.astro";
 import CookieConsentModal from "@/components/CookieConsentModal";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import ScrollbarVisibility from "@/components/ScrollbarVisibility";
+import { getVisibleNewsArticles } from "@/news/server";
 import { COOKIE_CONSENT_STORAGE_KEY } from "@/utils/cookieConsent";
 
 const {
@@ -16,6 +18,7 @@ const {
 } = Astro.props;
 
 const themeInitializer = `try{if(localStorage.getItem(${JSON.stringify(COOKIE_CONSENT_STORAGE_KEY)})==="accepted"){const theme=document.cookie.split("; ").find((cookie)=>cookie.startsWith("vsq-theme="))?.split("=")[1];if(theme==="light"){document.documentElement.dataset.theme="light"}}}catch{}`;
+const latestNewsPath = getVisibleNewsArticles()[0]?.path ?? "/news";
 ---
 <!doctype html>
 <html lang="en" class="scrollbar-while-scrolling h-full antialiased">
@@ -30,6 +33,7 @@ const themeInitializer = `try{if(localStorage.getItem(${JSON.stringify(COOKIE_CO
   <body class="min-h-full flex flex-col">
     <ScrollbarVisibility client:load />
     <CookieConsentModal client:load />
+    <ArchiveBanner href={latestNewsPath} />
     <Header search={search} {...header} client:load />
     <main class="flex flex-1 flex-col">
       <slot />

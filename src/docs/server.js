@@ -187,25 +187,18 @@ export function getBreadcrumbs(document) {
   return breadcrumbs;
 }
 
-export function searchDocuments(query, limit = 20) {
-  const terms = String(query).toLowerCase().trim().split(/\s+/).filter(Boolean);
-  if (!terms.length) return [];
-  const { documents } = getDocsData();
-
-  return documents.map((document) => {
+export function getDocsSearchIndex() {
+  return getDocsData().documents.map((document) => {
     const breadcrumbs = getBreadcrumbs(document).map((item) => item.title).join(" ");
     const headingText = document.headings.map((heading) => heading.title).join(" ");
-    const title = document.title.toLowerCase();
-    const searchable = `${document.title} ${document.description} ${breadcrumbs} ${headingText} ${document.text}`.toLowerCase();
-    if (!terms.every((term) => searchable.includes(term))) return null;
-    const score = terms.reduce((total, term) => total + (title.includes(term) ? 5 : 1), 0);
+
     return {
       id: document.path,
       href: document.path,
       title: document.title,
       description: document.description || breadcrumbs,
       breadcrumbs,
-      score,
+      searchText: `${document.title} ${document.description} ${breadcrumbs} ${headingText} ${document.text}`.toLowerCase(),
     };
-  }).filter(Boolean).sort((left, right) => right.score - left.score || left.title.localeCompare(right.title)).slice(0, limit);
+  });
 }

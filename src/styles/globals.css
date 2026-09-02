@@ -66,6 +66,11 @@
   --vsq-surface-input-hover: #262626;
   --vsq-surface-input-focus: #2a2a2a;
   --vsq-surface-error: #3b1f28;
+  --vsq-archive-banner-bg: #fff8c5;
+  --vsq-archive-banner-hover: #fff1a8;
+  --vsq-archive-banner-text: #24292f;
+  --vsq-archive-banner-border: #d4a72c;
+  --vsq-archive-banner-focus: #8250df;
   --vsq-border-divider: #262626;
   --vsq-border-img-card: #303030;
   --vsq-border-header: rgb(38 38 38 / 0.7);
@@ -230,6 +235,11 @@
   --vsq-surface-input-hover: #f9fafb;
   --vsq-surface-input-focus: #ffffff;
   --vsq-surface-error: #fef2f2;
+  --vsq-archive-banner-bg: #fff8c5;
+  --vsq-archive-banner-hover: #fff1a8;
+  --vsq-archive-banner-text: #24292f;
+  --vsq-archive-banner-border: #d4a72c;
+  --vsq-archive-banner-focus: #8250df;
   --vsq-border-divider: #e5e7eb;
   --vsq-border-img-card: #e5e7eb;
   --vsq-border-header: rgb(209 213 219 / 0.8);

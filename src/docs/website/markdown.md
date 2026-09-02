@@ -4,7 +4,7 @@ description: The supported Markdown syntax, website components and header fields
 order: 1
 ---
 
-The website uses `.md` files for docs and news articles. Docs are stored in `src/docs/` and news articles in `src/news/`. Bug report descriptions support sanitized Markdown through the bug reporter, but are not repository files.
+The website uses `.md` files for docs and news articles. Docs are stored in `src/docs/` and news articles in `news/`.
 
 The path and filename decide the page URL. For example, `src/docs/website/markdown.md` becomes `/docs/website/markdown`. Use lowercase snake case for filenames. A category page has the same name as its folder, meaning `src/docs/website/website.md` is the page for the `website` category.
 
@@ -70,7 +70,7 @@ You can use the website components directly in Markdown. Component names are cas
 </Button>
 ```
 
-`File` embeds a file download in docs, news articles and bug reports. `href` links to the file. `name`, `type`, `size` and `description` are optional. The file type is taken from the filename when `type` is not set.
+`File` embeds a file download in docs and news articles. `href` links to the file. `name`, `type`, `size` and `description` are optional. The file type is taken from the filename when `type` is not set.
 
 ```mdx
 <File

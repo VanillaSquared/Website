@@ -1,0 +1,11 @@
+---
+const { href } = Astro.props;
+const message = "The Project was archived on the 02.09.2026. Thank you for your support.";
+---
+<a
+  href={href}
+  class="block border-b border-[var(--vsq-archive-banner-border)] bg-[var(--vsq-archive-banner-bg)] px-4 py-3 text-center text-sm font-semibold text-[var(--vsq-archive-banner-text)] transition-colors hover:bg-[var(--vsq-archive-banner-hover)] focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--vsq-archive-banner-focus)] sm:text-base"
+  aria-label={`${message} Read the archive announcement.`}
+>
+  {message}
+</a>

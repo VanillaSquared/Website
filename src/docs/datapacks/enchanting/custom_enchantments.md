@@ -4,7 +4,7 @@ description: Define custom enchantments with item profiles, enchantment slots, e
 order: 4
 ---
 
-Using Datapacks you are able to create your own custom enchantments, this is already possible in Vanilla, but thanks to Vanilla Squareds new special enchantments, you are able to easily incorporate a keybind with cooldown bar and limits into your enchantments. I have to admit this part is heavily undertested and likely might not work in every case so please report any bugs to us on the [bug tracker](/bugs). I will try to fix them as soon as possible. This article will go over how to define custom enchantments, it will go through each and every one of the new enchantment effects added by the mod itself and also showcase how to implement special enchantments.
+Using Datapacks you are able to create your own custom enchantments, this is already possible in Vanilla, but thanks to Vanilla Squareds new special enchantments, you are able to easily incorporate a keybind with cooldown bar and limits into your enchantments. This part is heavily undertested and might not work in every case. The project and its [bug tracker](/bugs) are now archived. This article will go over how to define custom enchantments, it will go through each and every one of the new enchantment effects added by the mod itself and also showcase how to implement special enchantments.
 
 For further documentation on the Vanilla parts of custom enchantments, please check out the [Minecraft Wiki](https://minecraft.wiki/w/Enchantment_definition) page for custom enchantments.
 

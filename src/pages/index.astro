@@ -3,7 +3,6 @@ export const prerender = true;
 
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import FrontPageSecret from "@/components/FrontPageSecret";
-import CombinedDownloadStats from "@/components/CombinedDownloadStats";
 import { getVisibleNewsArticles } from "@/news/server";
 import { resolveAssetUrl } from "@/utils/serverAssets";
 
@@ -78,12 +77,11 @@ function tagClass(name) {
         <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold bg-tag text-soft">Fabric Loader ≥0.19.3</span>
         <span class="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold bg-tag text-soft">Java ≥25</span>
       </div>
-      <CombinedDownloadStats client:load />
       <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
         <a href="https://modrinth.com/mod/vsq" target="_blank" rel="noopener noreferrer" class="rounded-xl border-2 border-button-primary-outline bg-button-primary px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-primary-outline-hover hover:bg-button-primary-hover">Download</a>
         <a href="https://discord.gg/NrPZQbwc8Y" target="_blank" rel="noopener noreferrer" class="rounded-xl border-2 border-button-blurple-outline bg-button-blurple px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-blurple-outline-hover hover:bg-button-blurple-hover">Discord</a>
         <a href="/docs" class="rounded-xl border-2 border-button-blue-outline bg-button-blue px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-blue-outline-hover hover:bg-button-blue-hover">Docs</a>
-        <a href="/bugs" class="rounded-xl border-2 border-button-purple-outline bg-button-purple px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-purple-outline-hover hover:bg-button-purple-hover">Bug Reporter</a>
+        <a href="/bugs" class="rounded-xl border-2 border-button-purple-outline bg-button-purple px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-purple-outline-hover hover:bg-button-purple-hover">Bug Archive</a>
         <a href="/news" class="rounded-xl border-2 border-button-secondary-outline bg-button-secondary px-4 py-2 text-base font-semibold text-button-text transition-colors hover:border-button-secondary-outline-hover hover:bg-button-secondary-hover">News</a>
       </div>
     </section>

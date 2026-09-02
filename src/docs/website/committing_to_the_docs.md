@@ -70,7 +70,7 @@ Build the full website before committing:
 npm run build
 ```
 
-The build checks that every Markdown file can be rendered. It also catches invalid dates, news tags, bug fields, image paths and duplicate routes.
+The build checks that every Markdown file can be rendered. It also catches invalid dates, news tags, image paths and duplicate routes.
 
 After the build passes, review only your changes:
 
@@ -90,7 +90,7 @@ git add src/docs/website/markdown.md
 git commit -m "docs: update markdown guide"
 ```
 
-Use a short commit message which says what changed. `docs: add bug report guide` is useful, `updated stuff` isn't.
+Use a short commit message which says what changed. `docs: update enchanting guide` is useful, `updated stuff` isn't.
 
 Push your branch:
 
@@ -98,6 +98,6 @@ Push your branch:
 git push -u origin docs/short-description
 ```
 
-Open a pull request into the website repository's default branch. In the description, say what was changed and mention that `npm run build` passes. If the pull request fixes a bug report, link it there as well.
+Open a pull request into the website repository's default branch. In the description, say what was changed and mention that `npm run build` passes.
 
 If review asks for changes, update the same branch, run the build again, commit and push. The pull request updates automatically; you don't need to open another one.
